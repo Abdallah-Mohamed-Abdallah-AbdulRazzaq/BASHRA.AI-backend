@@ -1,0 +1,504 @@
+{
+  "info": {
+    "name": "Prescription Templates API Testing | اختبار API قوالب الوصفات",
+    "description": "مجموعة اختبارات شاملة لنظام قوالب الوصفات الطبية\nComprehensive test collection for Prescription Templates System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "doctorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctor2Token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "templateId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "templateUuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medicationId1",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "medicationId2",
+      "value": "2",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup - Login",
+      "item": [
+        {
+          "name": "Login as Doctor 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doctorToken', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor1@example.com\",\n  \"password\": \"DoctorPassword123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-doctor/login", "host": ["{{baseUrl}}"], "path": ["auth-doctor", "login"]},
+            "description": "تسجيل دخول الطبيب الأول | Login as Doctor 1"
+          }
+        },
+        {
+          "name": "Login as Doctor 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doctor2Token', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor2@example.com\",\n  \"password\": \"DoctorPassword123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-doctor/login", "host": ["{{baseUrl}}"], "path": ["auth-doctor", "login"]},
+            "description": "تسجيل دخول الطبيب الثاني | Login as Doctor 2"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Template | إنشاء قالب",
+      "item": [
+        {
+          "name": "✅ Create Template with Items",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('templateId', jsonData.data.id);",
+                  "    pm.collectionVariables.set('templateUuid', jsonData.data.uuid);",
+                  "    pm.test('Template created', () => pm.expect(jsonData.success).to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"علاج نزلة البرد\",\n  \"description\": \"قالب قياسي لعلاج نزلات البرد الشائعة\",\n  \"items\": [\n    {\n      \"medication_id\": {{medicationId1}},\n      \"default_dosage\": \"500mg\",\n      \"default_frequency\": \"3 مرات يومياً\",\n      \"default_duration\": \"5 أيام\",\n      \"default_instructions\": \"بعد الأكل\",\n      \"default_quantity\": \"15 حبة\"\n    },\n    {\n      \"medication_id\": {{medicationId2}},\n      \"default_dosage\": \"10ml\",\n      \"default_frequency\": \"مرتين يومياً\",\n      \"default_duration\": \"5 أيام\",\n      \"default_instructions\": \"قبل النوم\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "إنشاء قالب مع أدوية\nCreate template with medications"
+          }
+        },
+        {
+          "name": "✅ Create Simple Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"علاج الصداع\",\n  \"description\": \"قالب بسيط للصداع\",\n  \"items\": [\n    {\n      \"medication_id\": {{medicationId1}},\n      \"default_dosage\": \"500mg\",\n      \"default_frequency\": \"عند الحاجة\",\n      \"default_instructions\": \"لا تتجاوز 3 جرعات يومياً\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "إنشاء قالب بسيط\nCreate simple template"
+          }
+        },
+        {
+          "name": "❌ Missing Template Name",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"قالب بدون اسم\",\n  \"items\": [\n    {\n      \"medication_id\": {{medicationId1}},\n      \"default_dosage\": \"500mg\",\n      \"default_frequency\": \"مرتين يومياً\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "خطأ: اسم القالب مفقود\nError: Missing template name"
+          }
+        },
+        {
+          "name": "❌ No Items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"قالب فارغ\",\n  \"items\": []\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "خطأ: لا توجد أدوية\nError: No items"
+          }
+        },
+        {
+          "name": "❌ Missing Item Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"قالب خاطئ\",\n  \"items\": [\n    {\n      \"medication_id\": {{medicationId1}},\n      \"default_dosage\": \"500mg\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "خطأ: حقول مطلوبة مفقودة في الدواء\nError: Missing item required fields"
+          }
+        },
+        {
+          "name": "❌ Invalid Medication ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"قالب خاطئ\",\n  \"items\": [\n    {\n      \"medication_id\": 99999,\n      \"default_dosage\": \"500mg\",\n      \"default_frequency\": \"مرتين يومياً\"\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "خطأ: دواء غير موجود\nError: Invalid medication ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Templates | عرض القوالب",
+      "item": [
+        {
+          "name": "✅ Get All Templates",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates", "host": ["{{baseUrl}}"], "path": ["prescription-templates"]},
+            "description": "عرض جميع قوالب الطبيب\nGet all doctor's templates"
+          }
+        },
+        {
+          "name": "✅ Get Templates with Items",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/prescription-templates?include_items=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["prescription-templates"],
+              "query": [{"key": "include_items", "value": "true"}]
+            },
+            "description": "عرض القوالب مع الأدوية\nGet templates with items"
+          }
+        },
+        {
+          "name": "✅ Get Template by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "عرض قالب بالـ ID\nGet template by ID"
+          }
+        },
+        {
+          "name": "✅ Get Template by UUID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateUuid}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateUuid}}"]},
+            "description": "عرض قالب بالـ UUID\nGet template by UUID"
+          }
+        },
+        {
+          "name": "❌ Doctor 2 Cannot See Doctor 1 Template",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor2Token}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "خطأ: طبيب لا يمكنه رؤية قوالب طبيب آخر\nError: Doctor cannot see another doctor's template"
+          }
+        },
+        {
+          "name": "❌ Template Not Found",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/99999", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "99999"]},
+            "description": "خطأ: قالب غير موجود\nError: Template not found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Template | تعديل قالب",
+      "item": [
+        {
+          "name": "✅ Update Template Name",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"علاج نزلة البرد - محدث\",\n  \"description\": \"قالب محدث مع تعليمات إضافية\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "تعديل اسم ووصف القالب\nUpdate template name and description"
+          }
+        },
+        {
+          "name": "❌ Doctor 2 Cannot Update Doctor 1 Template",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctor2Token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_name\": \"محاولة تعديل\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "خطأ: طبيب لا يمكنه تعديل قالب طبيب آخر\nError: Doctor cannot update another doctor's template"
+          }
+        },
+        {
+          "name": "❌ No Data to Update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "خطأ: لا توجد بيانات للتحديث\nError: No data to update"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manage Items | إدارة الأدوية",
+      "item": [
+        {
+          "name": "✅ Add Item to Template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('itemId', jsonData.item_id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medication_id\": 3,\n  \"default_dosage\": \"250mg\",\n  \"default_frequency\": \"مرتين يومياً\",\n  \"default_duration\": \"7 أيام\",\n  \"default_instructions\": \"مع الطعام\",\n  \"default_quantity\": \"14 حبة\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/items", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "items"]},
+            "description": "إضافة دواء للقالب\nAdd medication to template"
+          }
+        },
+        {
+          "name": "✅ Update Template Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"default_dosage\": \"500mg\",\n  \"default_frequency\": \"3 مرات يومياً\",\n  \"default_instructions\": \"بعد الأكل مباشرة\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "items", "{{itemId}}"]},
+            "description": "تعديل دواء في القالب\nUpdate template item"
+          }
+        },
+        {
+          "name": "✅ Delete Template Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/items/{{itemId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "items", "{{itemId}}"]},
+            "description": "حذف دواء من القالب\nDelete item from template"
+          }
+        },
+        {
+          "name": "❌ Add Duplicate Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medication_id\": {{medicationId1}},\n  \"default_dosage\": \"500mg\",\n  \"default_frequency\": \"مرتين يومياً\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/items", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "items"]},
+            "description": "خطأ: دواء موجود بالفعل في القالب\nError: Duplicate medication in template"
+          }
+        },
+        {
+          "name": "❌ Add Item Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medication_id\": 5,\n  \"default_dosage\": \"500mg\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/items", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "items"]},
+            "description": "خطأ: حقول مطلوبة مفقودة\nError: Missing required fields"
+          }
+        },
+        {
+          "name": "❌ Update Non-existent Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"default_dosage\": \"500mg\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/items/99999", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "items", "99999"]},
+            "description": "خطأ: دواء غير موجود في القالب\nError: Item not found in template"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usage Count | عداد الاستخدام",
+      "item": [
+        {
+          "name": "✅ Increment Usage Count",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/use", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "use"]},
+            "description": "زيادة عداد الاستخدام\nIncrement usage count"
+          }
+        },
+        {
+          "name": "❌ Doctor 2 Cannot Increment Doctor 1 Template",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor2Token}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}/use", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}", "use"]},
+            "description": "خطأ: طبيب لا يمكنه زيادة عداد قالب طبيب آخر\nError: Doctor cannot increment another doctor's template"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Template | حذف قالب",
+      "item": [
+        {
+          "name": "✅ Delete Template",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "حذف قالب\nDelete template"
+          }
+        },
+        {
+          "name": "❌ Doctor 2 Cannot Delete Doctor 1 Template",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctor2Token}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "{{templateId}}"]},
+            "description": "خطأ: طبيب لا يمكنه حذف قالب طبيب آخر\nError: Doctor cannot delete another doctor's template"
+          }
+        },
+        {
+          "name": "❌ Delete Non-existent Template",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescription-templates/99999", "host": ["{{baseUrl}}"], "path": ["prescription-templates", "99999"]},
+            "description": "خطأ: قالب غير موجود\nError: Template not found"
+          }
+        }
+      ]
+    }
+  ]
+}

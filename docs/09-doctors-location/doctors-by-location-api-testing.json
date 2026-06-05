@@ -1,0 +1,512 @@
+{
+  "info": {
+    "name": "Doctors By Location API - Complete Testing",
+    "description": "مجموعة اختبارات شاملة لـ APIs البحث عن الأطباء حسب الموقع\n\nالتحديثات:\n- إزالة شروط is_verified و approval_status الصارمة\n- يعرض جميع الأطباء النشطين بغض النظر عن حالة التحقق\n- تحسين الاستعلامات لتجنب مشاكل البحث\n\nBase URL: http://localhost:3006/api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Address Management (إدارة العناوين)",
+      "item": [
+        {
+          "name": "1.1 Create Doctor Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "description": "توكن الطبيب"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_line1\": \"123 شارع الملك فهد\",\n  \"address_line2\": \"مبنى رقم 5، الطابق الثالث\",\n  \"postal_code\": \"12345\",\n  \"countries_cities_id\": 2,\n  \"latitude\": 24.7136,\n  \"longitude\": 46.6753,\n  \"type\": \"work\",\n  \"is_primary\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["addresses"]
+            },
+            "description": "إنشاء عنوان جديد للطبيب\n\nالحقول:\n- address_line1: العنوان الأساسي (مطلوب)\n- address_line2: عنوان إضافي (اختياري)\n- postal_code: الرمز البريدي (اختياري)\n- countries_cities_id: معرف الموقع من جدول countries_cities (اختياري)\n- latitude: خط العرض (اختياري)\n- longitude: خط الطول (اختياري)\n- type: نوع العنوان (home, work, billing, shipping)\n- is_primary: هل هو العنوان الرئيسي (true/false)"
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Get All Doctor Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "description": "توكن الطبيب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["addresses"]
+            },
+            "description": "جلب جميع عناوين الطبيب المسجل"
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Get Primary Address",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/addresses/primary",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "primary"]
+            },
+            "description": "جلب العنوان الرئيسي للطبيب"
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_line1\": \"456 شارع العليا\",\n  \"countries_cities_id\": 3,\n  \"latitude\": 24.7500,\n  \"longitude\": 46.7000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/addresses/:address_id",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", ":address_id"],
+              "variable": [
+                {
+                  "key": "address_id",
+                  "value": "1",
+                  "description": "معرف العنوان"
+                }
+              ]
+            },
+            "description": "تحديث عنوان موجود"
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Set Address as Primary",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/addresses/:address_id/set-primary",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", ":address_id", "set-primary"],
+              "variable": [
+                {
+                  "key": "address_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "تعيين عنوان كعنوان رئيسي"
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/addresses/:address_id",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", ":address_id"],
+              "variable": [
+                {
+                  "key": "address_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "حذف عنوان"
+          },
+          "response": []
+        }
+      ],
+      "description": "APIs إدارة العناوين للأطباء والمستخدمين"
+    },
+    {
+      "name": "2. Doctors By Location (البحث عن الأطباء)",
+      "item": [
+        {
+          "name": "2.1 Get Doctors By Location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors-by-location?countries_cities_id=2&page=1&limit=10&lang=ar",
+              "host": ["{{base_url}}"],
+              "path": ["doctors-by-location"],
+              "query": [
+                {
+                  "key": "countries_cities_id",
+                  "value": "2",
+                  "description": "معرف الموقع (مطلوب)"
+                },
+                {
+                  "key": "level_type",
+                  "value": "city",
+                  "description": "نوع المستوى (country, city, region, district)",
+                  "disabled": true
+                },
+                {
+                  "key": "include_children",
+                  "value": "true",
+                  "description": "تضمين المواقع الفرعية (افتراضي: true)",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "عدد النتائج في الصفحة"
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "اللغة (ar/en)"
+                }
+              ]
+            },
+            "description": "البحث عن الأطباء في موقع محدد\n\nالمعاملات:\n- countries_cities_id: معرف الموقع (مطلوب)\n- level_type: نوع المستوى (اختياري)\n- include_children: تضمين المواقع الفرعية (افتراضي: true)\n- page: رقم الصفحة (افتراضي: 1)\n- limit: عدد النتائج (افتراضي: 20، الحد الأقصى: 100)\n- lang: اللغة (ar/en)\n\nملاحظة: لا يتطلب مصادقة (Public API)"
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 Get Doctors Count By Location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors-by-location/count?countries_cities_id=2",
+              "host": ["{{base_url}}"],
+              "path": ["doctors-by-location", "count"],
+              "query": [
+                {
+                  "key": "countries_cities_id",
+                  "value": "2",
+                  "description": "معرف الموقع (مطلوب)"
+                },
+                {
+                  "key": "level_type",
+                  "value": "city",
+                  "description": "نوع المستوى",
+                  "disabled": true
+                },
+                {
+                  "key": "include_children",
+                  "value": "true",
+                  "description": "تضمين المواقع الفرعية",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "الحصول على عدد الأطباء في موقع محدد"
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Get Doctors Grouped By Location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors-by-location/grouped?level_type=city&lang=ar",
+              "host": ["{{base_url}}"],
+              "path": ["doctors-by-location", "grouped"],
+              "query": [
+                {
+                  "key": "level_type",
+                  "value": "city",
+                  "description": "نوع المستوى (مطلوب)"
+                },
+                {
+                  "key": "parent_id",
+                  "value": "1",
+                  "description": "معرف الموقع الأب (اختياري)",
+                  "disabled": true
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "اللغة"
+                }
+              ]
+            },
+            "description": "عرض الأطباء مجمعين حسب المواقع\n\nمفيد لعرض:\n- عدد الأطباء في كل مدينة\n- عدد الأطباء في كل منطقة\n- إحصائيات التوزيع الجغرافي"
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 Search Doctors By Location (Advanced)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors-by-location/search?countries_cities_id=2&specialization=قلب&min_experience=5&sort_by=rating&order=desc&page=1&limit=10&lang=ar",
+              "host": ["{{base_url}}"],
+              "path": ["doctors-by-location", "search"],
+              "query": [
+                {
+                  "key": "countries_cities_id",
+                  "value": "2",
+                  "description": "معرف الموقع (مطلوب)"
+                },
+                {
+                  "key": "specialization",
+                  "value": "قلب",
+                  "description": "التخصص (اختياري)"
+                },
+                {
+                  "key": "min_experience",
+                  "value": "5",
+                  "description": "الحد الأدنى لسنوات الخبرة (اختياري)"
+                },
+                {
+                  "key": "include_children",
+                  "value": "true",
+                  "description": "تضمين المواقع الفرعية",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "rating",
+                  "description": "ترتيب حسب (experience, name, created_at, rating)"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "description": "اتجاه الترتيب (asc, desc)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "عدد النتائج"
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "اللغة"
+                }
+              ]
+            },
+            "description": "البحث المتقدم عن الأطباء حسب الموقع مع فلاتر إضافية\n\nالفلاتر المتاحة:\n- التخصص\n- سنوات الخبرة\n- الترتيب حسب التقييم أو الخبرة أو الاسم\n- تضمين المواقع الفرعية"
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 Get Nearby Doctors (GPS)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/doctors-by-location/nearby?latitude=24.7136&longitude=46.6753&radius=10&page=1&limit=20&lang=ar",
+              "host": ["{{base_url}}"],
+              "path": ["doctors-by-location", "nearby"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "24.7136",
+                  "description": "خط العرض (مطلوب)"
+                },
+                {
+                  "key": "longitude",
+                  "value": "46.6753",
+                  "description": "خط الطول (مطلوب)"
+                },
+                {
+                  "key": "radius",
+                  "value": "10",
+                  "description": "نصف القطر بالكيلومتر (افتراضي: 5)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "عدد النتائج"
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "description": "اللغة"
+                }
+              ]
+            },
+            "description": "البحث عن الأطباء القريبين باستخدام إحداثيات GPS\n\nيستخدم معادلة Haversine لحساب المسافة\n\nمثال:\n- الرياض: 24.7136, 46.6753\n- جدة: 21.5433, 39.1728\n- الدمام: 26.4207, 50.0888"
+          },
+          "response": []
+        }
+      ],
+      "description": "APIs البحث عن الأطباء حسب الموقع (عامة - لا تتطلب مصادقة)"
+    },
+    {
+      "name": "3. Test Scenarios (سيناريوهات الاختبار)",
+      "item": [
+        {
+          "name": "3.1 Complete Flow - Register Doctor & Add Address",
+          "item": [
+            {
+              "name": "Step 1: Register Doctor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"doctor.test@example.com\",\n  \"phone\": \"+966501234567\",\n  \"password\": \"Test@123456\",\n  \"license_number\": \"DOC-2024-001\",\n  \"years_of_experience\": 10,\n  \"full_name_ar\": \"د. أحمد محمد\",\n  \"full_name_en\": \"Dr. Ahmed Mohammed\",\n  \"specialty_ar\": \"طب القلب\",\n  \"specialty_en\": \"Cardiology\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth-doctor/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth-doctor", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 2: Login Doctor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"doctor.test@example.com\",\n  \"password\": \"Test@123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth-doctor/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth-doctor", "login"]
+                },
+                "description": "احفظ الـ token من الاستجابة في متغير {{doctor_token}}"
+              },
+              "response": []
+            },
+            {
+              "name": "Step 3: Add Doctor Address",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{doctor_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"address_line1\": \"123 شارع الملك فهد\",\n  \"address_line2\": \"مبنى رقم 5\",\n  \"postal_code\": \"12345\",\n  \"countries_cities_id\": 2,\n  \"latitude\": 24.7136,\n  \"longitude\": 46.6753,\n  \"type\": \"work\",\n  \"is_primary\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/addresses",
+                  "host": ["{{base_url}}"],
+                  "path": ["addresses"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 4: Search for Doctor by Location",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/doctors-by-location?countries_cities_id=2&lang=ar",
+                  "host": ["{{base_url}}"],
+                  "path": ["doctors-by-location"],
+                  "query": [
+                    {
+                      "key": "countries_cities_id",
+                      "value": "2"
+                    },
+                    {
+                      "key": "lang",
+                      "value": "ar"
+                    }
+                  ]
+                },
+                "description": "يجب أن يظهر الطبيب في النتائج"
+              },
+              "response": []
+            }
+          ],
+          "description": "سيناريو كامل لاختبار التدفق من التسجيل حتى البحث"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string",
+      "description": "ضع هنا التوكن بعد تسجيل الدخول"
+    }
+  ]
+}

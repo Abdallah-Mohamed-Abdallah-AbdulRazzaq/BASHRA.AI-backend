@@ -1,0 +1,399 @@
+{
+  "info": {
+    "name": "Doctor Prescriptions API Testing",
+    "description": "Complete testing collection for Doctor Prescriptions endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prescription_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prescription_uuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "medical_record_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Prescription",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.data) {",
+              "        pm.collectionVariables.set('prescription_id', response.data.id);",
+              "        pm.collectionVariables.set('prescription_uuid', response.data.uuid);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"medical_record_id\": {{medical_record_id}},\n  \"patient_id\": {{patient_id}},\n  \"medication_name\": \"أموكسيسيلين 500mg\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"3 مرات يومياً\",\n  \"duration\": \"7 أيام\",\n  \"quantity\": \"21 كبسولة\",\n  \"route_of_administration\": \"فموي\",\n  \"refills_allowed\": 0,\n  \"is_generic_allowed\": true,\n  \"expiry_date\": \"2026-12-31\",\n  \"translations\": {\n    \"ar\": {\n      \"instructions\": \"يؤخذ بعد الأكل مع كوب ماء\",\n      \"indication\": \"التهاب الحلق البكتيري\",\n      \"pharmacy_notes\": \"تأكد من إكمال الجرعة كاملة\"\n    },\n    \"en\": {\n      \"instructions\": \"Take after meals with a glass of water\",\n      \"indication\": \"Bacterial throat infection\",\n      \"pharmacy_notes\": \"Ensure complete course\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/prescriptions",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"]
+        }
+      }
+    },
+    {
+      "name": "2. Get All My Prescriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "patient_id",
+              "value": "{{patient_id}}",
+              "disabled": true
+            },
+            {
+              "key": "status",
+              "value": "active",
+              "disabled": true
+            },
+            {
+              "key": "medical_record_id",
+              "value": "{{medical_record_id}}",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Get Prescription by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_id}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Prescription by UUID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_uuid}}"]
+        }
+      }
+    },
+    {
+      "name": "5. Get Prescriptions by Medical Record",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/medical-record/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "medical-record", "{{medical_record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "6. Update Prescription",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dosage\": \"1000mg\",\n  \"frequency\": \"مرتين يومياً\",\n  \"duration\": \"10 أيام\",\n  \"quantity\": \"20 كبسولة\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_id}}"]
+        }
+      }
+    },
+    {
+      "name": "7. Add/Update Translation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"language_code\": \"en\",\n  \"instructions\": \"Take twice daily after meals\",\n  \"indication\": \"Bacterial infection\",\n  \"pharmacy_notes\": \"Complete full course of treatment\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_id}}/translations",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_id}}", "translations"]
+        }
+      }
+    },
+    {
+      "name": "8. Cancel Prescription",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_id}}/cancel",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_id}}", "cancel"]
+        }
+      }
+    },
+    {
+      "name": "9. Create Prescription with Refills",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"medical_record_id\": {{medical_record_id}},\n  \"patient_id\": {{patient_id}},\n  \"medication_name\": \"دواء مزمن للضغط\",\n  \"dosage\": \"10mg\",\n  \"frequency\": \"مرة يومياً\",\n  \"duration\": \"30 يوم\",\n  \"quantity\": \"30 قرص\",\n  \"route_of_administration\": \"فموي\",\n  \"refills_allowed\": 3,\n  \"is_generic_allowed\": true,\n  \"expiry_date\": \"2027-03-31\",\n  \"translations\": {\n    \"ar\": {\n      \"instructions\": \"يؤخذ صباحاً قبل الإفطار\",\n      \"indication\": \"ارتفاع ضغط الدم\",\n      \"pharmacy_notes\": \"دواء مزمن - يمكن إعادة الصرف 3 مرات\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/prescriptions",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Patient",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?patient_id={{patient_id}}&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "patient_id",
+              "value": "{{patient_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?status=active&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "status",
+              "value": "active"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

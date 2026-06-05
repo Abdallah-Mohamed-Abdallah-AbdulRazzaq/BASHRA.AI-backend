@@ -1,0 +1,415 @@
+{
+  "api_documentation_title": "Profile Doctor API - الدليل الشامل للاختبار",
+  "base_url": "http://localhost:3006/api/profile-doctor",
+  "version": "1.0.0",
+  "last_updated": "2024-11-23",
+  
+  "table_of_contents": [
+    "1. Authentication & Authorization",
+    "2. Common Headers & Language Support",
+    "3. Database Schema",
+    "4. Field Requirements (Required vs Optional)",
+    "5. API Endpoints (9 endpoints)",
+    "6. Testing Guide",
+    "7. Error Handling",
+    "8. Examples (cURL, Postman, JavaScript)"
+  ],
+
+  "section_1_authentication": {
+    "title": "المصادقة والتفويض",
+    "authentication_type": "JWT Bearer Token",
+    "required_for_all_endpoints": true,
+    "required_role": "doctor",
+    "middleware_chain": [
+      {
+        "name": "authenticateJWT",
+        "description": "التحقق من صحة JWT token",
+        "checks": "صلاحية التوكن والتوقيع"
+      },
+      {
+        "name": "authorizeDoctor",
+        "description": "التحقق من صلاحيات الطبيب",
+        "checks": "req.user.role === 'doctor'"
+      },
+      {
+        "name": "checkAccountActive",
+        "description": "التحقق من تفعيل الحساب",
+        "checks": "is_active === 1",
+        "exception": "يسمح بالوصول إلى /reactivate حتى لو كان الحساب معطل"
+      }
+    ],
+    "how_to_get_token": {
+      "endpoint": "POST /api/auth-doctor/login",
+      "request": {
+        "email": "doctor@example.com",
+        "password": "YourPassword123!"
+      },
+      "response": {
+        "success": true,
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "user": {
+          "id": 1,
+          "email": "doctor@example.com",
+          "role": "doctor"
+        }
+      }
+    },
+    "header_format": "Authorization: Bearer YOUR_JWT_TOKEN"
+  },
+
+  "section_2_headers_and_language": {
+    "common_headers": {
+      "required": {
+        "Authorization": {
+          "value": "Bearer YOUR_JWT_TOKEN",
+          "description": "مطلوب لجميع الطلبات"
+        }
+      },
+      "optional": {
+        "Accept-Language": {
+          "values": ["ar", "en"],
+          "default": "ar",
+          "description": "لتحديد لغة الاستجابة"
+        },
+        "Content-Type": {
+          "values": ["application/json", "multipart/form-data"],
+          "description": "حسب نوع الطلب"
+        }
+      }
+    },
+    "language_support": {
+      "supported_languages": ["ar", "en"],
+      "default_language": "ar",
+      "how_it_works": "يتم استخدام Accept-Language header أو language_preference من بيانات المستخدم",
+      "examples": {
+        "arabic": "Accept-Language: ar",
+        "english": "Accept-Language: en",
+        "with_region": "Accept-Language: ar-EG",
+        "multiple": "Accept-Language: ar-EG, en-US;q=0.9"
+      }
+    }
+  },
+
+  "section_3_database_schema": {
+    "doctors_table": {
+      "description": "جدول حسابات الأطباء الأساسية",
+      "primary_key": "id",
+      "fields": [
+        {"name": "id", "type": "INT", "constraints": "PRIMARY KEY AUTO_INCREMENT"},
+        {"name": "uuid", "type": "VARCHAR(36)", "constraints": "UNIQUE NOT NULL"},
+        {"name": "email", "type": "VARCHAR(255)", "constraints": "UNIQUE NOT NULL"},
+        {"name": "phone", "type": "VARCHAR(20)", "constraints": "UNIQUE NOT NULL"},
+        {"name": "password", "type": "VARCHAR(255)", "constraints": "NOT NULL"},
+        {"name": "status", "type": "ENUM('active','inactive','suspended')", "default": "active"},
+        {"name": "is_active", "type": "TINYINT(1)", "default": "1", "note": "0=معطل, 1=مفعل"},
+        {"name": "email_verified_at", "type": "TIMESTAMP", "constraints": "NULL"},
+        {"name": "phone_verified_at", "type": "TIMESTAMP", "constraints": "NULL"},
+        {"name": "last_login_at", "type": "TIMESTAMP", "constraints": "NULL"},
+        {"name": "last_activity_at", "type": "TIMESTAMP", "constraints": "NULL"},
+        {"name": "is_email_otp", "type": "TINYINT(1)", "default": "0"},
+        {"name": "is_phone_otp", "type": "TINYINT(1)", "default": "0"},
+        {"name": "is_id_verified", "type": "TINYINT(1)", "default": "0"},
+        {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        {"name": "updated_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+      ]
+    },
+    "doctor_profiles_table": {
+      "description": "جدول الملفات الشخصية للأطباء",
+      "primary_key": "id",
+      "foreign_keys": [
+        {"field": "doctor_id", "references": "doctors(id)"}
+      ],
+      "fields": [
+        {"name": "id", "type": "INT", "constraints": "PRIMARY KEY AUTO_INCREMENT"},
+        {"name": "doctor_id", "type": "INT", "constraints": "FOREIGN KEY NOT NULL"},
+        {"name": "license_number", "type": "VARCHAR(100)", "constraints": "UNIQUE NULL"},
+        {"name": "years_of_experience", "type": "INT", "constraints": "NULL"},
+        {"name": "medical_school", "type": "VARCHAR(255)", "constraints": "NULL"},
+        {"name": "graduation_year", "type": "INT", "constraints": "NULL"},
+        {"name": "board_certifications", "type": "JSON", "constraints": "NULL", "example": "[\"البورد المصري\"]"},
+        {"name": "languages_spoken", "type": "JSON", "constraints": "NULL", "example": "[\"العربية\",\"الإنجليزية\"]"},
+        {"name": "consultation_fee", "type": "DECIMAL(10,2)", "constraints": "NULL"},
+        {"name": "consultation_duration", "type": "INT", "constraints": "NULL", "note": "بالدقائق"},
+        {"name": "working_hours", "type": "JSON", "constraints": "NULL"},
+        {"name": "profile_picture_url", "type": "VARCHAR(500)", "constraints": "NULL"},
+        {"name": "is_verified", "type": "TINYINT(1)", "default": "0"},
+        {"name": "approval_status", "type": "ENUM('pending','approved','rejected')", "default": "pending"},
+        {"name": "rating_average", "type": "DECIMAL(3,2)", "constraints": "NULL"},
+        {"name": "rating_count", "type": "INT", "default": "0"},
+        {"name": "total_consultations", "type": "INT", "default": "0"},
+        {"name": "is_available", "type": "TINYINT(1)", "default": "1"},
+        {"name": "date_of_birth", "type": "DATE", "constraints": "NULL"},
+        {"name": "gender", "type": "ENUM('male','female','other','prefer_not_to_say')", "constraints": "NULL"},
+        {"name": "nationality", "type": "VARCHAR(100)", "constraints": "NULL"},
+        {"name": "emergency_contact_phone", "type": "VARCHAR(20)", "constraints": "NULL"},
+        {"name": "timezone", "type": "VARCHAR(50)", "default": "Africa/Cairo"},
+        {"name": "language_preference", "type": "ENUM('ar','en')", "default": "ar"},
+        {"name": "created_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        {"name": "updated_at", "type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+      ]
+    },
+    "doctor_profile_translations_table": {
+      "description": "جدول ترجمات الملفات الشخصية",
+      "primary_key": "id",
+      "foreign_keys": [
+        {"field": "doctor_profile_id", "references": "doctor_profiles(id)"}
+      ],
+      "unique_constraint": "UNIQUE(doctor_profile_id, language_code)",
+      "fields": [
+        {"name": "id", "type": "INT", "constraints": "PRIMARY KEY AUTO_INCREMENT"},
+        {"name": "doctor_profile_id", "type": "INT", "constraints": "FOREIGN KEY NOT NULL"},
+        {"name": "language_code", "type": "ENUM('ar','en')", "constraints": "NOT NULL"},
+        {"name": "full_name", "type": "VARCHAR(255)", "constraints": "NULL"},
+        {"name": "specialty", "type": "VARCHAR(255)", "constraints": "NULL"},
+        {"name": "sub_specialty", "type": "VARCHAR(255)", "constraints": "NULL"},
+        {"name": "biography", "type": "TEXT", "constraints": "NULL"},
+        {"name": "emergency_contact_name", "type": "VARCHAR(255)", "constraints": "NULL"},
+        {"name": "emergency_contact_relationship", "type": "VARCHAR(100)", "constraints": "NULL"}
+      ]
+    }
+  },
+
+  "section_4_field_requirements": {
+    "note": "جميع الحقول في عمليات التحديث اختيارية - يمكن تحديث أي حقل أو مجموعة حقول",
+    "update_profile_fields": {
+      "profile_table_fields": {
+        "years_of_experience": {"required": false, "type": "integer", "example": 10, "description": "عدد سنوات الخبرة"},
+        "medical_school": {"required": false, "type": "string", "max_length": 255, "example": "كلية الطب - جامعة القاهرة"},
+        "graduation_year": {"required": false, "type": "integer", "example": 2013, "validation": "يجب أن يكون سنة صحيحة"},
+        "board_certifications": {"required": false, "type": "array", "example": ["البورد المصري", "FACC"], "description": "مصفوفة من الشهادات"},
+        "languages_spoken": {"required": false, "type": "array", "example": ["العربية", "الإنجليزية"], "description": "اللغات المتحدثة"},
+        "consultation_fee": {"required": false, "type": "decimal", "example": 500.00, "description": "رسوم الاستشارة"},
+        "consultation_duration": {"required": false, "type": "integer", "example": 30, "unit": "minutes"},
+        "working_hours": {"required": false, "type": "object", "example": {"saturday": {"start": "09:00", "end": "17:00", "available": true}}},
+        "date_of_birth": {"required": false, "type": "string", "format": "YYYY-MM-DD", "example": "1990-01-15"},
+        "gender": {"required": false, "type": "enum", "values": ["male", "female", "other", "prefer_not_to_say"], "example": "male"},
+        "nationality": {"required": false, "type": "string", "max_length": 100, "example": "مصري"},
+        "emergency_contact_phone": {"required": false, "type": "string", "max_length": 20, "example": "+201234567890", "format": "international"},
+        "timezone": {"required": false, "type": "string", "max_length": 50, "example": "Africa/Cairo", "default": "Africa/Cairo"},
+        "language_preference": {"required": false, "type": "enum", "values": ["ar", "en"], "example": "ar", "default": "ar"}
+      },
+      "translation_fields": {
+        "full_name": {"required": false, "type": "string", "max_length": 255, "example": "د. أحمد محمد علي", "description": "الاسم الكامل"},
+        "specialty": {"required": false, "type": "string", "max_length": 255, "example": "أمراض القلب والأوعية الدموية"},
+        "sub_specialty": {"required": false, "type": "string", "max_length": 255, "example": "قسطرة القلب التداخلية"},
+        "biography": {"required": false, "type": "text", "example": "طبيب قلب متخصص مع خبرة 10 سنوات..."},
+        "emergency_contact_name": {"required": false, "type": "string", "max_length": 255, "example": "محمد أحمد علي"},
+        "emergency_contact_relationship": {"required": false, "type": "string", "max_length": 100, "example": "أخ"}
+      },
+      "update_modes": {
+        "single_language": {
+          "description": "تحديث اللغة الحالية فقط (من Accept-Language header)",
+          "example": {
+            "years_of_experience": 12,
+            "consultation_fee": 600,
+            "full_name": "د. أحمد محمد علي",
+            "specialty": "أمراض القلب"
+          }
+        },
+        "multi_language": {
+          "description": "تحديث عدة لغات في نفس الوقت",
+          "example": {
+            "years_of_experience": 12,
+            "translations": {
+              "ar": {
+                "full_name": "د. أحمد محمد",
+                "specialty": "أمراض القلب"
+              },
+              "en": {
+                "full_name": "Dr. Ahmed Mohamed",
+                "specialty": "Cardiology"
+              }
+            }
+          }
+        }
+      }
+    },
+    "update_basic_data_fields": {
+      "doctor_table_fields": {
+        "email": {"required": false, "type": "string", "max_length": 255, "unique": true, "example": "doctor@example.com", "validation": "يجب أن يكون email صحيح وغير مستخدم"},
+        "phone": {"required": false, "type": "string", "max_length": 20, "unique": true, "example": "+201234567890", "validation": "يجب أن يكون رقم هاتف صحيح وغير مستخدم"}
+      },
+      "profile_and_translation_fields": "نفس الحقول في update_profile"
+    },
+    "upload_picture_fields": {
+      "profile_picture": {
+        "required": true,
+        "type": "file",
+        "field_name": "profile_picture",
+        "accepted_formats": ["jpg", "jpeg", "png", "gif", "webp"],
+        "max_size": "5MB",
+        "validation": "يتم التحقق من نوع الملف والحجم في uploadMiddleware"
+      }
+    }
+  },
+
+  "section_5_endpoints": "انظر الملف المنفصل: profile-doctor-endpoints-detailed.json",
+  
+  "section_6_testing_guide": {
+    "prerequisites": [
+      "الحصول على JWT token صالح لطبيب من endpoint /api/auth-doctor/login",
+      "التأكد من أن الحساب مفعّل (is_active = 1)",
+      "التأكد من وجود ملف شخصي للطبيب في قاعدة البيانات",
+      "تثبيت أداة اختبار API مثل Postman أو Insomnia أو استخدام cURL"
+    ],
+    "recommended_test_order": [
+      {
+        "step": 1,
+        "endpoint": "GET /api/profile-doctor",
+        "purpose": "التحقق من وجود الملف الشخصي وجلب البيانات الحالية"
+      },
+      {
+        "step": 2,
+        "endpoint": "GET /api/profile-doctor/basic",
+        "purpose": "جلب البيانات الأساسية"
+      },
+      {
+        "step": 3,
+        "endpoint": "GET /api/profile-doctor/complete",
+        "purpose": "جلب جميع البيانات مع كل الترجمات"
+      },
+      {
+        "step": 4,
+        "endpoint": "PUT /api/profile-doctor",
+        "purpose": "تحديث الملف الشخصي (لغة واحدة)",
+        "test_data": {
+          "years_of_experience": 11,
+          "full_name": "د. أحمد محمد المحدث"
+        }
+      },
+      {
+        "step": 5,
+        "endpoint": "PUT /api/profile-doctor",
+        "purpose": "تحديث الملف الشخصي (عدة لغات)",
+        "test_data": {
+          "translations": {
+            "ar": {"full_name": "د. أحمد محمد"},
+            "en": {"full_name": "Dr. Ahmed Mohamed"}
+          }
+        }
+      },
+      {
+        "step": 6,
+        "endpoint": "PUT /api/profile-doctor/basic",
+        "purpose": "تحديث البيانات الأساسية",
+        "test_data": {
+          "phone": "+201098765432",
+          "consultation_fee": 550
+        }
+      },
+      {
+        "step": 7,
+        "endpoint": "POST /api/profile-doctor/picture",
+        "purpose": "رفع صورة شخصية",
+        "note": "استخدم FormData مع ملف صورة"
+      },
+      {
+        "step": 8,
+        "endpoint": "DELETE /api/profile-doctor/picture",
+        "purpose": "حذف الصورة الشخصية"
+      },
+      {
+        "step": 9,
+        "endpoint": "DELETE /api/profile-doctor",
+        "purpose": "إلغاء تفعيل الحساب"
+      },
+      {
+        "step": 10,
+        "endpoint": "PATCH /api/profile-doctor/reactivate",
+        "purpose": "إعادة تفعيل الحساب"
+      }
+    ],
+    "postman_setup": {
+      "variables": {
+        "base_url": "http://localhost:3006",
+        "jwt_token": "YOUR_JWT_TOKEN_HERE",
+        "doctor_id": "1"
+      },
+      "environment_setup": "قم بإنشاء environment في Postman وأضف المتغيرات أعلاه"
+    }
+  },
+
+  "section_7_error_handling": {
+    "common_errors": [
+      {
+        "status": 400,
+        "code": "BAD_REQUEST",
+        "causes": [
+          "بيانات غير صحيحة في الطلب",
+          "email أو phone مستخدم بالفعل",
+          "صيغة بيانات غير صحيحة"
+        ],
+        "example": {
+          "success": false,
+          "message": "البريد الإلكتروني مستخدم بالفعل"
+        }
+      },
+      {
+        "status": 401,
+        "code": "UNAUTHORIZED",
+        "causes": [
+          "JWT token غير موجود",
+          "JWT token غير صالح",
+          "JWT token منتهي"
+        ],
+        "example": {
+          "success": false,
+          "message": "Unauthorized"
+        }
+      },
+      {
+        "status": 403,
+        "code": "FORBIDDEN",
+        "causes": [
+          "المستخدم ليس طبيب",
+          "الحساب معطل (is_active = 0)"
+        ],
+        "example": {
+          "success": false,
+          "message": "Access denied. Doctor role required."
+        }
+      },
+      {
+        "status": 404,
+        "code": "NOT_FOUND",
+        "causes": [
+          "الملف الشخصي غير موجود",
+          "الطبيب غير موجود",
+          "الصورة الشخصية غير موجودة"
+        ],
+        "example": {
+          "success": false,
+          "message": "الملف الشخصي غير موجود"
+        }
+      },
+      {
+        "status": 500,
+        "code": "INTERNAL_SERVER_ERROR",
+        "causes": [
+          "خطأ في قاعدة البيانات",
+          "خطأ في السيرفر",
+          "خطأ غير متوقع"
+        ],
+        "example": {
+          "success": false,
+          "message": "خطأ في جلب الملف الشخصي",
+          "error": "Database connection error"
+        }
+      }
+    ]
+  },
+
+  "section_8_examples": {
+    "curl_examples": {
+      "get_profile": "curl -X GET 'http://localhost:3006/api/profile-doctor' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -H 'Accept-Language: ar'",
+      "update_profile": "curl -X PUT 'http://localhost:3006/api/profile-doctor' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -H 'Content-Type: application/json' \\\n  -H 'Accept-Language: ar' \\\n  -d '{\n    \"years_of_experience\": 12,\n    \"consultation_fee\": 600,\n    \"full_name\": \"د. أحمد محمد علي\"\n  }'",
+      "upload_picture": "curl -X POST 'http://localhost:3006/api/profile-doctor/picture' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -F 'profile_picture=@/path/to/image.jpg'",
+      "delete_account": "curl -X DELETE 'http://localhost:3006/api/profile-doctor' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'",
+      "reactivate_account": "curl -X PATCH 'http://localhost:3006/api/profile-doctor/reactivate' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'"
+    },
+    "javascript_fetch_examples": {
+      "get_profile": "fetch('http://localhost:3006/api/profile-doctor', {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer YOUR_JWT_TOKEN',\n    'Accept-Language': 'ar'\n  }\n})\n.then(res => res.json())\n.then(data => console.log(data))\n.catch(err => console.error(err));",
+      "update_profile": "fetch('http://localhost:3006/api/profile-doctor', {\n  method: 'PUT',\n  headers: {\n    'Authorization': 'Bearer YOUR_JWT_TOKEN',\n    'Content-Type': 'application/json',\n    'Accept-Language': 'ar'\n  },\n  body: JSON.stringify({\n    years_of_experience: 12,\n    consultation_fee: 600,\n    full_name: 'د. أحمد محمد علي'\n  })\n})\n.then(res => res.json())\n.then(data => console.log(data))\n.catch(err => console.error(err));"
+    }
+  }
+}

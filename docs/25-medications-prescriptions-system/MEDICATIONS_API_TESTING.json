@@ -1,0 +1,425 @@
+{
+  "info": {
+    "name": "Medications API Testing | اختبار API الأدوية",
+    "description": "مجموعة اختبارات شاملة لنظام الأدوية\nComprehensive test collection for Medications System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medicationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medicationUuid",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup - Login",
+      "item": [
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('adminToken', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"AdminPassword123\",\n  \"entityType\": \"admin\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-admin/login", "host": ["{{baseUrl}}"], "path": ["auth-admin", "login"]},
+            "description": "تسجيل دخول المسؤول | Login as Admin"
+          }
+        },
+        {
+          "name": "Login as Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doctorToken', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"DoctorPassword123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-doctor/login", "host": ["{{baseUrl}}"], "path": ["auth-doctor", "login"]},
+            "description": "تسجيل دخول الطبيب | Login as Doctor"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Medication | إنشاء دواء",
+      "item": [
+        {
+          "name": "✅ Admin - Create Global Medication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('medicationId', jsonData.data.id);",
+                  "    pm.collectionVariables.set('medicationUuid', jsonData.data.uuid);",
+                  "    pm.test('Created by admin', () => pm.expect(jsonData.data.created_by.type).to.eql('admin'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"باراسيتامول\",\n  \"name_en\": \"Paracetamol\",\n  \"scientific_name\": \"Acetaminophen\",\n  \"category\": \"مسكن وخافض حرارة\",\n  \"form_type\": \"tablet\",\n  \"available_dosages\": [\"500mg\", \"1000mg\"],\n  \"indications\": \"مسكن للألم وخافض للحرارة\",\n  \"warning_alert\": \"لا يستخدم مع أمراض الكبد الشديدة\",\n  \"is_active\": true\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"]},
+            "description": "إنشاء دواء عام بواسطة المسؤول\nCreate global medication by admin"
+          }
+        },
+        {
+          "name": "✅ Doctor - Create Private Medication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"خلطة خاصة للجلد\",\n  \"name_en\": \"Custom Skin Mix\",\n  \"category\": \"علاج جلدي\",\n  \"form_type\": \"cream\",\n  \"indications\": \"خلطة خاصة للأكزيما\",\n  \"is_active\": true\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"]},
+            "description": "إنشاء دواء خاص بواسطة الطبيب\nCreate private medication by doctor"
+          }
+        },
+        {
+          "name": "❌ Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"دواء اختبار\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"]},
+            "description": "خطأ: حقول مطلوبة مفقودة\nError: Missing required fields"
+          }
+        },
+        {
+          "name": "❌ Invalid Form Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"دواء اختبار\",\n  \"name_en\": \"Test Med\",\n  \"form_type\": \"invalid_type\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"]},
+            "description": "خطأ: نوع دواء غير صالح\nError: Invalid form type"
+          }
+        },
+        {
+          "name": "❌ Duplicate Medication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"باراسيتامول\",\n  \"name_en\": \"Paracetamol\",\n  \"form_type\": \"tablet\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"]},
+            "description": "خطأ: دواء موجود بالفعل\nError: Duplicate medication"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Medications | عرض الأدوية",
+      "item": [
+        {
+          "name": "✅ Get All Medications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications", "host": ["{{baseUrl}}"], "path": ["medications"]},
+            "description": "عرض جميع الأدوية\nGet all medications"
+          }
+        },
+        {
+          "name": "✅ Get Medication by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"]},
+            "description": "عرض دواء بالـ ID\nGet medication by ID"
+          }
+        },
+        {
+          "name": "✅ Get Medication by UUID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationUuid}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationUuid}}"]},
+            "description": "عرض دواء بالـ UUID\nGet medication by UUID"
+          }
+        },
+        {
+          "name": "✅ Filter by Active Status",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/medications?is_active=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["medications"],
+              "query": [{"key": "is_active", "value": "true"}]
+            },
+            "description": "فلترة الأدوية المفعلة\nFilter active medications"
+          }
+        },
+        {
+          "name": "✅ Filter by Category",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/medications?category=مسكن وخافض حرارة",
+              "host": ["{{baseUrl}}"],
+              "path": ["medications"],
+              "query": [{"key": "category", "value": "مسكن وخافض حرارة"}]
+            },
+            "description": "فلترة حسب التصنيف\nFilter by category"
+          }
+        },
+        {
+          "name": "✅ Filter by Form Type",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/medications?form_type=tablet",
+              "host": ["{{baseUrl}}"],
+              "path": ["medications"],
+              "query": [{"key": "form_type", "value": "tablet"}]
+            },
+            "description": "فلترة حسب شكل الدواء\nFilter by form type"
+          }
+        },
+        {
+          "name": "✅ Search Medications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/medications?search=باراسيتامول",
+              "host": ["{{baseUrl}}"],
+              "path": ["medications"],
+              "query": [{"key": "search", "value": "باراسيتامول"}]
+            },
+            "description": "البحث في الأدوية\nSearch medications"
+          }
+        },
+        {
+          "name": "✅ Pagination",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/medications?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["medications"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"}
+              ]
+            },
+            "description": "تقسيم النتائج\nPagination"
+          }
+        },
+        {
+          "name": "✅ Get Categories List",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/categories/list", "host": ["{{baseUrl}}"], "path": ["medications", "categories", "list"]},
+            "description": "عرض قائمة التصنيفات\nGet categories list"
+          }
+        },
+        {
+          "name": "✅ Get by Category",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/category/مسكن وخافض حرارة", "host": ["{{baseUrl}}"], "path": ["medications", "category", "مسكن وخافض حرارة"]},
+            "description": "عرض أدوية تصنيف معين\nGet medications by category"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Medication | تعديل دواء",
+      "item": [
+        {
+          "name": "✅ Admin - Update Medication",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"باراسيتامول محدث\",\n  \"indications\": \"مسكن للألم وخافض للحرارة - محدث\",\n  \"available_dosages\": [\"500mg\", \"1000mg\", \"650mg\"]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"]},
+            "description": "تعديل دواء بواسطة المسؤول\nUpdate medication by admin"
+          }
+        },
+        {
+          "name": "❌ Doctor Cannot Update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"محاولة تعديل\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"]},
+            "description": "خطأ: الطبيب لا يمكنه التعديل\nError: Doctor cannot update"
+          }
+        },
+        {
+          "name": "❌ Update Non-existent Medication",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name_ar\": \"تعديل\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/medications/99999", "host": ["{{baseUrl}}"], "path": ["medications", "99999"]},
+            "description": "خطأ: دواء غير موجود\nError: Medication not found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Toggle Status | تفعيل/إلغاء",
+      "item": [
+        {
+          "name": "✅ Admin - Toggle Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}/toggle-status", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}", "toggle-status"]},
+            "description": "تفعيل/إلغاء تفعيل دواء\nToggle medication status"
+          }
+        },
+        {
+          "name": "❌ Doctor Cannot Toggle",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}/toggle-status", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}", "toggle-status"]},
+            "description": "خطأ: الطبيب لا يمكنه التفعيل/الإلغاء\nError: Doctor cannot toggle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Medication | حذف دواء",
+      "item": [
+        {
+          "name": "✅ Admin - Delete Medication",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"]},
+            "description": "حذف دواء بواسطة المسؤول\nDelete medication by admin"
+          }
+        },
+        {
+          "name": "❌ Doctor Cannot Delete",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/{{medicationId}}", "host": ["{{baseUrl}}"], "path": ["medications", "{{medicationId}}"]},
+            "description": "خطأ: الطبيب لا يمكنه الحذف\nError: Doctor cannot delete"
+          }
+        },
+        {
+          "name": "❌ Delete Non-existent",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/medications/99999", "host": ["{{baseUrl}}"], "path": ["medications", "99999"]},
+            "description": "خطأ: دواء غير موجود\nError: Medication not found"
+          }
+        }
+      ]
+    }
+  ]
+}

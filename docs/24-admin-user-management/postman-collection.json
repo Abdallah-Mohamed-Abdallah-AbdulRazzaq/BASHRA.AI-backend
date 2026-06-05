@@ -1,0 +1,680 @@
+{
+  "info": {
+    "name": "Admin User Management API",
+    "description": "Complete API collection for BASHRA.AI Admin User Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    console.log('Token saved:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bashra.ai\",\n  \"password\": \"your_password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-admin/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth-admin", "login"]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "1. Get All Users",
+      "item": [
+        {
+          "name": "Get All Users (Default)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get All Users (Page 2, Limit 50)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users?page=2&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Users (Filter by Active Status)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users?status=active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Users (Filter by Verified)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users?verified=true",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"],
+              "query": [
+                {
+                  "key": "verified",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "2. Get User By ID",
+      "item": [
+        {
+          "name": "Get User By ID (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID (English)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}?language=en",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}"],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Get Users By Status",
+      "item": [
+        {
+          "name": "Get Active Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/status/active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "status", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Suspended Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/status/suspended",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "status", "suspended"]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Verification Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/status/pending_verification",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "status", "pending_verification"]
+            }
+          }
+        },
+        {
+          "name": "Get Inactive Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/status/inactive",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "status", "inactive"]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "4. Get User Medical Profile",
+      "item": [
+        {
+          "name": "Get Medical Profile (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/medical",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "medical"]
+            }
+          }
+        },
+        {
+          "name": "Get Medical Profile (English)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/medical?language=en",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "medical"],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Search Users",
+      "item": [
+        {
+          "name": "Search by Name (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/search?query=أحمد",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "أحمد"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/search?email=example.com",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "search"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by Phone",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/search?phone=966501234567",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "search"],
+              "query": [
+                {
+                  "key": "phone",
+                  "value": "966501234567"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search by UUID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/search?uuid=550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "search"],
+              "query": [
+                {
+                  "key": "uuid",
+                  "value": "550e8400-e29b-41d4-a716-446655440000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Combined Search (Name + Status)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/search?query=أحمد&status=active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "أحمد"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "6. Update User Status (Super Admin Only)",
+      "item": [
+        {
+          "name": "Suspend User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"suspended\",\n  \"reason\": \"انتهاك شروط الاستخدام - نشر محتوى غير لائق\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\",\n  \"reason\": \"User appeal approved after review\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Set to Inactive",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\",\n  \"reason\": \"User requested account deactivation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Set to Pending Verification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"pending_verification\",\n  \"reason\": \"Additional verification required for medical license\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Get User Statistics",
+      "item": [
+        {
+          "name": "Get Statistics (Arabic)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/stats",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Statistics (English)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/stats?language=en",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "stats"],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "en"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "8. Get User Admin Logs",
+      "item": [
+        {
+          "name": "Get All Logs for User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/logs?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "logs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Logs by Action",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/logs?action=USER_STATUS_CHANGE",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "logs"],
+              "query": [
+                {
+                  "key": "action",
+                  "value": "USER_STATUS_CHANGE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Invalid User ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/abc",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "abc"]
+            }
+          }
+        },
+        {
+          "name": "User Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/99999",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "99999"]
+            }
+          }
+        },
+        {
+          "name": "No JWT Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Status Value",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"invalid_status\",\n  \"reason\": \"Test reason for invalid status\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Reason Too Short",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"suspended\",\n  \"reason\": \"Short\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

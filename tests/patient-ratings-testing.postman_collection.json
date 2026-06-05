@@ -1,0 +1,273 @@
+{
+  "info": {
+    "name": "Patient Ratings API Testing",
+    "description": "Complete testing collection for Patient Ratings endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "patient_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rating_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rating_uuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "4",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Rating",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.data) {",
+              "        pm.collectionVariables.set('rating_id', response.data.id);",
+              "        pm.collectionVariables.set('rating_uuid', response.data.uuid);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointment_id\": {{appointment_id}},\n  \"doctor_id\": {{doctor_id}},\n  \"rating\": 5,\n  \"categories\": {\n    \"professionalism\": 5,\n    \"communication\": 5,\n    \"cleanliness\": 5,\n    \"wait_time\": 4\n  },\n  \"would_recommend\": true,\n  \"is_anonymous\": false,\n  \"translations\": {\n    \"ar\": {\n      \"review_title\": \"تجربة ممتازة\",\n      \"review_comment\": \"الدكتور محترف جداً وشرحه واضح. أنصح بزيارته.\"\n    },\n    \"en\": {\n      \"review_title\": \"Excellent Experience\",\n      \"review_comment\": \"Very professional doctor with clear explanations. Highly recommended.\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"]
+        }
+      }
+    },
+    {
+      "name": "2. Get All My Ratings",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Get Rating by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Rating by UUID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_uuid}}"]
+        }
+      }
+    },
+    {
+      "name": "5. Update Rating",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rating\": 4,\n  \"categories\": {\n    \"professionalism\": 4,\n    \"communication\": 5,\n    \"cleanliness\": 4,\n    \"wait_time\": 3\n  },\n  \"translations\": {\n    \"ar\": {\n      \"review_comment\": \"تجربة جيدة بشكل عام، لكن وقت الانتظار كان طويلاً قليلاً.\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}"]
+        }
+      }
+    },
+    {
+      "name": "6. Create Anonymous Rating",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointment_id\": 2,\n  \"doctor_id\": {{doctor_id}},\n  \"rating\": 3,\n  \"would_recommend\": false,\n  \"is_anonymous\": true,\n  \"translations\": {\n    \"ar\": {\n      \"review_title\": \"تجربة متوسطة\",\n      \"review_comment\": \"الخدمة كانت مقبولة لكن يمكن تحسينها.\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"]
+        }
+      }
+    },
+    {
+      "name": "7. Delete Rating",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}"]
+        }
+      }
+    },
+    {
+      "name": "8. Get Doctor Rating Stats (Public)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/doctor/{{doctor_id}}/stats",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "doctor", "{{doctor_id}}", "stats"]
+        }
+      }
+    }
+  ]
+}

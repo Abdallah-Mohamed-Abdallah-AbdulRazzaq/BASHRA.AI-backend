@@ -1,0 +1,390 @@
+{
+  "info": {
+    "name": "Clinic Images Limit Testing - Max 5 Images",
+    "description": "اختبار شامل لحد الـ 5 صور لكل عيادة",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Upload 3 Images (First Upload)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "is_main",
+              "value": "true",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images"]
+        },
+        "description": "رفع 3 صور للعيادة (0/5 → 3/5)\n\nالنتيجة المتوقعة:\n- success: true\n- count: 3\n- total_images: 3\n- remaining_slots: 2"
+      }
+    },
+    {
+      "name": "2. Get Clinic Images (Check Count)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images"]
+        },
+        "description": "جلب صور العيادة للتحقق من العدد\n\nالنتيجة المتوقعة:\n- count: 3"
+      }
+    },
+    {
+      "name": "3. Upload 2 More Images (Reach Limit)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images"]
+        },
+        "description": "رفع صورتين إضافيتين (3/5 → 5/5)\n\nالنتيجة المتوقعة:\n- success: true\n- count: 2\n- total_images: 5\n- remaining_slots: 0"
+      }
+    },
+    {
+      "name": "4. Try Upload When Limit Reached (Should Fail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images"]
+        },
+        "description": "محاولة رفع صورة عند الوصول للحد الأقصى (5/5)\n\nالنتيجة المتوقعة:\n- success: false\n- message: \"لقد وصلت للحد الأقصى من الصور (5 صور). يرجى حذف بعض الصور أولاً.\"\n- current_count: 5\n- max_allowed: 5"
+      }
+    },
+    {
+      "name": "5. Try Upload 3 Images When Only 2 Slots Available",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/2/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "2", "images"]
+        },
+        "description": "محاولة رفع 3 صور عندما يوجد مساحة لـ 2 فقط\n\nالمتطلبات:\n- العيادة رقم 2 يجب أن يكون بها 3 صور بالفعل\n\nالنتيجة المتوقعة:\n- success: true\n- count: 2 (تم رفع صورتين فقط)\n- skipped: 1 (تم تجاهل صورة واحدة)\n- total_images: 5\n- remaining_slots: 0\n- message: \"تم رفع 2 صورة بنجاح. تم تجاهل 1 صورة بسبب الوصول للحد الأقصى (5 صور).\""
+      }
+    },
+    {
+      "name": "6. Delete One Image",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images", "1"]
+        },
+        "description": "حذف صورة واحدة (5/5 → 4/5)\n\nالنتيجة المتوقعة:\n- success: true\n- message: \"تم حذف الصورة بنجاح\""
+      }
+    },
+    {
+      "name": "7. Upload After Delete (Should Work)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images"]
+        },
+        "description": "رفع صورة بعد حذف صورة (4/5 → 5/5)\n\nالنتيجة المتوقعة:\n- success: true\n- count: 1\n- total_images: 5\n- remaining_slots: 0"
+      }
+    },
+    {
+      "name": "8. Upload 5 Images at Once (New Clinic)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "is_main",
+              "value": "true",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/3/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "3", "images"]
+        },
+        "description": "رفع 5 صور دفعة واحدة لعيادة جديدة (0/5 → 5/5)\n\nالنتيجة المتوقعة:\n- success: true\n- count: 5\n- total_images: 5\n- remaining_slots: 0"
+      }
+    },
+    {
+      "name": "9. Try Upload 6 Images at Once (Should Upload 5 Only)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "images",
+              "type": "file",
+              "src": []
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/4/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "4", "images"]
+        },
+        "description": "محاولة رفع 6 صور دفعة واحدة (يجب رفع 5 فقط)\n\nالنتيجة المتوقعة:\n- success: true\n- count: 5\n- skipped: 1\n- total_images: 5\n- remaining_slots: 0\n- message: \"تم رفع 5 صورة بنجاح. تم تجاهل 1 صورة بسبب الوصول للحد الأقصى (5 صور).\""
+      }
+    },
+    {
+      "name": "10. Delete All Images",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images/{{imageId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images", "{{imageId}}"]
+        },
+        "description": "حذف جميع الصور واحدة تلو الأخرى\n\nملاحظة: كرر هذا الطلب 5 مرات مع imageId مختلف في كل مرة"
+      }
+    },
+    {
+      "name": "11. Verify Empty After Delete All",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3006/api/clinics/1/images",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "clinics", "1", "images"]
+        },
+        "description": "التحقق من أن العيادة أصبحت بدون صور\n\nالنتيجة المتوقعة:\n- count: 0\n- data: []"
+      }
+    }
+  ]
+}

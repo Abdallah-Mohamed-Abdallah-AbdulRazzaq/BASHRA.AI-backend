@@ -1,0 +1,392 @@
+{
+  "info": {
+    "name": "Patient Appointments Testing",
+    "description": "Complete testing collection for patient appointments with new schedule-based logic",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "patient_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_uuid",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get Available Slots",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Response contains slots data\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});",
+              "",
+              "// Save first slot details for booking",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.data && jsonData.data.length > 0) {",
+              "    var firstSlot = jsonData.data[0];",
+              "    if (firstSlot.slots && firstSlot.slots.length > 0) {",
+              "        pm.environment.set('schedule_id', firstSlot.schedule_id);",
+              "        pm.environment.set('actual_start_time', firstSlot.slots[0].start);",
+              "        pm.environment.set('currency_code', firstSlot.currency_code);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/appointments/available-slots?doctor_id=1&day_of_week=sunday&consultation_type=online",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "appointments", "available-slots"],
+          "query": [
+            {
+              "key": "doctor_id",
+              "value": "1",
+              "description": "Doctor ID"
+            },
+            {
+              "key": "day_of_week",
+              "value": "sunday",
+              "description": "Day of week: saturday, sunday, monday, etc."
+            },
+            {
+              "key": "consultation_type",
+              "value": "online",
+              "description": "Optional: online or in_clinic"
+            }
+          ]
+        },
+        "description": "Get available time slots for a doctor on a specific day"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Book Appointment (New Logic)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Appointment created with schedule data\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('id');",
+              "    pm.expect(jsonData.data).to.have.property('uuid');",
+              "    pm.expect(jsonData.data).to.have.property('schedule_id');",
+              "    pm.expect(jsonData.data).to.have.property('doctor_id');",
+              "    pm.expect(jsonData.data).to.have.property('consultation_fee');",
+              "    pm.expect(jsonData.data).to.have.property('currency_code');",
+              "    pm.expect(jsonData.data).to.have.property('duration_minutes');",
+              "});",
+              "",
+              "// Save appointment details",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set('appointment_id', jsonData.data.id);",
+              "pm.collectionVariables.set('appointment_uuid', jsonData.data.uuid);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"schedule_id\": {{schedule_id}},\n  \"scheduled_date\": \"2026-03-15\",\n  \"actual_start_time\": \"{{actual_start_time}}\",\n  \"appointment_type\": \"consultation\",\n  \"urgency_level\": \"medium\",\n  \"language_code\": \"ar\",\n  \"chief_complaint\": \"صداع نصفي مستمر\",\n  \"symptoms_description\": \"أعاني من صداع نصفي شديد منذ 3 أيام\",\n  \"notes\": \"أفضل الكشف في الصباح\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/patient/appointments",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "appointments"]
+        },
+        "description": "Book a new appointment using schedule_id. The system automatically fetches doctor_id, clinic_id, duration_minutes, consultation_fee, and currency_code from doctor_schedules table."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get My Appointments",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Response contains appointments array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/appointments?status=pending&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "appointments"],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending",
+              "description": "Optional: pending, confirmed, in_progress, completed, cancelled, no_show, rescheduled"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get patient's appointments with optional filters"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Appointment By ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Appointment has all required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('schedule_id');",
+              "    pm.expect(jsonData.data).to.have.property('consultation_fee');",
+              "    pm.expect(jsonData.data).to.have.property('currency_code');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/appointments/{{appointment_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "appointments", "{{appointment_id}}"]
+        },
+        "description": "Get single appointment details by ID or UUID"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Reschedule Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"scheduled_date\": \"2026-03-16\",\n  \"actual_start_time\": \"11:00:00\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/patient/appointments/{{appointment_id}}/reschedule",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "appointments", "{{appointment_id}}", "reschedule"]
+        },
+        "description": "Reschedule an appointment to a new date and time"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Cancel Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cancellation_reason\": \"لدي ظرف طارئ\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/patient/appointments/{{appointment_id}}/cancel",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "appointments", "{{appointment_id}}", "cancel"]
+        },
+        "description": "Cancel an appointment with optional reason"
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "admin-user-management-env",
+  "name": "Admin User Management - Development",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@bashra.ai",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "admin_password",
+      "value": "your_password",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_user_email",
+      "value": "testuser@example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "language",
+      "value": "ar",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-02-21T10:00:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}

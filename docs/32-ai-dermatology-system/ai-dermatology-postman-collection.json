@@ -1,0 +1,1926 @@
+{
+  "info": {
+    "_postman_id": "b4c4c268-8a2f-4d7f-a310-ai-dermatology-bashra",
+    "name": "Bashra AI - AI Dermatology System",
+    "description": "Complete Postman collection for Bashra AI Dermatology feature.\n\nCovers User AI APIs, Doctor shared AI APIs, Admin AI Usage APIs, secure file access, sharing, doctor review, usage policies, and negative tests.\n\nImport the companion environment file, then set tokens manually.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006"
+    },
+    {
+      "key": "user_id",
+      "value": "1"
+    },
+    {
+      "key": "doctor_id",
+      "value": "1"
+    },
+    {
+      "key": "appointment_id",
+      "value": ""
+    },
+    {
+      "key": "session_uuid",
+      "value": ""
+    },
+    {
+      "key": "completed_session_uuid",
+      "value": ""
+    },
+    {
+      "key": "share_uuid",
+      "value": ""
+    },
+    {
+      "key": "result_uuid",
+      "value": ""
+    },
+    {
+      "key": "file_uuid",
+      "value": ""
+    },
+    {
+      "key": "policy_id",
+      "value": "2"
+    },
+    {
+      "key": "period_key",
+      "value": "2026-06"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Setup Notes",
+      "description": "Setup and health checks. Real login/auth requests should come from your existing auth collections.",
+      "item": [
+        {
+          "name": "Health Check - Root",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Root health check used in the AI Dermatology implementation tests."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health Check - API Prefix",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Alternative health check if mounted under /api."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Environment Variables Reference",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Do not send. Required environment variables:\n- base_url\n- user_token\n- doctor_token\n- admin_token\n- super_admin_token\n- user_id\n- doctor_id\n- appointment_id optional\n- session_uuid\n- completed_session_uuid\n- share_uuid\n- result_uuid\n- file_uuid\n- policy_id\n- period_key"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - User AI Sessions",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{user_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Create AI Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"تحليل حالة جلدية\",\n  \"input_mode\": \"chat\",\n  \"language_code\": \"ar\",\n  \"patient_consent\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Creates an active AI dermatology session. Saves data.uuid to session_uuid."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const session_uuid_value = jsonData?.data?.uuid;",
+                  "if (session_uuid_value) pm.environment.set('session_uuid', session_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List My AI Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions"
+              ]
+            },
+            "description": "Lists authenticated user's AI sessions."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get AI Session Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}"
+              ]
+            },
+            "description": "Gets session, messages, files, results, latest_result, stats, and doctor_review."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const result_uuid_value = jsonData?.data?.latest_result?.uuid || jsonData?.data?.results?.[0]?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);",
+                  "const file_uuid_value = jsonData?.data?.files?.[0]?.uuid || jsonData?.data?.messages?.find(m => m.file)?.file?.uuid;",
+                  "if (file_uuid_value) pm.environment.set('file_uuid', file_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Complete AI Session - Final Summary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Creates final_summary, saves summary_json, and marks session completed."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const completed_session_uuid_value = jsonData?.data?.session_uuid;",
+                  "if (completed_session_uuid_value) pm.environment.set('completed_session_uuid', completed_session_uuid_value);",
+                  "const result_uuid_value = jsonData?.data?.result?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My AI Usage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/usage",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "usage"
+              ]
+            },
+            "description": "Gets current monthly usage, active policy, and remaining limits."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - User AI Messages, Images, Documents",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{user_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Send Text Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "messages"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"عندي حكة واحمرار خفيف في الرقبة منذ يومين\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sends symptom text and creates chat_response AI result."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const result_uuid_value = jsonData?.data?.result?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload and Analyze Skin Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/images",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "images"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "description",
+                  "value": "عندي بقعة حمراء في الرقبة مع حكة منذ أسبوع وتزيد مع العرق",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Select an image file manually. Saves uploaded_file.uuid and result.uuid."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const file_uuid_value = jsonData?.data?.uploaded_file?.uuid;",
+                  "if (file_uuid_value) pm.environment.set('file_uuid', file_uuid_value);",
+                  "const result_uuid_value = jsonData?.data?.result?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload and Analyze Medical PDF/TXT Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/documents",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "documents"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "description",
+                  "value": "هذا تقرير طبي متعلق بحالة جلدية، أريد تلخيصه وفهم علاقته بالأعراض",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Select PDF or TXT manually. Saves uploaded_file.uuid and result.uuid."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const file_uuid_value = jsonData?.data?.uploaded_file?.uuid;",
+                  "if (file_uuid_value) pm.environment.set('file_uuid', file_uuid_value);",
+                  "const result_uuid_value = jsonData?.data?.result?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Secure User File Access",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/files/{{file_uuid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "files",
+                "{{file_uuid}}"
+              ]
+            },
+            "description": "Secure binary file access for session owner. Response may be image/pdf, not JSON."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - User AI Sharing",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{user_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Share AI Session with Doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/share",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "share"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_id\": \"{{doctor_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Shares latest AI result/session with doctor. Saves share_uuid."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const share_uuid_value = jsonData?.data?.share?.uuid;",
+                  "if (share_uuid_value) pm.environment.set('share_uuid', share_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Share AI Session with Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/share",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "share"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointment_id\": \"{{appointment_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Optional: share using appointment_id. Set appointment_id first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const share_uuid_value = jsonData?.data?.share?.uuid;",
+                  "if (share_uuid_value) pm.environment.set('share_uuid', share_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List AI Session Shares",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/shares",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "shares"
+              ]
+            },
+            "description": "Lists active and revoked shares for the user's session."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const share_uuid_value = jsonData?.data?.shares?.[0]?.uuid;",
+                  "if (share_uuid_value) pm.environment.set('share_uuid', share_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revoke AI Share",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/shares/{{share_uuid}}/revoke",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "shares",
+                "{{share_uuid}}",
+                "revoke"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Revokes a share. Doctor loses access after revoke."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Doctor AI Access and Review",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{doctor_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Doctor - List Shared AI Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/doctor/shared-sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "doctor",
+                "shared-sessions"
+              ]
+            },
+            "description": "Doctor lists sessions shared with him. Saves share_uuid and result_uuid if available."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const share_uuid_value = jsonData?.data?.shares?.[0]?.share?.uuid;",
+                  "if (share_uuid_value) pm.environment.set('share_uuid', share_uuid_value);",
+                  "const result_uuid_value = jsonData?.data?.shares?.[0]?.result?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Doctor - Get Shared AI Session Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/doctor/shared-sessions/{{share_uuid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "doctor",
+                "shared-sessions",
+                "{{share_uuid}}"
+              ]
+            },
+            "description": "Doctor views complete shared session details."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const result_uuid_value = jsonData?.data?.latest_result?.uuid || jsonData?.data?.results?.[0]?.uuid;",
+                  "if (result_uuid_value) pm.environment.set('result_uuid', result_uuid_value);",
+                  "const file_uuid_value = jsonData?.data?.files?.[0]?.uuid;",
+                  "if (file_uuid_value) pm.environment.set('file_uuid', file_uuid_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Doctor - Secure Shared File Access",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/doctor/files/{{file_uuid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "doctor",
+                "files",
+                "{{file_uuid}}"
+              ]
+            },
+            "description": "Doctor opens shared AI file only if active share exists."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Doctor - Review AI Result",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/doctor/results/{{result_uuid}}/review",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "doctor",
+                "results",
+                "{{result_uuid}}",
+                "review"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_agreement\": \"partially_agree\",\n  \"doctor_notes\": \"أوافق جزئيًا مع تحليل الذكاء الاصطناعي. الاحتمالات المذكورة مناسبة كبداية، لكن يلزم فحص سريري مباشر وسؤال المريض عن وجود منتجات جديدة أو حساسية سابقة.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Doctor reviews AI result. Allowed doctor_agreement: agree, partially_agree, disagree."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Admin AI Usage Management",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{admin_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Admin - AI Usage Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/overview?period_key={{period_key}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "overview"
+              ],
+              "query": [
+                {
+                  "key": "period_key",
+                  "value": "{{period_key}}"
+                }
+              ]
+            },
+            "description": "Admin usage overview: counters, provider logs summary, policy summary."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Get User AI Usage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/users/{{user_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "users",
+                "{{user_id}}"
+              ]
+            },
+            "description": "Admin gets user's AI usage counters, active policies, recent events."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - List AI Usage Policies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies"
+              ]
+            },
+            "description": "Admin lists policies."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const policy_id_value = jsonData?.data?.policies?.[0]?.id;",
+                  "if (policy_id_value) pm.environment.set('policy_id', policy_id_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin - Get AI Usage Policy by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies/{{policy_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies",
+                "{{policy_id}}"
+              ]
+            },
+            "description": "Admin gets policy details."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Super Admin AI Usage Policy Management",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{super_admin_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Super Admin - Create User VIP Policy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_name\": \"VIP User AI Usage\",\n  \"scope_type\": \"user\",\n  \"user_id\": \"{{user_id}}\",\n  \"max_total_requests_per_month\": 120,\n  \"max_chat_messages_per_month\": 80,\n  \"max_image_analyses_per_month\": 40,\n  \"max_document_analyses_per_month\": 15,\n  \"max_files_per_session\": 10,\n  \"max_tokens_per_request\": 8000,\n  \"is_active\": true,\n  \"priority\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create user policy. Requires super_admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "pm.test('Status code is acceptable', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 400, 401, 403, 404, 409, 429]);",
+                  "});",
+                  "const policy_id_value = jsonData?.data?.policy?.id;",
+                  "if (policy_id_value) pm.environment.set('policy_id', policy_id_value);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Super Admin - Update AI Usage Policy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies/{{policy_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies",
+                "{{policy_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"max_total_requests_per_month\": 120,\n  \"max_image_analyses_per_month\": 40,\n  \"priority\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update policy. Requires super_admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Super Admin - Activate AI Usage Policy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies/{{policy_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies",
+                "{{policy_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Activate policy. Requires super_admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Super Admin - Deactivate AI Usage Policy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies/{{policy_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies",
+                "{{policy_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Deactivate policy. Requires super_admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Negative Tests",
+      "item": [
+        {
+          "name": "No Token - User Usage Should Fail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/usage",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "usage"
+              ]
+            },
+            "description": "Expected 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([401]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Token on Doctor Route Should Fail",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{user_token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/doctor/shared-sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "doctor",
+                "shared-sessions"
+              ]
+            },
+            "description": "Expected 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([403]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Doctor Review Invalid Agreement",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{doctor_token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/doctor/results/{{result_uuid}}/review",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "doctor",
+                "results",
+                "{{result_uuid}}",
+                "review"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_agreement\": \"maybe\",\n  \"doctor_notes\": \"Invalid value test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Expected 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Share Without Doctor or Appointment",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{user_token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{session_uuid}}/share",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{session_uuid}}",
+                "share"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Expected 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([400]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Send Message to Completed Session Should Fail",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{user_token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ai-dermatology/sessions/{{completed_session_uuid}}/messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ai-dermatology",
+                "sessions",
+                "{{completed_session_uuid}}",
+                "messages"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"اختبار إرسال رسالة إلى جلسة مكتملة\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Expected 404."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([404]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Route with User Token Should Fail",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{user_token}}",
+                "type": "string"
+              }
+            ]
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/ai-usage/policies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "ai-usage",
+                "policies"
+              ]
+            },
+            "description": "Expected 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected status code', function () { pm.expect(pm.response.code).to.be.oneOf([403]); });",
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData && jsonData.success !== undefined) {",
+                  "  pm.test('Response has success field', function () { pm.expect(jsonData).to.have.property('success'); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - SQL Verification Reference",
+      "description": "Manual SQL checks to run in your DB client.",
+      "item": [
+        {
+          "name": "SQL - AI Usage Policies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Run manually:\n\nSELECT id, policy_name, scope_type, user_id, package_id, max_total_requests_per_month, max_chat_messages_per_month, max_image_analyses_per_month, max_document_analyses_per_month, max_files_per_session, max_tokens_per_request, is_active, priority, created_by_admin_id, updated_by_admin_id, created_at, updated_at FROM ai_usage_policies ORDER BY id DESC;"
+          }
+        },
+        {
+          "name": "SQL - Admin Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Run manually:\n\nSELECT id, admin_id, action, target_type, target_id, description, severity, created_at FROM admin_logs WHERE target_type = 'AIUsagePolicy' ORDER BY id DESC LIMIT 10;"
+          }
+        },
+        {
+          "name": "SQL - Doctor Review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Run manually:\n\nSELECT id, uuid, result_type, doctor_reviewed, doctor_agreement, reviewed_by_doctor_id, doctor_notes, reviewed_at FROM ai_analysis_results WHERE uuid = '<result_uuid>';"
+          }
+        }
+      ]
+    }
+  ]
+}

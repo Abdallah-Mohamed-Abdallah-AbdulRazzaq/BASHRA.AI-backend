@@ -1,0 +1,343 @@
+{
+  "endpoints": [
+    {
+      "id": 1,
+      "name": "Get Doctor Profile",
+      "name_ar": "جلب الملف الشخصي للطبيب",
+      "method": "GET",
+      "endpoint": "/api/profile-doctor",
+      "full_url": "http://localhost:3006/api/profile-doctor",
+      "description_ar": "جلب الملف الشخصي الكامل للطبيب مع الترجمة حسب اللغة المطلوبة (من Accept-Language header)",
+      "description_en": "Get complete doctor profile with translation based on requested language",
+      "authentication": {
+        "required": true,
+        "type": "JWT Bearer Token",
+        "role": "doctor"
+      },
+      "headers": {
+        "required": {
+          "Authorization": "Bearer YOUR_JWT_TOKEN"
+        },
+        "optional": {
+          "Accept-Language": "ar | en (default: ar)"
+        }
+      },
+      "query_parameters": "لا يوجد",
+      "request_body": "لا يوجد - GET request",
+      "success_response_example": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": 1,
+            "doctor_id": 1,
+            "license_number": "DOC123456",
+            "years_of_experience": 10,
+            "medical_school": "كلية الطب - جامعة القاهرة",
+            "graduation_year": 2013,
+            "board_certifications": [
+              "البورد المصري في أمراض القلب",
+              "البورد الأمريكي في أمراض القلب (FACC)",
+              "زمالة الجمعية الأوروبية لأمراض القلب (FESC)"
+            ],
+            "languages_spoken": ["العربية", "الإنجليزية", "الفرنسية"],
+            "consultation_fee": 500.00,
+            "consultation_duration": 30,
+            "working_hours": {
+              "saturday": {"start": "09:00", "end": "17:00", "available": true},
+              "sunday": {"start": "09:00", "end": "17:00", "available": true},
+              "monday": {"start": "09:00", "end": "17:00", "available": true},
+              "tuesday": {"start": "09:00", "end": "17:00", "available": true},
+              "wednesday": {"start": "09:00", "end": "17:00", "available": true},
+              "thursday": {"start": "09:00", "end": "14:00", "available": true},
+              "friday": {"available": false}
+            },
+            "profile_picture_url": "https://example.com/uploads/profile_pictures/doctor_1_1234567890.jpg",
+            "is_verified": true,
+            "approval_status": "approved",
+            "rating_average": 4.75,
+            "rating_count": 120,
+            "total_consultations": 350,
+            "is_available": true,
+            "date_of_birth": "1990-01-15",
+            "gender": "male",
+            "nationality": "مصري",
+            "emergency_contact_phone": "+201234567890",
+            "timezone": "Africa/Cairo",
+            "language_preference": "ar",
+            "full_name": "د. أحمد محمد علي السيد",
+            "specialty": "أمراض القلب والأوعية الدموية",
+            "sub_specialty": "قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية",
+            "biography": "طبيب قلب متخصص مع خبرة 10 سنوات في مجال قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية. حاصل على البورد المصري والأمريكي والأوروبي في أمراض القلب. عضو الجمعية المصرية لأمراض القلب والجمعية الأمريكية لأمراض القلب.",
+            "emergency_contact_name": "محمد أحمد علي",
+            "emergency_contact_relationship": "أخ",
+            "created_at": "2024-01-01T10:00:00.000Z",
+            "updated_at": "2024-11-20T15:30:00.000Z"
+          }
+        }
+      },
+      "error_responses": [
+        {
+          "status": 404,
+          "description": "الملف الشخصي غير موجود",
+          "body": {
+            "success": false,
+            "message": "الملف الشخصي غير موجود"
+          }
+        },
+        {
+          "status": 401,
+          "description": "غير مصرح - token غير صالح أو منتهي",
+          "body": {
+            "success": false,
+            "message": "Unauthorized"
+          }
+        },
+        {
+          "status": 403,
+          "description": "ممنوع - المستخدم ليس طبيب",
+          "body": {
+            "success": false,
+            "message": "Access denied. Doctor role required."
+          }
+        },
+        {
+          "status": 500,
+          "description": "خطأ في السيرفر",
+          "body": {
+            "success": false,
+            "message": "خطأ في جلب الملف الشخصي",
+            "error": "Database connection error"
+          }
+        }
+      ],
+      "test_scenarios": [
+        {
+          "scenario": "جلب الملف الشخصي باللغة العربية",
+          "method": "GET",
+          "url": "http://localhost:3006/api/profile-doctor",
+          "headers": {
+            "Authorization": "Bearer YOUR_JWT_TOKEN",
+            "Accept-Language": "ar"
+          },
+          "expected_status": 200,
+          "expected_result": "يتم إرجاع البيانات مع الترجمة العربية للحقول المترجمة"
+        },
+        {
+          "scenario": "جلب الملف الشخصي باللغة الإنجليزية",
+          "method": "GET",
+          "url": "http://localhost:3006/api/profile-doctor",
+          "headers": {
+            "Authorization": "Bearer YOUR_JWT_TOKEN",
+            "Accept-Language": "en"
+          },
+          "expected_status": 200,
+          "expected_result": "يتم إرجاع البيانات مع الترجمة الإنجليزية للحقول المترجمة"
+        },
+        {
+          "scenario": "محاولة الوصول بدون token",
+          "method": "GET",
+          "url": "http://localhost:3006/api/profile-doctor",
+          "headers": {},
+          "expected_status": 401,
+          "expected_result": "خطأ 401 Unauthorized"
+        }
+      ],
+      "curl_examples": {
+        "arabic": "curl -X GET 'http://localhost:3006/api/profile-doctor' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -H 'Accept-Language: ar'",
+        "english": "curl -X GET 'http://localhost:3006/api/profile-doctor' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -H 'Accept-Language: en'"
+      },
+      "postman_example": {
+        "method": "GET",
+        "url": "{{base_url}}/profile-doctor",
+        "headers": [
+          {"key": "Authorization", "value": "Bearer {{jwt_token}}"},
+          {"key": "Accept-Language", "value": "ar"}
+        ]
+      }
+    },
+    
+    {
+      "id": 2,
+      "name": "Get Basic Doctor Data",
+      "name_ar": "جلب البيانات الأساسية للطبيب",
+      "method": "GET",
+      "endpoint": "/api/profile-doctor/basic",
+      "full_url": "http://localhost:3006/api/profile-doctor/basic",
+      "description_ar": "جلب البيانات الأساسية المختارة فقط من جداول doctors و doctor_profiles و doctor_profile_translations",
+      "description_en": "Get selected basic data only from doctors, doctor_profiles, and doctor_profile_translations tables",
+      "authentication": {
+        "required": true,
+        "type": "JWT Bearer Token",
+        "role": "doctor"
+      },
+      "headers": {
+        "required": {
+          "Authorization": "Bearer YOUR_JWT_TOKEN"
+        },
+        "optional": {
+          "Accept-Language": "ar | en"
+        }
+      },
+      "request_body": "لا يوجد",
+      "success_response_example": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": 1,
+            "uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "email": "doctor@example.com",
+            "phone": "+201234567890",
+            "status": "active",
+            "is_active": true,
+            "license_number": "DOC123456",
+            "years_of_experience": 10,
+            "medical_school": "كلية الطب - جامعة القاهرة",
+            "graduation_year": 2013,
+            "consultation_fee": 500.00,
+            "consultation_duration": 30,
+            "is_verified": true,
+            "approval_status": "approved",
+            "rating_average": 4.75,
+            "rating_count": 120,
+            "total_consultations": 350,
+            "is_available": true,
+            "date_of_birth": "1990-01-15",
+            "gender": "male",
+            "nationality": "مصري",
+            "emergency_contact_phone": "+201234567890",
+            "timezone": "Africa/Cairo",
+            "language_preference": "ar",
+            "full_name": "د. أحمد محمد علي",
+            "specialty": "أمراض القلب والأوعية الدموية",
+            "sub_specialty": "قسطرة القلب التداخلية",
+            "biography": "طبيب قلب متخصص مع خبرة 10 سنوات",
+            "emergency_contact_name": "محمد أحمد علي",
+            "emergency_contact_relationship": "أخ"
+          }
+        }
+      },
+      "error_responses": [
+        {
+          "status": 404,
+          "body": {
+            "success": false,
+            "message": "الطبيب غير موجود"
+          }
+        },
+        {
+          "status": 404,
+          "body": {
+            "success": false,
+            "message": "الملف الشخصي غير موجود"
+          }
+        }
+      ],
+      "curl_example": "curl -X GET 'http://localhost:3006/api/profile-doctor/basic' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \\\n  -H 'Accept-Language: ar'"
+    },
+    
+    {
+      "id": 3,
+      "name": "Get Complete Doctor Data",
+      "name_ar": "جلب البيانات الكاملة للطبيب",
+      "method": "GET",
+      "endpoint": "/api/profile-doctor/complete",
+      "full_url": "http://localhost:3006/api/profile-doctor/complete",
+      "description_ar": "جلب جميع بيانات الطبيب (الحساب + الملف الشخصي + جميع الترجمات لكل اللغات)",
+      "description_en": "Get all doctor data (account + profile + all translations for all languages)",
+      "authentication": {
+        "required": true,
+        "type": "JWT Bearer Token",
+        "role": "doctor"
+      },
+      "headers": {
+        "required": {
+          "Authorization": "Bearer YOUR_JWT_TOKEN"
+        }
+      },
+      "request_body": "لا يوجد",
+      "success_response_example": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "account": {
+              "id": 1,
+              "uuid": "550e8400-e29b-41d4-a716-446655440000",
+              "email": "doctor@example.com",
+              "phone": "+201234567890",
+              "email_verified_at": "2024-01-01T10:00:00.000Z",
+              "phone_verified_at": "2024-01-01T10:05:00.000Z",
+              "status": "active",
+              "is_active": true,
+              "last_login_at": "2024-11-23T08:30:00.000Z",
+              "last_activity_at": "2024-11-23T10:15:00.000Z",
+              "is_email_otp": true,
+              "is_phone_otp": true,
+              "is_id_verified": true,
+              "created_at": "2024-01-01T10:00:00.000Z",
+              "updated_at": "2024-11-23T10:15:00.000Z"
+            },
+            "profile": {
+              "id": 1,
+              "doctor_id": 1,
+              "license_number": "DOC123456",
+              "years_of_experience": 10,
+              "medical_school": "كلية الطب - جامعة القاهرة",
+              "graduation_year": 2013,
+              "board_certifications": "[\"البورد المصري في أمراض القلب\",\"FACC\",\"FESC\"]",
+              "languages_spoken": "[\"العربية\",\"الإنجليزية\",\"الفرنسية\"]",
+              "consultation_fee": 500.00,
+              "consultation_duration": 30,
+              "working_hours": "{\"saturday\":{\"start\":\"09:00\",\"end\":\"17:00\",\"available\":true}}",
+              "profile_picture_url": "https://example.com/uploads/profile_pictures/doctor_1_1234567890.jpg",
+              "is_verified": true,
+              "approval_status": "approved",
+              "rating_average": 4.75,
+              "rating_count": 120,
+              "total_consultations": 350,
+              "is_available": true,
+              "date_of_birth": "1990-01-15",
+              "gender": "male",
+              "nationality": "مصري",
+              "emergency_contact_phone": "+201234567890",
+              "timezone": "Africa/Cairo",
+              "language_preference": "ar",
+              "created_at": "2024-01-01T10:00:00.000Z",
+              "updated_at": "2024-11-20T15:30:00.000Z"
+            },
+            "translations": {
+              "ar": {
+                "full_name": "د. أحمد محمد علي السيد",
+                "specialty": "أمراض القلب والأوعية الدموية",
+                "sub_specialty": "قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية",
+                "biography": "طبيب قلب متخصص مع خبرة 10 سنوات في مجال قسطرة القلب التداخلية",
+                "emergency_contact_name": "محمد أحمد علي",
+                "emergency_contact_relationship": "أخ"
+              },
+              "en": {
+                "full_name": "Dr. Ahmed Mohamed Ali Elsayed",
+                "specialty": "Cardiovascular Medicine",
+                "sub_specialty": "Interventional Cardiology and Echocardiography",
+                "biography": "Specialized cardiologist with 10 years experience in interventional cardiology",
+                "emergency_contact_name": "Mohamed Ahmed Ali",
+                "emergency_contact_relationship": "Brother"
+              }
+            }
+          }
+        }
+      },
+      "error_responses": [
+        {
+          "status": 404,
+          "body": {
+            "success": false,
+            "message": "الطبيب غير موجود"
+          }
+        }
+      ],
+      "curl_example": "curl -X GET 'http://localhost:3006/api/profile-doctor/complete' \\\n  -H 'Authorization: Bearer YOUR_JWT_TOKEN'"
+    }
+  ]
+}

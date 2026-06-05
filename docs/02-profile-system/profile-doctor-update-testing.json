@@ -1,0 +1,429 @@
+{
+  "info": {
+    "name": "Doctor Profile Update - Complete Testing",
+    "description": "اختبار شامل لجميع حالات تحديث الملف الشخصي للطبيب",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Update Personal Data Only",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date_of_birth\": \"1985-05-15\",\n  \"gender\": \"male\",\n  \"nationality\": \"Egyptian\",\n  \"emergency_contact_phone\": \"+201234567890\",\n  \"timezone\": \"Africa/Cairo\",\n  \"language_preference\": \"ar\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث البيانات الشخصية فقط (تاريخ الميلاد، الجنس، الجنسية، إلخ)"
+      }
+    },
+    {
+      "name": "2. Update Professional Data Only",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"years_of_experience\": 12,\n  \"medical_school\": \"Cairo University Faculty of Medicine\",\n  \"graduation_year\": 2012,\n  \"board_certifications\": [\n    \"Board Certified in Cardiology\",\n    \"ACLS Certified\",\n    \"BLS Certified\"\n  ],\n  \"languages_spoken\": [\n    \"Arabic\",\n    \"English\",\n    \"French\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث البيانات المهنية فقط (الخبرة، الشهادات، اللغات)"
+      }
+    },
+    {
+      "name": "3. Update Translation Fields (Current Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"د. أحمد محمد علي\",\n  \"specialty\": \"أمراض القلب والأوعية الدموية\",\n  \"sub_specialty\": \"قسطرة القلب التداخلية\",\n  \"biography\": \"طبيب قلب متخصص مع خبرة 12 سنة في مجال قسطرة القلب والعلاج التداخلي. حاصل على شهادة البورد الأمريكي في أمراض القلب.\",\n  \"emergency_contact_name\": \"فاطمة أحمد\",\n  \"emergency_contact_relationship\": \"الزوجة\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث حقول الترجمة للغة الحالية فقط (العربية في هذا المثال)"
+      }
+    },
+    {
+      "name": "4. Update Multiple Languages (translations object)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"translations\": {\n    \"ar\": {\n      \"full_name\": \"د. أحمد محمد علي\",\n      \"specialty\": \"أمراض القلب والأوعية الدموية\",\n      \"sub_specialty\": \"قسطرة القلب التداخلية\",\n      \"biography\": \"طبيب قلب متخصص مع خبرة 12 سنة في مجال قسطرة القلب والعلاج التداخلي.\",\n      \"emergency_contact_name\": \"فاطمة أحمد\",\n      \"emergency_contact_relationship\": \"الزوجة\"\n    },\n    \"en\": {\n      \"full_name\": \"Dr. Ahmed Mohamed Ali\",\n      \"specialty\": \"Cardiology and Cardiovascular Diseases\",\n      \"sub_specialty\": \"Interventional Cardiac Catheterization\",\n      \"biography\": \"Specialized cardiologist with 12 years of experience in cardiac catheterization and interventional therapy.\",\n      \"emergency_contact_name\": \"Fatima Ahmed\",\n      \"emergency_contact_relationship\": \"Wife\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث الترجمات لعدة لغات في نفس الوقت (العربية والإنجليزية)"
+      }
+    },
+    {
+      "name": "5. Update Everything (Complete Profile)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date_of_birth\": \"1985-05-15\",\n  \"gender\": \"male\",\n  \"nationality\": \"Egyptian\",\n  \"emergency_contact_phone\": \"+201234567890\",\n  \"timezone\": \"Africa/Cairo\",\n  \"language_preference\": \"ar\",\n  \"years_of_experience\": 12,\n  \"medical_school\": \"Cairo University Faculty of Medicine\",\n  \"graduation_year\": 2012,\n  \"board_certifications\": [\n    \"Board Certified in Cardiology\",\n    \"ACLS Certified\",\n    \"BLS Certified\"\n  ],\n  \"languages_spoken\": [\n    \"Arabic\",\n    \"English\",\n    \"French\"\n  ],\n  \"translations\": {\n    \"ar\": {\n      \"full_name\": \"د. أحمد محمد علي\",\n      \"specialty\": \"أمراض القلب والأوعية الدموية\",\n      \"sub_specialty\": \"قسطرة القلب التداخلية\",\n      \"biography\": \"طبيب قلب متخصص مع خبرة 12 سنة في مجال قسطرة القلب والعلاج التداخلي. حاصل على شهادة البورد الأمريكي في أمراض القلب.\",\n      \"emergency_contact_name\": \"فاطمة أحمد\",\n      \"emergency_contact_relationship\": \"الزوجة\"\n    },\n    \"en\": {\n      \"full_name\": \"Dr. Ahmed Mohamed Ali\",\n      \"specialty\": \"Cardiology and Cardiovascular Diseases\",\n      \"sub_specialty\": \"Interventional Cardiac Catheterization\",\n      \"biography\": \"Specialized cardiologist with 12 years of experience in cardiac catheterization and interventional therapy. Board certified by the American Board of Cardiology.\",\n      \"emergency_contact_name\": \"Fatima Ahmed\",\n      \"emergency_contact_relationship\": \"Wife\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث كامل للملف الشخصي (بيانات شخصية + مهنية + ترجمات)"
+      }
+    },
+    {
+      "name": "6. Update Single Field Only",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"years_of_experience\": 13\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث حقل واحد فقط (مثال: سنوات الخبرة)"
+      }
+    },
+    {
+      "name": "7. Update Arabic Translation Only",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"translations\": {\n    \"ar\": {\n      \"biography\": \"طبيب قلب متخصص مع خبرة واسعة في علاج أمراض القلب المعقدة.\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث الترجمة العربية فقط"
+      }
+    },
+    {
+      "name": "8. Update English Translation Only",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "en",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"translations\": {\n    \"en\": {\n      \"biography\": \"Specialized cardiologist with extensive experience in treating complex heart diseases.\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث الترجمة الإنجليزية فقط"
+      }
+    },
+    {
+      "name": "9. Update Board Certifications Array",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"board_certifications\": [\n    \"Board Certified in Cardiology\",\n    \"ACLS Certified\",\n    \"BLS Certified\",\n    \"PALS Certified\",\n    \"Interventional Cardiology Fellowship\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث قائمة الشهادات المهنية"
+      }
+    },
+    {
+      "name": "10. Update Languages Spoken Array",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"languages_spoken\": [\n    \"Arabic\",\n    \"English\",\n    \"French\",\n    \"German\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث قائمة اللغات المنطوقة"
+      }
+    },
+    {
+      "name": "11. Update Emergency Contact Info",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emergency_contact_phone\": \"+201098765432\",\n  \"translations\": {\n    \"ar\": {\n      \"emergency_contact_name\": \"محمد أحمد\",\n      \"emergency_contact_relationship\": \"الأخ\"\n    },\n    \"en\": {\n      \"emergency_contact_name\": \"Mohamed Ahmed\",\n      \"emergency_contact_relationship\": \"Brother\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث معلومات جهة الاتصال في حالات الطوارئ"
+      }
+    },
+    {
+      "name": "12. Update Timezone and Language Preference",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctorToken}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"timezone\": \"Europe/London\",\n  \"language_preference\": \"en\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3006/api/profile-doctor",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3006",
+          "path": ["api", "profile-doctor"]
+        },
+        "description": "تحديث المنطقة الزمنية واللغة المفضلة"
+      }
+    }
+  ]
+}

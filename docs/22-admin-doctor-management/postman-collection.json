@@ -1,0 +1,405 @@
+{
+  "info": {
+    "_postman_id": "admin-doctor-management-api",
+    "name": "Admin Doctor Management API",
+    "description": "API Collection for Admin Doctor Management - إدارة الأطباء للأدمن",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "YOUR_ADMIN_JWT_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "doctorId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bashraai.com\",\n  \"password\": \"your_password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-admin", "login"]
+            },
+            "description": "Login as admin to get JWT token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read Operations",
+      "item": [
+        {
+          "name": "Get All Doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors"]
+            },
+            "description": "Get all doctors with default pagination"
+          }
+        },
+        {
+          "name": "Get Doctors with Filters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors?page=1&limit=20&status=pending_verification&approval_status=pending&is_verified=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "pending_verification"
+                },
+                {
+                  "key": "approval_status",
+                  "value": "pending"
+                },
+                {
+                  "key": "is_verified",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Get doctors with multiple filters"
+          }
+        },
+        {
+          "name": "Search Doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors?search=ahmed",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "ahmed"
+                }
+              ]
+            },
+            "description": "Search doctors by name, email, phone, or license number"
+          }
+        },
+        {
+          "name": "Get Pending Doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "pending"]
+            },
+            "description": "Get doctors awaiting approval"
+          }
+        },
+        {
+          "name": "Get Doctor Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "statistics"]
+            },
+            "description": "Get doctor statistics for dashboard"
+          }
+        },
+        {
+          "name": "Get Doctor Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}"]
+            },
+            "description": "Get single doctor details"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Operations",
+      "item": [
+        {
+          "name": "Update Doctor Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\",\n  \"reason\": \"تم التحقق من جميع الوثائق\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}", "status"]
+            },
+            "description": "Update doctor status (active, inactive, suspended, pending_verification)"
+          }
+        },
+        {
+          "name": "Verify Doctor Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_verified\": true,\n  \"reason\": \"تم التحقق من رخصة مزاولة المهنة\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}", "verify"]
+            },
+            "description": "Verify or unverify doctor profile"
+          }
+        },
+        {
+          "name": "Update Approval Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approval_status\": \"approved\",\n  \"reason\": \"مستوفي جميع الشروط\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}/approval",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}", "approval"]
+            },
+            "description": "Update approval status (pending, approved, rejected, suspended)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Combined Actions",
+      "item": [
+        {
+          "name": "Approve Doctor (Full)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"تم التحقق من جميع الوثائق والمؤهلات\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}", "approve"]
+            },
+            "description": "Full approval: sets status=active, is_verified=true, approval_status=approved"
+          }
+        },
+        {
+          "name": "Reject Doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"الوثائق المقدمة غير صالحة\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}", "reject"]
+            },
+            "description": "Reject doctor: sets status=inactive, approval_status=rejected. Reason is required."
+          }
+        },
+        {
+          "name": "Suspend Doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"مخالفة سياسات المنصة\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/{{doctorId}}/suspend",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "{{doctorId}}", "suspend"]
+            },
+            "description": "Suspend doctor: sets status=suspended, approval_status=suspended. Reason is required."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Operations",
+      "item": [
+        {
+          "name": "Bulk Update Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorIds\": [1, 2, 3],\n  \"status\": \"active\",\n  \"reason\": \"تفعيل مجموعة من الأطباء\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/doctors/bulk/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "doctors", "bulk", "status"]
+            },
+            "description": "Update status for multiple doctors at once"
+          }
+        }
+      ]
+    }
+  ]
+}

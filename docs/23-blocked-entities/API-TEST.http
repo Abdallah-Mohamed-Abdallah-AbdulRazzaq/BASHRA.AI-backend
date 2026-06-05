@@ -1,0 +1,600 @@
+### ============================================
+### Blocked Entities API Tests
+### اختبارات API الكيانات المحظورة
+### ============================================
+### Base URL: http://localhost:3006/api/admin/blocked-entities
+### Required: Admin JWT Token (System Admin or Super Admin for modifications)
+### ============================================
+
+### Variables - قم بتغيير هذه القيم حسب بيئتك
+@baseUrl = http://localhost:3006/api
+@adminToken = YOUR_ADMIN_JWT_TOKEN_HERE
+@entityId = 1
+@entityType = user
+@blockId = 1
+
+### ============================================
+### 1. AUTHENTICATION - المصادقة
+### ============================================
+
+### Login as Admin (to get token)
+### تسجيل دخول كأدمن للحصول على التوكن
+POST {{baseUrl}}/auth-admin/login
+Content-Type: application/json
+
+{
+  "email": "admin@bashraai.com",
+  "password": "your_admin_password"
+}
+
+### ============================================
+### 2. READ OPERATIONS - عمليات القراءة (Any Admin)
+### ============================================
+
+### Get All Blocked Entities - جلب جميع الكيانات المحظورة
+GET {{baseUrl}}/admin/blocked-entities
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Active Blocked Entities Only - الكيانات المحظورة النشطة فقط
+GET {{baseUrl}}/admin/blocked-entities?is_active=true
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Removed (Inactive) Blocks - الحظر الملغي
+GET {{baseUrl}}/admin/blocked-entities?is_active=false
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Filter by Entity Type - فلتر حسب نوع الكيان
+GET {{baseUrl}}/admin/blocked-entities?entity_type=user
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Filter by Block Type - فلتر حسب نوع الحظر
+GET {{baseUrl}}/admin/blocked-entities?block_type=temporary
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Filter Blocked Doctors - فلتر الأطباء المحظورين
+GET {{baseUrl}}/admin/blocked-entities?entity_type=doctor&is_active=true
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Filter Blocked Assistants - فلتر المساعدين المحظورين
+GET {{baseUrl}}/admin/blocked-entities?entity_type=assistant&is_active=true
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Filter Blocked Admins - فلتر المديرين المحظورين
+GET {{baseUrl}}/admin/blocked-entities?entity_type=admin&is_active=true
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Search Blocked Entities - البحث في الكيانات المحظورة
+GET {{baseUrl}}/admin/blocked-entities?search=example@email.com
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get with Pagination - جلب مع صفحات
+GET {{baseUrl}}/admin/blocked-entities?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Sort by Block Until Date - ترتيب حسب تاريخ انتهاء الحظر
+GET {{baseUrl}}/admin/blocked-entities?sort_by=blocked_until&sort_order=ASC
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Combined Filters - فلاتر مجمعة
+GET {{baseUrl}}/admin/blocked-entities?entity_type=user&block_type=temporary&is_active=true&page=1&limit=20
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 3. STATISTICS - الإحصائيات
+### ============================================
+
+### Get Block Statistics - إحصائيات الحظر
+GET {{baseUrl}}/admin/blocked-entities/statistics
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 4. CHECK BLOCK STATUS - التحقق من حالة الحظر
+### ============================================
+
+### Check if User is Blocked - التحقق من حظر مستخدم
+GET {{baseUrl}}/admin/blocked-entities/check?entity_id={{entityId}}&entity_type=user
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Check if Doctor is Blocked - التحقق من حظر طبيب
+GET {{baseUrl}}/admin/blocked-entities/check?entity_id=1&entity_type=doctor
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Check if Assistant is Blocked - التحقق من حظر مساعد
+GET {{baseUrl}}/admin/blocked-entities/check?entity_id=1&entity_type=assistant
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Check if Admin is Blocked - التحقق من حظر أدمن
+GET {{baseUrl}}/admin/blocked-entities/check?entity_id=1&entity_type=admin
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 5. BLOCK DETAILS - تفاصيل الحظر
+### ============================================
+
+### Get Block Details by ID - تفاصيل الحظر بالمعرف
+GET {{baseUrl}}/admin/blocked-entities/{{blockId}}
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 6. BLOCK HISTORY - سجل الحظر
+### ============================================
+
+### Get User Block History - سجل حظر مستخدم
+GET {{baseUrl}}/admin/blocked-entities/history/user/{{entityId}}
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Doctor Block History - سجل حظر طبيب
+GET {{baseUrl}}/admin/blocked-entities/history/doctor/1
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Assistant Block History - سجل حظر مساعد
+GET {{baseUrl}}/admin/blocked-entities/history/assistant/1
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Admin Block History - سجل حظر أدمن
+GET {{baseUrl}}/admin/blocked-entities/history/admin/1
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 7. BLOCK ENTITY - حظر كيان (System Admin+)
+### ============================================
+
+### Block User - Temporary - حظر مستخدم مؤقتاً
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "block_type": "temporary",
+  "blocked_until": "2025-02-15T00:00:00.000Z",
+  "reason": "مخالفة سياسات الاستخدام - تم التحذير مسبقاً ولم يتم الالتزام"
+}
+
+### Block User - Permanent - حظر مستخدم دائم
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 2,
+  "entity_type": "user",
+  "block_type": "permanent",
+  "reason": "انتهاك خطير لسياسات المنصة - حساب مزيف"
+}
+
+### Block User - Warning - تحذير مستخدم
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 3,
+  "entity_type": "user",
+  "block_type": "warning",
+  "reason": "تحذير أول بسبب سلوك غير لائق في المحادثات"
+}
+
+### Block Doctor - Temporary - حظر طبيب مؤقتاً
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "doctor",
+  "block_type": "temporary",
+  "blocked_until": "2025-01-30T00:00:00.000Z",
+  "reason": "شكاوى متعددة من المرضى - يتم التحقيق في الأمر"
+}
+
+### Block Doctor - Permanent - حظر طبيب دائم
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 2,
+  "entity_type": "doctor",
+  "block_type": "permanent",
+  "reason": "تقديم معلومات طبية خاطئة ومضللة للمرضى"
+}
+
+### Block Assistant - حظر مساعد
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "assistant",
+  "block_type": "temporary",
+  "blocked_until": "2025-01-20T00:00:00.000Z",
+  "reason": "عدم الالتزام بمواعيد العمل المحددة"
+}
+
+### Block Admin (Super Admin Only) - حظر أدمن
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 2,
+  "entity_type": "admin",
+  "block_type": "permanent",
+  "reason": "إساءة استخدام صلاحيات الأدمن"
+}
+
+### ============================================
+### 8. UNBLOCK ENTITY - إلغاء حظر كيان (System Admin+)
+### ============================================
+
+### Unblock User - إلغاء حظر مستخدم
+POST {{baseUrl}}/admin/blocked-entities/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "reason": "تم مراجعة الحالة وإلغاء الحظر بعد التزام المستخدم"
+}
+
+### Unblock Doctor - إلغاء حظر طبيب
+POST {{baseUrl}}/admin/blocked-entities/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "doctor",
+  "reason": "تم التحقق من الشكاوى وثبت عدم صحتها"
+}
+
+### Unblock Assistant - إلغاء حظر مساعد
+POST {{baseUrl}}/admin/blocked-entities/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "assistant",
+  "reason": "تم الالتزام بالتعليمات"
+}
+
+### Unblock Admin (Super Admin Only) - إلغاء حظر أدمن
+POST {{baseUrl}}/admin/blocked-entities/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 2,
+  "entity_type": "admin",
+  "reason": "تم مراجعة الحالة"
+}
+
+### ============================================
+### 9. UPDATE BLOCK - تحديث سجل الحظر (System Admin+)
+### ============================================
+
+### Extend Temporary Block - تمديد الحظر المؤقت
+PATCH {{baseUrl}}/admin/blocked-entities/{{blockId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "blocked_until": "2025-03-01T00:00:00.000Z",
+  "reason": "تم تمديد فترة الحظر بسبب عدم الاستجابة"
+}
+
+### Convert Temporary to Permanent - تحويل مؤقت إلى دائم
+PATCH {{baseUrl}}/admin/blocked-entities/{{blockId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "block_type": "permanent",
+  "blocked_until": null,
+  "reason": "تحويل إلى حظر دائم بسبب تكرار المخالفات"
+}
+
+### Update Block Reason Only - تحديث السبب فقط
+PATCH {{baseUrl}}/admin/blocked-entities/{{blockId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "reason": "تم تحديث سبب الحظر بعد مراجعة إضافية"
+}
+
+### Convert to Warning - تحويل إلى تحذير
+PATCH {{baseUrl}}/admin/blocked-entities/{{blockId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "block_type": "warning",
+  "reason": "تم تخفيف العقوبة إلى تحذير"
+}
+
+### ============================================
+### 10. BULK OPERATIONS - عمليات مجمعة (System Admin+)
+### ============================================
+
+### Bulk Block Users - حظر مجموعة مستخدمين
+POST {{baseUrl}}/admin/blocked-entities/bulk/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entities": [
+    { "entity_id": 1, "entity_type": "user" },
+    { "entity_id": 2, "entity_type": "user" },
+    { "entity_id": 3, "entity_type": "user" }
+  ],
+  "block_type": "temporary",
+  "blocked_until": "2025-02-01T00:00:00.000Z",
+  "reason": "حظر جماعي بسبب نشاط مشبوه تم رصده"
+}
+
+### Bulk Block Mixed Entities - حظر مجموعة متنوعة
+POST {{baseUrl}}/admin/blocked-entities/bulk/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entities": [
+    { "entity_id": 1, "entity_type": "user" },
+    { "entity_id": 1, "entity_type": "doctor" },
+    { "entity_id": 1, "entity_type": "assistant" }
+  ],
+  "block_type": "warning",
+  "reason": "تحذير جماعي بسبب مخالفة سياسات المنصة"
+}
+
+### Bulk Block Permanent - حظر جماعي دائم
+POST {{baseUrl}}/admin/blocked-entities/bulk/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entities": [
+    { "entity_id": 4, "entity_type": "user" },
+    { "entity_id": 5, "entity_type": "user" }
+  ],
+  "block_type": "permanent",
+  "reason": "حسابات مزيفة تم التأكد منها"
+}
+
+### Bulk Unblock Users - إلغاء حظر مجموعة مستخدمين
+POST {{baseUrl}}/admin/blocked-entities/bulk/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entities": [
+    { "entity_id": 1, "entity_type": "user" },
+    { "entity_id": 2, "entity_type": "user" }
+  ],
+  "reason": "إلغاء حظر جماعي بعد مراجعة الحالات"
+}
+
+### Bulk Unblock Mixed Entities - إلغاء حظر مجموعة متنوعة
+POST {{baseUrl}}/admin/blocked-entities/bulk/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entities": [
+    { "entity_id": 1, "entity_type": "user" },
+    { "entity_id": 1, "entity_type": "doctor" }
+  ],
+  "reason": "إلغاء حظر جماعي"
+}
+
+### ============================================
+### 11. AUTO-UNBLOCK - إلغاء الحظر التلقائي
+### ============================================
+
+### Auto-Unblock Expired Temporary Blocks
+### إلغاء حظر الكيانات المنتهية تلقائياً
+POST {{baseUrl}}/admin/blocked-entities/auto-unblock
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 12. ERROR TESTING - اختبار الأخطاء
+### ============================================
+
+### Test Block Without Reason - حظر بدون سبب
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "block_type": "temporary",
+  "blocked_until": "2025-02-15T00:00:00.000Z"
+}
+
+### Test Block With Short Reason - حظر بسبب قصير
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "block_type": "temporary",
+  "blocked_until": "2025-02-15T00:00:00.000Z",
+  "reason": "short"
+}
+
+### Test Temporary Block Without Date - حظر مؤقت بدون تاريخ
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "block_type": "temporary",
+  "reason": "سبب الحظر المؤقت بدون تحديد تاريخ الانتهاء"
+}
+
+### Test Block With Past Date - حظر بتاريخ ماضي
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "block_type": "temporary",
+  "blocked_until": "2020-01-01T00:00:00.000Z",
+  "reason": "سبب الحظر بتاريخ انتهاء في الماضي"
+}
+
+### Test Invalid Entity Type - نوع كيان غير صحيح
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "invalid_type",
+  "block_type": "temporary",
+  "blocked_until": "2025-02-15T00:00:00.000Z",
+  "reason": "سبب الحظر لنوع كيان غير صحيح"
+}
+
+### Test Invalid Block Type - نوع حظر غير صحيح
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 1,
+  "entity_type": "user",
+  "block_type": "invalid_block_type",
+  "reason": "سبب الحظر لنوع حظر غير صحيح"
+}
+
+### Test Block Non-existent Entity - حظر كيان غير موجود
+POST {{baseUrl}}/admin/blocked-entities/block
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 99999,
+  "entity_type": "user",
+  "block_type": "permanent",
+  "reason": "محاولة حظر كيان غير موجود في النظام"
+}
+
+### Test Unblock Non-blocked Entity - إلغاء حظر كيان غير محظور
+POST {{baseUrl}}/admin/blocked-entities/unblock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "entity_id": 99999,
+  "entity_type": "user",
+  "reason": "محاولة إلغاء حظر كيان غير محظور"
+}
+
+### Test Without Token - بدون توكن
+GET {{baseUrl}}/admin/blocked-entities
+Accept-Language: ar
+
+### Test Invalid Token - توكن غير صحيح
+GET {{baseUrl}}/admin/blocked-entities
+Authorization: Bearer invalid_token_here
+Accept-Language: ar
+
+### ============================================
+### WORKFLOW EXAMPLES - أمثلة سير العمل
+### ============================================
+
+### === Workflow 1: Block User for Violation ===
+### Step 1: Check if user is already blocked
+# GET {{baseUrl}}/admin/blocked-entities/check?entity_id=5&entity_type=user
+
+### Step 2: Block the user
+# POST {{baseUrl}}/admin/blocked-entities/block
+# Body: { "entity_id": 5, "entity_type": "user", "block_type": "temporary", "blocked_until": "2025-02-01", "reason": "..." }
+
+### Step 3: Verify block was created
+# GET {{baseUrl}}/admin/blocked-entities?entity_type=user&is_active=true
+
+### === Workflow 2: Handle Appeal ===
+### Step 1: Get user's block history
+# GET {{baseUrl}}/admin/blocked-entities/history/user/5
+
+### Step 2: Review and decide to unblock
+# POST {{baseUrl}}/admin/blocked-entities/unblock
+# Body: { "entity_id": 5, "entity_type": "user", "reason": "Appeal accepted" }
+
+### === Workflow 3: Escalate Warning to Block ===
+### Step 1: Find existing warning
+# GET {{baseUrl}}/admin/blocked-entities?entity_type=user&block_type=warning&is_active=true
+
+### Step 2: Update to temporary block
+# PATCH {{baseUrl}}/admin/blocked-entities/:blockId
+# Body: { "block_type": "temporary", "blocked_until": "2025-02-01", "reason": "Escalated from warning" }
+
+### === Workflow 4: Daily Cleanup ===
+### Run auto-unblock for expired temporary blocks
+# POST {{baseUrl}}/admin/blocked-entities/auto-unblock

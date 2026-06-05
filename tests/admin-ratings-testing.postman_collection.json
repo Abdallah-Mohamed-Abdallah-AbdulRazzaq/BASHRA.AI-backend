@@ -1,0 +1,480 @@
+{
+  "info": {
+    "name": "Admin Ratings API Testing",
+    "description": "Complete testing collection for Admin Ratings endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rating_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rating_uuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "4",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get All Ratings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.data && response.data.length > 0) {",
+              "        pm.collectionVariables.set('rating_id', response.data[0].id);",
+              "        pm.collectionVariables.set('rating_uuid', response.data[0].uuid);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Get Rating by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}"]
+        }
+      }
+    },
+    {
+      "name": "3. Get Rating by UUID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_uuid}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Doctor Rating Stats",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/doctor/{{doctor_id}}/stats",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "doctor", "{{doctor_id}}", "stats"]
+        }
+      }
+    },
+    {
+      "name": "5. Flag Rating",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"language_code\": \"ar\",\n  \"reason\": \"محتوى غير لائق أو مسيء\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}/flag",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}", "flag"]
+        }
+      }
+    },
+    {
+      "name": "6. Update Status to Hidden",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"hidden\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "7. Update Status to Active",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"active\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "8. Update Status to Removed",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"removed\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Doctor",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?doctor_id={{doctor_id}}&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "doctor_id",
+              "value": "{{doctor_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Patient",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?patient_id={{patient_id}}&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "patient_id",
+              "value": "{{patient_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Status (Hidden)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?status=hidden&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "status",
+              "value": "hidden"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: Low Ratings (1-2 stars)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?min_rating=1&max_rating=2&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "min_rating",
+              "value": "1"
+            },
+            {
+              "key": "max_rating",
+              "value": "2"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: High Ratings (4-5 stars)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?min_rating=4&max_rating=5&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "min_rating",
+              "value": "4"
+            },
+            {
+              "key": "max_rating",
+              "value": "5"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,367 @@
+### ============================================
+### Admin Doctor Management API Tests
+### اختبارات API إدارة الأطباء للأدمن
+### ============================================
+### Base URL: http://localhost:3006/api/admin/doctors
+### Required: Admin JWT Token (System Admin or Super Admin for modifications)
+### ============================================
+
+### Variables - قم بتغيير هذه القيم حسب بيئتك
+@baseUrl = http://localhost:3006/api
+@adminToken = YOUR_ADMIN_JWT_TOKEN_HERE
+@doctorId = 1
+
+### ============================================
+### 1. AUTHENTICATION - المصادقة
+### ============================================
+
+### Login as Admin (to get token)
+### تسجيل دخول كأدمن للحصول على التوكن
+POST {{baseUrl}}/auth-admin/login
+Content-Type: application/json
+
+{
+  "email": "admin@bashraai.com",
+  "password": "your_admin_password"
+}
+
+### ============================================
+### 2. READ OPERATIONS - عمليات القراءة (Any Admin)
+### ============================================
+
+### Get All Doctors - جلب جميع الأطباء
+GET {{baseUrl}}/admin/doctors
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get All Doctors with Pagination - جلب الأطباء مع صفحات
+GET {{baseUrl}}/admin/doctors?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Doctors by Status - فلتر حسب الحالة
+GET {{baseUrl}}/admin/doctors?status=pending_verification
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Doctors by Approval Status - فلتر حسب حالة الموافقة
+GET {{baseUrl}}/admin/doctors?approval_status=pending
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Verified Doctors Only - الأطباء المتحقق منهم فقط
+GET {{baseUrl}}/admin/doctors?is_verified=true
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Unverified Doctors - الأطباء غير المتحقق منهم
+GET {{baseUrl}}/admin/doctors?is_verified=false
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Search Doctors - البحث في الأطباء
+GET {{baseUrl}}/admin/doctors?search=ahmed
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Doctors Sorted by Rating - ترتيب حسب التقييم
+GET {{baseUrl}}/admin/doctors?sort_by=rating_average&sort_order=DESC
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Combined Filters - فلاتر مجمعة
+GET {{baseUrl}}/admin/doctors?status=active&approval_status=approved&is_verified=true&page=1&limit=20
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 3. PENDING DOCTORS - الأطباء المعلقين
+### ============================================
+
+### Get Pending Doctors - جلب الأطباء في انتظار الموافقة
+GET {{baseUrl}}/admin/doctors/pending
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Pending Doctors with Pagination
+GET {{baseUrl}}/admin/doctors/pending?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 4. STATISTICS - الإحصائيات
+### ============================================
+
+### Get Doctor Statistics - إحصائيات الأطباء
+GET {{baseUrl}}/admin/doctors/statistics
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### ============================================
+### 5. DOCTOR DETAILS - تفاصيل طبيب
+### ============================================
+
+### Get Single Doctor Details - تفاصيل طبيب واحد
+GET {{baseUrl}}/admin/doctors/{{doctorId}}
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Get Doctor Details in English
+GET {{baseUrl}}/admin/doctors/{{doctorId}}
+Authorization: Bearer {{adminToken}}
+Accept-Language: en
+
+### ============================================
+### 6. UPDATE STATUS - تحديث الحالة (System Admin+)
+### ============================================
+
+### Update Doctor Status to Active - تفعيل الطبيب
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "status": "active",
+  "reason": "تم التحقق من جميع الوثائق"
+}
+
+### Update Doctor Status to Inactive - إلغاء تفعيل الطبيب
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "status": "inactive",
+  "reason": "طلب الطبيب إيقاف الحساب مؤقتاً"
+}
+
+### Update Doctor Status to Suspended - تعليق الطبيب
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "status": "suspended",
+  "reason": "مخالفة سياسات المنصة"
+}
+
+### Update Doctor Status to Pending Verification
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "status": "pending_verification",
+  "reason": "يحتاج إعادة التحقق من الوثائق"
+}
+
+### ============================================
+### 7. VERIFY PROFILE - التحقق من الملف (System Admin+)
+### ============================================
+
+### Verify Doctor Profile - التحقق من ملف الطبيب
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/verify
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "is_verified": true,
+  "reason": "تم التحقق من رخصة مزاولة المهنة"
+}
+
+### Unverify Doctor Profile - إلغاء التحقق من ملف الطبيب
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/verify
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "is_verified": false,
+  "reason": "انتهاء صلاحية الرخصة الطبية"
+}
+
+### ============================================
+### 8. UPDATE APPROVAL STATUS - تحديث حالة الموافقة (System Admin+)
+### ============================================
+
+### Set Approval Status to Approved - الموافقة
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/approval
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "approval_status": "approved",
+  "reason": "مستوفي جميع الشروط والمتطلبات"
+}
+
+### Set Approval Status to Pending - إعادة للانتظار
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/approval
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "approval_status": "pending",
+  "reason": "يحتاج مراجعة إضافية"
+}
+
+### Set Approval Status to Rejected - الرفض
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/approval
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "approval_status": "rejected",
+  "reason": "الوثائق المقدمة غير صالحة"
+}
+
+### Set Approval Status to Suspended - التعليق
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/approval
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "approval_status": "suspended",
+  "reason": "مخالفة متكررة لسياسات المنصة"
+}
+
+### ============================================
+### 9. COMBINED ACTIONS - إجراءات مجمعة (System Admin+)
+### ============================================
+
+### Approve Doctor (Full Approval) - الموافقة الكاملة على الطبيب
+### This sets: status=active, is_verified=true, approval_status=approved
+POST {{baseUrl}}/admin/doctors/{{doctorId}}/approve
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "reason": "تم التحقق من جميع الوثائق والمؤهلات الطبية"
+}
+
+### Reject Doctor - رفض الطبيب
+### This sets: status=inactive, approval_status=rejected
+POST {{baseUrl}}/admin/doctors/{{doctorId}}/reject
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "reason": "الوثائق المقدمة غير صالحة أو مزورة"
+}
+
+### Suspend Doctor - تعليق الطبيب
+### This sets: status=suspended, approval_status=suspended
+POST {{baseUrl}}/admin/doctors/{{doctorId}}/suspend
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "reason": "شكاوى متعددة من المرضى"
+}
+
+### ============================================
+### 10. BULK OPERATIONS - عمليات مجمعة (System Admin+)
+### ============================================
+
+### Bulk Update Doctors Status - تحديث حالة مجموعة أطباء
+POST {{baseUrl}}/admin/doctors/bulk/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "doctorIds": [1, 2, 3],
+  "status": "active",
+  "reason": "تفعيل مجموعة من الأطباء بعد المراجعة"
+}
+
+### Bulk Suspend Doctors - تعليق مجموعة أطباء
+POST {{baseUrl}}/admin/doctors/bulk/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "doctorIds": [4, 5, 6],
+  "status": "suspended",
+  "reason": "مخالفات جماعية"
+}
+
+### ============================================
+### 11. ERROR TESTING - اختبار الأخطاء
+### ============================================
+
+### Test Invalid Status - اختبار حالة غير صحيحة
+PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+  "status": "invalid_status",
+  "reason": "test"
+}
+
+### Test Missing Reason for Reject - اختبار رفض بدون سبب
+POST {{baseUrl}}/admin/doctors/{{doctorId}}/reject
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept-Language: ar
+
+{
+}
+
+### Test Non-existent Doctor - اختبار طبيب غير موجود
+GET {{baseUrl}}/admin/doctors/99999
+Authorization: Bearer {{adminToken}}
+Accept-Language: ar
+
+### Test Without Token - اختبار بدون توكن
+GET {{baseUrl}}/admin/doctors
+Accept-Language: ar
+
+### Test Invalid Token - اختبار توكن غير صحيح
+GET {{baseUrl}}/admin/doctors
+Authorization: Bearer invalid_token_here
+Accept-Language: ar
+
+### ============================================
+### WORKFLOW EXAMPLES - أمثلة سير العمل
+### ============================================
+
+### === Workflow 1: Approve New Doctor ===
+### Step 1: Check pending doctors
+# GET {{baseUrl}}/admin/doctors/pending
+
+### Step 2: Review doctor details
+# GET {{baseUrl}}/admin/doctors/{{doctorId}}
+
+### Step 3: Approve the doctor
+# POST {{baseUrl}}/admin/doctors/{{doctorId}}/approve
+
+### === Workflow 2: Handle Complaint ===
+### Step 1: Get doctor details
+# GET {{baseUrl}}/admin/doctors/{{doctorId}}
+
+### Step 2: Suspend the doctor
+# POST {{baseUrl}}/admin/doctors/{{doctorId}}/suspend
+
+### === Workflow 3: Reactivate Doctor ===
+### Step 1: Update status to active
+# PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/status
+# { "status": "active", "reason": "..." }
+
+### Step 2: Update approval to approved
+# PATCH {{baseUrl}}/admin/doctors/{{doctorId}}/approval
+# { "approval_status": "approved", "reason": "..." }

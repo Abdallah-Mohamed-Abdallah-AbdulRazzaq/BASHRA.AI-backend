@@ -1,0 +1,236 @@
+{
+  "info": {
+    "name": "Doctor Professional Data APIs",
+    "description": "اختبار APIs البيانات المهنية للأطباء",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get Professional Data",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "جلب البيانات المهنية للطبيب الحالي"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Update Professional Data (Single Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"years_of_experience\": 12,\n  \"medical_school\": \"Cairo University\",\n  \"graduation_year\": 2012,\n  \"board_certifications\": [\"Board Certified in Cardiology\", \"FACC\"],\n  \"languages_spoken\": [\"Arabic\", \"English\", \"French\"],\n  \"specialty\": \"أمراض القلب\",\n  \"sub_specialty\": \"قسطرة القلب\",\n  \"biography\": \"طبيب قلب متخصص مع خبرة 12 سنة في مجال أمراض القلب والقسطرة القلبية\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "تحديث البيانات المهنية للطبيب (لغة واحدة)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Update Professional Data (Multi-Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"license_number\": \"MED123456\",\n  \"years_of_experience\": 12,\n  \"medical_school\": \"Cairo University\",\n  \"graduation_year\": 2012,\n  \"board_certifications\": [\"Board Certified in Cardiology\", \"FACC\", \"FESC\"],\n  \"languages_spoken\": [\"Arabic\", \"English\", \"French\"],\n  \"translations\": {\n    \"ar\": {\n      \"specialty\": \"أمراض القلب\",\n      \"sub_specialty\": \"قسطرة القلب\",\n      \"biography\": \"طبيب قلب متخصص مع خبرة 12 سنة في مجال أمراض القلب والقسطرة القلبية. حاصل على شهادة البورد الأمريكي في أمراض القلب.\"\n    },\n    \"en\": {\n      \"specialty\": \"Cardiology\",\n      \"sub_specialty\": \"Cardiac Catheterization\",\n      \"biography\": \"Specialized cardiologist with 12 years of experience in cardiology and cardiac catheterization. Board certified by the American Board of Cardiology.\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "تحديث البيانات المهنية للطبيب (عدة لغات)"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Only License Number",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"license_number\": \"MED789012\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "تحديث رقم الترخيص فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Update Only Certifications",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"board_certifications\": [\n    \"Board Certified in Cardiology\",\n    \"FACC\",\n    \"FESC\",\n    \"Advanced Cardiac Life Support (ACLS)\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "تحديث الشهادات المهنية فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Update Only Biography (Arabic)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"biography\": \"طبيب قلب استشاري مع خبرة واسعة في تشخيص وعلاج أمراض القلب والأوعية الدموية. متخصص في إجراء القسطرة القلبية وتركيب الدعامات. عضو في الجمعية الأوروبية لأمراض القلب.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "تحديث السيرة الذاتية باللغة العربية فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Professional Data (English)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "en",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "professional"]
+        },
+        "description": "جلب البيانات المهنية باللغة الإنجليزية"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "YOUR_DOCTOR_TOKEN_HERE",
+      "type": "string"
+    }
+  ]
+}

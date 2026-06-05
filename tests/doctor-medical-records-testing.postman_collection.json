@@ -1,0 +1,237 @@
+{
+  "info": {
+    "name": "Doctor Medical Records API Testing",
+    "description": "Complete testing collection for Doctor Medical Records endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medical_record_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Medical Record",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    if (response.data && response.data.id) {",
+              "        pm.collectionVariables.set('medical_record_id', response.data.id);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointment_id\": {{appointment_id}},\n  \"patient_id\": {{patient_id}},\n  \"next_appointment_recommended\": true,\n  \"follow_up_date\": \"2026-04-15\",\n  \"vital_signs\": {\n    \"blood_pressure\": \"120/80\",\n    \"heart_rate\": 75,\n    \"temperature\": 37.0,\n    \"weight\": 70,\n    \"height\": 175\n  },\n  \"skin_condition_severity\": \"moderate\",\n  \"affected_body_areas\": [\"face\", \"arms\"],\n  \"treatment_response\": \"good\",\n  \"patient_consent\": true,\n  \"record_status\": \"draft\",\n  \"translations\": {\n    \"ar\": {\n      \"chief_complaint\": \"طفح جلدي في الوجه والذراعين\",\n      \"history_of_present_illness\": \"بدأت الأعراض منذ أسبوعين\",\n      \"physical_examination\": \"طفح جلدي أحمر مع حكة\",\n      \"assessment\": \"التهاب جلدي تماسي\",\n      \"diagnosis\": \"التهاب الجلد التماسي\",\n      \"differential_diagnosis\": \"أكزيما، صدفية\",\n      \"treatment_plan\": \"كريم كورتيزون موضعي مرتين يومياً\",\n      \"follow_up_instructions\": \"المتابعة بعد أسبوعين\",\n      \"doctor_notes\": \"المريض يستجيب جيداً للعلاج\"\n    },\n    \"en\": {\n      \"chief_complaint\": \"Skin rash on face and arms\",\n      \"history_of_present_illness\": \"Symptoms started two weeks ago\",\n      \"physical_examination\": \"Red itchy rash\",\n      \"assessment\": \"Contact dermatitis\",\n      \"diagnosis\": \"Contact Dermatitis\",\n      \"differential_diagnosis\": \"Eczema, Psoriasis\",\n      \"treatment_plan\": \"Topical cortisone cream twice daily\",\n      \"follow_up_instructions\": \"Follow up in two weeks\",\n      \"doctor_notes\": \"Patient responding well to treatment\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/doctor/medical-records",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "medical-records"]
+        }
+      }
+    },
+    {
+      "name": "2. Get All My Medical Records",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/medical-records?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "medical-records"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "patient_id",
+              "value": "{{patient_id}}",
+              "disabled": true
+            },
+            {
+              "key": "record_status",
+              "value": "draft",
+              "disabled": true
+            },
+            {
+              "key": "from_date",
+              "value": "2026-01-01",
+              "disabled": true
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Get Medical Record by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/medical-records/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "medical-records", "{{medical_record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Patient Medical History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/medical-records/patient/{{patient_id}}/history",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "medical-records", "patient", "{{patient_id}}", "history"]
+        }
+      }
+    },
+    {
+      "name": "5. Update Medical Record",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"next_appointment_recommended\": false,\n  \"follow_up_date\": \"2026-05-01\",\n  \"vital_signs\": {\n    \"blood_pressure\": \"118/78\",\n    \"heart_rate\": 72,\n    \"temperature\": 36.8,\n    \"weight\": 69,\n    \"height\": 175\n  },\n  \"skin_condition_severity\": \"mild\",\n  \"treatment_response\": \"excellent\",\n  \"patient_consent\": true,\n  \"record_status\": \"final\",\n  \"translations\": {\n    \"ar\": {\n      \"doctor_notes\": \"تحسن ملحوظ في الحالة، العلاج فعال\"\n    },\n    \"en\": {\n      \"doctor_notes\": \"Significant improvement, treatment effective\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/doctor/medical-records/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "medical-records", "{{medical_record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "6. Delete Medical Record (Draft Only)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/medical-records/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "medical-records", "{{medical_record_id}}"]
+        }
+      }
+    }
+  ]
+}

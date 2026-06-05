@@ -1,0 +1,378 @@
+{
+  "info": {
+    "name": "Patient Medical Records Testing",
+    "description": "Complete testing collection for patient medical records",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "patient_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medical_record_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medical_record_uuid",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get Medical Records Summary",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Summary contains statistics\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('statistics');",
+              "    pm.expect(jsonData.data).to.have.property('recent_records');",
+              "});",
+              "",
+              "// Save first record ID if exists",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.data.recent_records && jsonData.data.recent_records.length > 0) {",
+              "    pm.collectionVariables.set('medical_record_id', jsonData.data.recent_records[0].id);",
+              "    pm.collectionVariables.set('medical_record_uuid', jsonData.data.recent_records[0].uuid);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/medical-records/summary",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "medical-records", "summary"]
+        },
+        "description": "Get medical records summary and statistics for the patient"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get My Medical Records",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Response contains records array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"Records are final status only\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.length > 0) {",
+              "        jsonData.data.forEach(record => {",
+              "            pm.expect(record.record_status).to.eql('final');",
+              "        });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/medical-records?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "medical-records"],
+          "query": [
+            {
+              "key": "doctor_id",
+              "value": "1",
+              "description": "Optional filter by doctor",
+              "disabled": true
+            },
+            {
+              "key": "from_date",
+              "value": "2026-01-01",
+              "description": "Optional start date",
+              "disabled": true
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31",
+              "description": "Optional end date",
+              "disabled": true
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get patient's own medical records (final status only)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Medical Record By ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Record has all required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('id');",
+              "    pm.expect(jsonData.data).to.have.property('uuid');",
+              "    pm.expect(jsonData.data).to.have.property('appointment_id');",
+              "    pm.expect(jsonData.data).to.have.property('visit_date');",
+              "    pm.expect(jsonData.data).to.have.property('translations');",
+              "});",
+              "",
+              "pm.test(\"Record is final status\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data.record_status).to.eql('final');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/medical-records/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "medical-records", "{{medical_record_id}}"]
+        },
+        "description": "Get single medical record details by ID or UUID"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Medical Record By UUID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "en",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/medical-records/{{medical_record_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "medical-records", "{{medical_record_uuid}}"]
+        },
+        "description": "Get medical record using UUID (test UUID support)"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Filter Records By Doctor",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"All records are from specified doctor\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.length > 0) {",
+              "        jsonData.data.forEach(record => {",
+              "            pm.expect(record).to.have.property('doctor_name');",
+              "        });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/medical-records?doctor_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "medical-records"],
+          "query": [
+            {
+              "key": "doctor_id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Filter medical records by specific doctor"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Filter Records By Date Range",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/patient/medical-records?from_date=2026-01-01&to_date=2026-12-31",
+          "host": ["{{base_url}}"],
+          "path": ["patient", "medical-records"],
+          "query": [
+            {
+              "key": "from_date",
+              "value": "2026-01-01"
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31"
+            }
+          ]
+        },
+        "description": "Filter medical records by date range"
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "project_name": "SQL_Database_Subscription_Setup",
+  "data_version": "2025.01.01",
+  "execution_order_priority": [
+    "1_FEATURES",
+    "2_PACKAGES",
+    "3_PACKAGE_FEATURES"
+  ],
+  "data_seeding": {
+    "1_FEATURES": {
+      "table": "features",
+      "description": "قائمة بجميع المميزات المتاحة في النظام.",
+      "records": [
+        {"id": 1, "name_ar": "عدد المستخدمين (الأطباء/الرئيسي)", "name_en": "Max Primary Users", "unit_ar": "مستخدم"},
+        {"id": 2, "name_ar": "سعة التخزين السحابي", "name_en": "Cloud Storage", "unit_ar": "جيجابايت"},
+        {"id": 3, "name_ar": "تقارير متقدمة", "name_en": "Advanced Reports", "unit_ar": "نعم/لا"},
+        {"id": 4, "name_ar": "عدد مساعدي الطبيب", "name_en": "Max Assistants Accounts", "unit_ar": "مساعد"},
+        {"id": 5, "name_ar": "ميزة الإعلان داخل التطبيق", "name_en": "In-App Advertising", "unit_ar": "نعم/لا"},
+        {"id": 6, "name_ar": "الظهور الأولي في نتائج البحث", "name_en": "Premium Search Ranking", "unit_ar": "نعم/لا"},
+        {"id": 7, "name_ar": "عدد فروع العيادة", "name_en": "Max Clinic Branches", "unit_ar": "فرع"}
+      ]
+    },
+    "2_PACKAGES": {
+      "table": "packages",
+      "description": "تعريف الباقات الخمس المتنوعة مع أسعارها ومددها.",
+      "records": [
+        {"id": 101, "name_ar": "الباقة التجريبية", "secondary_name_ar": "مجانية لمدة أسبوع", "duration_days": 7, "price": 0.00, "is_active": 1},
+        {"id": 102, "name_ar": "الباقة الأساسية (شهرية)", "secondary_name_ar": "للاستخدام الفردي المحدود", "duration_days": 30, "price": 50.00, "is_active": 1},
+        {"id": 103, "name_ar": "الباقة الاحترافية (شهرية)", "secondary_name_ar": "للاستخدام الجماعي ونمو الأعمال", "duration_days": 30, "price": 150.00, "is_active": 1},
+        {"id": 104, "name_ar": "الباقة المتميزة (سنوية)", "secondary_name_ar": "الأفضل قيمة وتوفيراً", "duration_days": 365, "price": 1500.00, "is_active": 1},
+        {"id": 105, "name_ar": "الباقة الشاملة (سنوية)", "secondary_name_ar": "حلول متكاملة وإعلانات حصرية", "duration_days": 365, "price": 3000.00, "is_active": 1}
+      ]
+    },
+    "3_PACKAGE_FEATURES": {
+      "table": "package_features",
+      "description": "ربط كل باقة بقيمة محددة من كل ميزة.",
+      "records": [
+
+        {"package_id": 101, "feature_id": 1, "feature_value": "1"},
+        {"package_id": 101, "feature_id": 4, "feature_value": "0"},
+        {"package_id": 101, "feature_id": 6, "feature_value": "لا"},
+
+        {"package_id": 102, "feature_id": 1, "feature_value": "1"},
+        {"package_id": 102, "feature_id": 4, "feature_value": "1"}, 
+        {"package_id": 102, "feature_id": 7, "feature_value": "1"}, 
+
+        {"package_id": 103, "feature_id": 4, "feature_value": "5"}, 
+        {"package_id": 103, "feature_id": 6, "feature_value": "نعم"}, 
+        {"package_id": 103, "feature_id": 2, "feature_value": "50"},
+
+        {"package_id": 104, "feature_id": 5, "feature_value": "نعم (محدود)"}, 
+        {"package_id": 104, "feature_id": 7, "feature_value": "3"}, 
+        {"package_id": 104, "feature_id": 3, "feature_value": "نعم"},
+
+        {"package_id": 105, "feature_id": 1, "feature_value": "غير محدود"},
+        {"package_id": 105, "feature_id": 4, "feature_value": "غير محدود"},
+        {"package_id": 105, "feature_id": 5, "feature_value": "نعم (مميز)"}, 
+        {"package_id": 105, "feature_id": 6, "feature_value": "نعم"} 
+      ]
+    }
+  }
+}
+
+
+
+
+

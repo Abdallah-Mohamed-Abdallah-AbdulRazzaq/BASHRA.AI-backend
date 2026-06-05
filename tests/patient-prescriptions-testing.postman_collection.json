@@ -1,0 +1,325 @@
+{
+  "info": {
+    "name": "Patient Prescriptions API Testing",
+    "description": "Complete testing collection for Patient Prescriptions endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "patient_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prescription_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prescription_uuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medical_record_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get All My Prescriptions",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.data && response.data.length > 0) {",
+              "        pm.collectionVariables.set('prescription_id', response.data[0].id);",
+              "        pm.collectionVariables.set('prescription_uuid', response.data[0].uuid);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Get Prescription by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_id}}"]
+        }
+      }
+    },
+    {
+      "name": "3. Get Prescription by UUID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_uuid}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Prescriptions by Medical Record",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/medical-record/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "medical-record", "{{medical_record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "5. Get Prescription with English Translation",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "en",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions/{{prescription_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions", "{{prescription_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Filter: Active Prescriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?status=active&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "status",
+              "value": "active"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: Filled Prescriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?status=filled&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "status",
+              "value": "filled"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: Expired Prescriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?status=expired&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "status",
+              "value": "expired"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Medical Record",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{patient_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/prescriptions?medical_record_id={{medical_record_id}}&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["prescriptions"],
+          "query": [
+            {
+              "key": "medical_record_id",
+              "value": "{{medical_record_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

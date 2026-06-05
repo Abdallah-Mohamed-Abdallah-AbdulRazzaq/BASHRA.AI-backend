@@ -1,0 +1,335 @@
+{
+  "info": {
+    "name": "Chat CRUD APIs Testing",
+    "description": "Testing collection for Chat CRUD operations only (REST APIs)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recipient_id",
+      "value": "4",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Chat Users - READ",
+      "item": [
+        {
+          "name": "Get All Chat Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"]
+            }
+          }
+        },
+        {
+          "name": "Filter by Type (Doctors)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?type=doctor",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "doctor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?search=أحمد",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "أحمد"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversations - CRUD",
+      "item": [
+        {
+          "name": "CREATE - New Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.conversation) {",
+                  "        pm.collectionVariables.set('conversation_id', response.conversation.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_id\": {{recipient_id}},\n  \"recipient_type\": \"doctor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "READ - All Conversations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.conversations && response.conversations.length > 0) {",
+                  "        pm.collectionVariables.set('conversation_id', response.conversations[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "READ - Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}"]
+            }
+          }
+        },
+        {
+          "name": "READ - Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}/messages?limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "READ - Messages with Pagination",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}/messages?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor - Conversations CRUD",
+      "item": [
+        {
+          "name": "CREATE - Doctor to Patient Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_id\": 1,\n  \"recipient_type\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "READ - Doctor All Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            }
+          }
+        },
+        {
+          "name": "READ - Doctor Get Chat Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?type=user",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "user"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

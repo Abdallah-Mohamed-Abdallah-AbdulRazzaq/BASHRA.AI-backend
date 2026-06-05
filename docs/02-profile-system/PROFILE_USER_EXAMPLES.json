@@ -1,0 +1,304 @@
+{
+  "info": {
+    "name": "User Profile API Examples",
+    "description": "أمثلة على استخدام API الملفات الشخصية للمستخدمين",
+    "version": "1.0.0"
+  },
+  "baseUrl": "http://localhost:3006/api/profile-user",
+  "auth": {
+    "type": "Bearer Token",
+    "token": "YOUR_JWT_TOKEN_HERE"
+  },
+  "examples": [
+    {
+      "name": "1. Get User Profile (Arabic)",
+      "method": "GET",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar"
+      },
+      "response_example": {
+        "success": true,
+        "message": "تم جلب الملف الشخصي بنجاح",
+        "data": {
+          "id": 1,
+          "user_id": 123,
+          "date_of_birth": "1990-01-01",
+          "gender": "male",
+          "nationality": "Egyptian",
+          "profile_picture_url": "/upload/profiles/user/user_123_1234567890.jpg",
+          "emergency_contact_phone": "+20123456789",
+          "timezone": "Africa/Cairo",
+          "language_preference": "ar",
+          "full_name": "أحمد محمد",
+          "emergency_contact_name": "فاطمة أحمد",
+          "emergency_contact_relationship": "أخت",
+          "created_at": "2024-01-01T10:00:00.000Z",
+          "updated_at": "2024-01-01T10:00:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "2. Get User Profile (English)",
+      "method": "GET",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "en"
+      },
+      "response_example": {
+        "success": true,
+        "message": "Profile retrieved successfully",
+        "data": {
+          "id": 1,
+          "user_id": 123,
+          "date_of_birth": "1990-01-01",
+          "gender": "male",
+          "nationality": "Egyptian",
+          "profile_picture_url": "/upload/profiles/user/user_123_1234567890.jpg",
+          "emergency_contact_phone": "+20123456789",
+          "timezone": "Africa/Cairo",
+          "language_preference": "ar",
+          "full_name": "Ahmed Mohamed",
+          "emergency_contact_name": "Fatima Ahmed",
+          "emergency_contact_relationship": "Sister",
+          "created_at": "2024-01-01T10:00:00.000Z",
+          "updated_at": "2024-01-01T10:00:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "3. Update Profile - Full Update (Arabic)",
+      "method": "PUT",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "date_of_birth": "1990-05-15",
+        "gender": "male",
+        "nationality": "مصري",
+        "emergency_contact_phone": "+20123456789",
+        "timezone": "Africa/Cairo",
+        "language_preference": "ar",
+        "full_name": "أحمد محمد علي",
+        "emergency_contact_name": "فاطمة أحمد محمد",
+        "emergency_contact_relationship": "أخت"
+      },
+      "note": "Translation fields (full_name, emergency_contact_name, emergency_contact_relationship) are updated for Arabic language only"
+    },
+    {
+      "name": "4. Update Profile - Full Update (English)",
+      "method": "PUT",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "en",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "date_of_birth": "1990-05-15",
+        "gender": "male",
+        "nationality": "Egyptian",
+        "emergency_contact_phone": "+20123456789",
+        "timezone": "Africa/Cairo",
+        "language_preference": "ar",
+        "full_name": "Ahmed Mohamed Ali",
+        "emergency_contact_name": "Fatima Ahmed Mohamed",
+        "emergency_contact_relationship": "Sister"
+      },
+      "note": "Translation fields are updated for English language only"
+    },
+    {
+      "name": "5. Update Profile - Partial Update (Name Only)",
+      "method": "PUT",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "full_name": "سارة أحمد محمد"
+      }
+    },
+    {
+      "name": "6. Update Profile - Only Basic Fields",
+      "method": "PUT",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "en",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "nationality": "Saudi Arabian",
+        "timezone": "Asia/Riyadh",
+        "language_preference": "ar"
+      }
+    },
+    {
+      "name": "7. Update Profile - Emergency Contact Only",
+      "method": "PUT",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "emergency_contact_phone": "+966501234567",
+        "emergency_contact_name": "محمد أحمد",
+        "emergency_contact_relationship": "أخ"
+      }
+    },
+    {
+      "name": "7. Upload Profile Picture",
+      "method": "POST",
+      "url": "{{baseUrl}}/picture",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar"
+      },
+      "body_type": "form-data",
+      "body": {
+        "profile_picture": "FILE_UPLOAD (JPEG, PNG, WebP, max 5MB)"
+      },
+      "important_notes": [
+        "⚠️ Field name MUST be exactly 'profile_picture' (case-sensitive)",
+        "⚠️ اسم الحقل يجب أن يكون 'profile_picture' بالضبط",
+        "Use form-data, NOT raw JSON",
+        "Do NOT set Content-Type header manually",
+        "Supported types: image/jpeg, image/png, image/webp",
+        "Maximum size: 5MB"
+      ],
+      "curl_example": "curl -X POST http://localhost:3006/api/profile-user/picture -H 'Authorization: Bearer YOUR_TOKEN' -F 'profile_picture=@/path/to/image.jpg'",
+      "postman_instructions": {
+        "step1": "Select POST method",
+        "step2": "URL: http://localhost:3006/api/profile-user/picture",
+        "step3": "Headers: Add Authorization with Bearer token",
+        "step4": "Body: Select 'form-data'",
+        "step5": "Key: 'profile_picture' (select type: File)",
+        "step6": "Value: Choose image file from your computer"
+      },
+      "response_example": {
+        "success": true,
+        "message": "تم رفع الصورة الشخصية بنجاح",
+        "data": {
+          "profile_picture_url": "/upload/profiles/user/user_123_1699876543210.jpg"
+        }
+      }
+    },
+    {
+      "name": "8. Delete Profile Picture",
+      "method": "DELETE",
+      "url": "{{baseUrl}}/picture",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar"
+      },
+      "response_example": {
+        "success": true,
+        "message": "تم حذف الصورة الشخصية بنجاح"
+      }
+    },
+    {
+      "name": "9. Delete Profile (Deactivate Account)",
+      "method": "DELETE",
+      "url": "{{baseUrl}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Accept-Language": "ar"
+      },
+      "response_example": {
+        "success": true,
+        "message": "تم إلغاء تفعيل الحساب بنجاح"
+      }
+    }
+  ],
+  "error_examples": [
+    {
+      "name": "Invalid Date Format",
+      "status": 400,
+      "response": {
+        "success": false,
+        "message": "صيغة تاريخ الميلاد غير صحيحة. استخدم YYYY-MM-DD"
+      }
+    },
+    {
+      "name": "Invalid Gender",
+      "status": 400,
+      "response": {
+        "success": false,
+        "message": "قيمة الجنس غير صحيحة"
+      }
+    },
+    {
+      "name": "Invalid Phone Number",
+      "status": 400,
+      "response": {
+        "success": false,
+        "message": "رقم هاتف جهة الاتصال غير صحيح"
+      }
+    },
+    {
+      "name": "File Too Large",
+      "status": 400,
+      "response": {
+        "success": false,
+        "message": "حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت"
+      }
+    },
+    {
+      "name": "Invalid File Type",
+      "status": 400,
+      "response": {
+        "success": false,
+        "message": "نوع الملف غير مدعوم. يجب أن يكون الملف صورة (JPEG, PNG, WebP)"
+      }
+    },
+    {
+      "name": "Unexpected Field Name",
+      "status": 400,
+      "response": {
+        "success": false,
+        "message": "اسم حقل الملف غير صحيح. استخدم \"profile_picture\" كاسم للحقل",
+        "expectedFieldName": "profile_picture"
+      },
+      "note": "This error occurs when the field name in form-data is not 'profile_picture'"
+    },
+    {
+      "name": "Profile Not Found",
+      "status": 404,
+      "response": {
+        "success": false,
+        "message": "الملف الشخصي غير موجود"
+      }
+    },
+    {
+      "name": "Unauthorized",
+      "status": 401,
+      "response": {
+        "success": false,
+        "message": "غير مصرح"
+      }
+    }
+  ],
+  "test_data": {
+    "valid_genders": ["male", "female", "other", "prefer_not_to_say"],
+    "valid_date_format": "YYYY-MM-DD",
+    "valid_phone_examples": [
+      "+20123456789",
+      "+966501234567",
+      "+971501234567",
+      "0123456789",
+      "+1 (555) 123-4567"
+    ],
+    "valid_image_types": ["image/jpeg", "image/png", "image/jpg", "image/webp"],
+    "max_file_size_mb": 5,
+    "supported_languages": ["ar", "en"]
+  }
+}

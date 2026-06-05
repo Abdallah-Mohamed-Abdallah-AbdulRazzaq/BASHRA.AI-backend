@@ -1,0 +1,449 @@
+{
+  "info": {
+    "name": "Admin Appointments Testing",
+    "description": "Complete testing collection for admin appointments management with new schedule-based logic",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_uuid",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get All Appointments",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Response contains appointments array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"Appointments have schedule_id\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.length > 0) {",
+              "        pm.expect(jsonData.data[0]).to.have.property('schedule_id');",
+              "        pm.expect(jsonData.data[0]).to.have.property('consultation_fee');",
+              "        pm.expect(jsonData.data[0]).to.have.property('currency_code');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/appointments?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments"],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending",
+              "description": "Optional filter",
+              "disabled": true
+            },
+            {
+              "key": "doctor_id",
+              "value": "1",
+              "description": "Optional filter",
+              "disabled": true
+            },
+            {
+              "key": "patient_id",
+              "value": "1",
+              "description": "Optional filter",
+              "disabled": true
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get all appointments with optional filters"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create Appointment (New Logic)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Appointment created with schedule data\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('id');",
+              "    pm.expect(jsonData.data).to.have.property('uuid');",
+              "    pm.expect(jsonData.data).to.have.property('schedule_id');",
+              "    pm.expect(jsonData.data).to.have.property('doctor_id');",
+              "    pm.expect(jsonData.data).to.have.property('consultation_fee');",
+              "    pm.expect(jsonData.data).to.have.property('currency_code');",
+              "    pm.expect(jsonData.data).to.have.property('duration_minutes');",
+              "});",
+              "",
+              "// Save appointment details",
+              "var jsonData = pm.response.json();",
+              "pm.collectionVariables.set('appointment_id', jsonData.data.id);",
+              "pm.collectionVariables.set('appointment_uuid', jsonData.data.uuid);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patient_id\": 1,\n  \"schedule_id\": 1,\n  \"scheduled_date\": \"2026-03-15\",\n  \"actual_start_time\": \"10:00:00\",\n  \"appointment_type\": \"consultation\",\n  \"urgency_level\": \"medium\",\n  \"payment_status\": \"pending\",\n  \"language_code\": \"ar\",\n  \"chief_complaint\": \"صداع مستمر\",\n  \"symptoms_description\": \"أعاني من صداع شديد منذ أسبوع\",\n  \"notes\": \"المريض يحتاج إلى فحص شامل\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/admin/appointments",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments"]
+        },
+        "description": "Create a new appointment using schedule_id. The system automatically fetches doctor_id, clinic_id, duration_minutes, consultation_fee, and currency_code from doctor_schedules table."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Appointment By ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Appointment has all required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('schedule_id');",
+              "    pm.expect(jsonData.data).to.have.property('actual_start_time');",
+              "    pm.expect(jsonData.data).to.have.property('consultation_fee');",
+              "    pm.expect(jsonData.data).to.have.property('currency_code');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/appointments/{{appointment_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments", "{{appointment_id}}"]
+        },
+        "description": "Get single appointment details by ID or UUID"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"scheduled_date\": \"2026-03-16\",\n  \"actual_start_time\": \"11:00:00\",\n  \"urgency_level\": \"high\",\n  \"payment_status\": \"paid\",\n  \"status\": \"confirmed\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/admin/appointments/{{appointment_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments", "{{appointment_id}}"]
+        },
+        "description": "Update appointment details"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Cancel Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cancellation_reason\": \"تم الإلغاء بناءً على طلب المريض\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/admin/appointments/{{appointment_id}}/cancel",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments", "{{appointment_id}}", "cancel"]
+        },
+        "description": "Cancel an appointment with optional reason"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Delete Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/appointments/{{appointment_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments", "{{appointment_id}}"]
+        },
+        "description": "Permanently delete an appointment"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Statistics",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Statistics contain required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('total_appointments');",
+              "    pm.expect(jsonData.data).to.have.property('by_status');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/appointments/statistics?from_date=2026-03-01&to_date=2026-03-31",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "appointments", "statistics"],
+          "query": [
+            {
+              "key": "from_date",
+              "value": "2026-03-01",
+              "description": "Optional start date"
+            },
+            {
+              "key": "to_date",
+              "value": "2026-03-31",
+              "description": "Optional end date"
+            },
+            {
+              "key": "doctor_id",
+              "value": "1",
+              "description": "Optional doctor filter",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Get appointment statistics"
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,0 +1,500 @@
+{
+  "document_title": "Account Deactivation & Reactivation Logic",
+  "document_title_ar": "منطق إلغاء تفعيل وإعادة تفعيل الحساب",
+  "version": "1.0.0",
+  "last_updated": "2025-11-04",
+  "author": "BASHRA.AI Development Team",
+  
+  "overview": {
+    "description": "This document explains the complete logic for user account deactivation and reactivation system",
+    "description_ar": "يشرح هذا المستند المنطق الكامل لنظام إلغاء تفعيل وإعادة تفعيل حساب المستخدم",
+    "purpose": "Allow users to temporarily deactivate their accounts and reactivate them later without losing access to login",
+    "purpose_ar": "السماح للمستخدمين بإلغاء تفعيل حساباتهم مؤقتاً وإعادة تفعيلها لاحقاً دون فقدان القدرة على تسجيل الدخول"
+  },
+
+  "database_schema": {
+    "table": "users",
+    "columns": {
+      "status": {
+        "type": "ENUM('active', 'inactive', 'suspended', 'pending_verification')",
+        "purpose": "Administrative account status - controlled by admin or system",
+        "purpose_ar": "حالة الحساب الإدارية - يتحكم بها المسؤول أو النظام",
+        "values": {
+          "active": "Account is active and verified",
+          "inactive": "Account is not active (not used for user deactivation)",
+          "suspended": "Account suspended by admin (cannot login or use any API)",
+          "pending_verification": "Account pending email/phone verification"
+        }
+      },
+      "is_active": {
+        "type": "TINYINT(1)",
+        "default": 1,
+        "purpose": "User self-deactivation flag - controlled by user",
+        "purpose_ar": "علامة إلغاء التفعيل الذاتي - يتحكم بها المستخدم نفسه",
+        "values": {
+          "1": "Account is active and can use all APIs",
+          "0": "Account is deactivated by user (can login but cannot use APIs except /reactivate)"
+        }
+      }
+    },
+    "sql_migration": {
+      "description": "SQL command to add is_active column",
+      "command": "ALTER TABLE users ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Account active status: 1=active, 0=deactivated by user' AFTER status;",
+      "index": "CREATE INDEX idx_users_is_active ON users(is_active);"
+    }
+  },
+
+  "logic_flow": {
+    "scenario_1_deactivate_account": {
+      "step": 1,
+      "action": "User deactivates account",
+      "action_ar": "المستخدم يقوم بإلغاء تفعيل الحساب",
+      "endpoint": {
+        "method": "DELETE",
+        "url": "/api/profile-user",
+        "requires_auth": true,
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "controller": {
+        "file": "profileUserController.js",
+        "method": "deleteProfile",
+        "logic": [
+          "1. Start database transaction",
+          "2. Get userId from req.user.id (from JWT token)",
+          "3. Check if user profile exists",
+          "4. Execute SQL: UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+          "5. Commit transaction",
+          "6. Return success message"
+        ]
+      },
+      "database_changes": {
+        "table": "users",
+        "fields_updated": {
+          "is_active": "0",
+          "updated_at": "CURRENT_TIMESTAMP"
+        },
+        "fields_unchanged": {
+          "status": "remains 'active'",
+          "email": "unchanged",
+          "password_hash": "unchanged"
+        }
+      },
+      "response_success": {
+        "status_code": 200,
+        "body": {
+          "success": true,
+          "message": "تم إلغاء تفعيل الحساب بنجاح. يمكنك إعادة تفعيله في أي وقت",
+          "message_en": "Account deactivated successfully. You can reactivate it anytime"
+        }
+      },
+      "response_error": {
+        "status_code": 500,
+        "body": {
+          "success": false,
+          "message": "خطأ في إلغاء تفعيل الحساب",
+          "message_en": "Error deactivating account",
+          "error": "error message"
+        }
+      }
+    },
+
+    "scenario_2_login_with_deactivated_account": {
+      "step": 2,
+      "action": "User tries to login with deactivated account",
+      "action_ar": "المستخدم يحاول تسجيل الدخول بحساب معطّل",
+      "endpoint": {
+        "method": "POST",
+        "url": "/api/auth-user/login",
+        "body": {
+          "email": "user@example.com",
+          "password": "password123"
+        }
+      },
+      "middleware_flow": [
+        {
+          "middleware": "authMiddleware.authenticateJWT",
+          "check": "Verifies JWT token is valid and not revoked",
+          "checks_performed": [
+            "Token exists in Authorization header",
+            "Token is valid and not expired",
+            "Token exists in auth_tokens table and is not revoked",
+            "User exists in database",
+            "User status is NOT 'suspended' (admin suspension)",
+            "User is not blocked"
+          ],
+          "does_not_check": "is_active column (intentionally ignored)",
+          "result": "✅ PASSES - User can login and get new token"
+        }
+      ],
+      "result": {
+        "status": "SUCCESS",
+        "status_ar": "نجح",
+        "description": "User can successfully login and receive access token even with is_active = 0",
+        "description_ar": "المستخدم يستطيع تسجيل الدخول بنجاح والحصول على token حتى مع is_active = 0",
+        "reason": "Login only checks 'status' column, not 'is_active' column",
+        "reason_ar": "تسجيل الدخول يتحقق فقط من عمود 'status' وليس عمود 'is_active'"
+      },
+      "response_success": {
+        "status_code": 200,
+        "body": {
+          "success": true,
+          "accessToken": "<new_jwt_token>",
+          "refreshToken": "<refresh_token>",
+          "user": {
+            "id": 1,
+            "email": "user@example.com"
+          }
+        }
+      }
+    },
+
+    "scenario_3_use_api_with_deactivated_account": {
+      "step": 3,
+      "action": "User tries to use any API (except /reactivate)",
+      "action_ar": "المستخدم يحاول استخدام أي API (عدا /reactivate)",
+      "endpoint": {
+        "method": "GET",
+        "url": "/api/profile-user",
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "middleware_flow": [
+        {
+          "order": 1,
+          "middleware": "authenticateJWT",
+          "result": "✅ PASSES",
+          "reason": "Token is valid, user exists, status is 'active'"
+        },
+        {
+          "order": 2,
+          "middleware": "checkAccountActive",
+          "file": "middleware/checkAccountActive.js",
+          "logic": [
+            "1. Check if route is /reactivate → if yes, skip check and continue",
+            "2. Query database: SELECT is_active FROM users WHERE id = ?",
+            "3. Check if is_active = 0 or false",
+            "4. If deactivated, return error response",
+            "5. If active, call next() to continue"
+          ],
+          "result": "❌ BLOCKED",
+          "reason": "is_active = 0 and route is not /reactivate"
+        }
+      ],
+      "response_blocked": {
+        "status_code": 403,
+        "body": {
+          "error": "Account is deactivated. Please reactivate your account.",
+          "error_ar": "الحساب معطّل. يرجى إعادة تفعيل حسابك.",
+          "reactivate_endpoint": "/api/profile-user/reactivate"
+        }
+      },
+      "affected_endpoints": [
+        "GET /api/profile-user",
+        "PUT /api/profile-user",
+        "GET /api/profile-user/basic",
+        "PUT /api/profile-user/basic",
+        "GET /api/profile-user/complete",
+        "POST /api/profile-user/picture",
+        "DELETE /api/profile-user/picture",
+        "DELETE /api/profile-user (deactivate again)"
+      ],
+      "exception_endpoint": "PATCH /api/profile-user/reactivate (allowed even with is_active = 0)"
+    },
+
+    "scenario_4_reactivate_account": {
+      "step": 4,
+      "action": "User reactivates account",
+      "action_ar": "المستخدم يعيد تفعيل الحساب",
+      "endpoint": {
+        "method": "PATCH",
+        "url": "/api/profile-user/reactivate",
+        "requires_auth": true,
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "middleware_flow": [
+        {
+          "order": 1,
+          "middleware": "authenticateJWT",
+          "result": "✅ PASSES"
+        },
+        {
+          "order": 2,
+          "middleware": "checkAccountActive",
+          "result": "✅ PASSES (EXCEPTION)",
+          "reason": "Route path includes '/reactivate' - explicitly allowed"
+        }
+      ],
+      "controller": {
+        "file": "profileUserController.js",
+        "method": "reactivateProfile",
+        "logic": [
+          "1. Start database transaction",
+          "2. Get userId from req.user.id",
+          "3. Query: SELECT is_active FROM users WHERE id = ?",
+          "4. Check if is_active = 1 → return error 'already active'",
+          "5. If is_active = 0 → Execute SQL: UPDATE users SET is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+          "6. Commit transaction",
+          "7. Return success message"
+        ]
+      },
+      "database_changes": {
+        "table": "users",
+        "fields_updated": {
+          "is_active": "1",
+          "updated_at": "CURRENT_TIMESTAMP"
+        }
+      },
+      "response_success": {
+        "status_code": 200,
+        "body": {
+          "success": true,
+          "message": "تم إعادة تفعيل الحساب بنجاح",
+          "message_en": "Account reactivated successfully"
+        }
+      },
+      "response_already_active": {
+        "status_code": 400,
+        "body": {
+          "success": false,
+          "message": "الحساب مفعّل بالفعل",
+          "message_en": "Account is already active"
+        }
+      }
+    },
+
+    "scenario_5_use_api_after_reactivation": {
+      "step": 5,
+      "action": "User uses APIs normally after reactivation",
+      "action_ar": "المستخدم يستخدم APIs بشكل طبيعي بعد إعادة التفعيل",
+      "endpoint": {
+        "method": "GET",
+        "url": "/api/profile-user",
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "middleware_flow": [
+        {
+          "order": 1,
+          "middleware": "authenticateJWT",
+          "result": "✅ PASSES"
+        },
+        {
+          "order": 2,
+          "middleware": "checkAccountActive",
+          "check": "is_active = 1",
+          "result": "✅ PASSES"
+        }
+      ],
+      "result": {
+        "status": "SUCCESS",
+        "description": "All APIs work normally",
+        "description_ar": "جميع APIs تعمل بشكل طبيعي"
+      }
+    }
+  },
+
+  "comparison_table": {
+    "title": "Difference between 'status' and 'is_active'",
+    "title_ar": "الفرق بين 'status' و 'is_active'",
+    "columns": [
+      {
+        "column_name": "status",
+        "controlled_by": "Admin or System",
+        "controlled_by_ar": "المسؤول أو النظام",
+        "purpose": "Administrative account status",
+        "purpose_ar": "حالة الحساب الإدارية",
+        "values": ["active", "inactive", "suspended", "pending_verification"],
+        "affects_login": true,
+        "affects_login_note": "If status = 'suspended', user CANNOT login",
+        "affects_api": true,
+        "affects_api_note": "Checked in authenticateJWT middleware"
+      },
+      {
+        "column_name": "is_active",
+        "controlled_by": "User (self-service)",
+        "controlled_by_ar": "المستخدم (الخدمة الذاتية)",
+        "purpose": "Temporary account deactivation by user",
+        "purpose_ar": "إلغاء تفعيل الحساب مؤقتاً من قبل المستخدم",
+        "values": [1, 0],
+        "affects_login": false,
+        "affects_login_note": "User CAN login even with is_active = 0",
+        "affects_api": true,
+        "affects_api_note": "Checked in checkAccountActive middleware (except /reactivate)"
+      }
+    ]
+  },
+
+  "implementation_files": {
+    "controllers": [
+      {
+        "file": "controllers/profileUserController.js",
+        "methods": [
+          {
+            "name": "deleteProfile",
+            "line": "~461-509",
+            "purpose": "Deactivate user account (set is_active = 0)",
+            "sql": "UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+          },
+          {
+            "name": "reactivateProfile",
+            "line": "~515-583",
+            "purpose": "Reactivate user account (set is_active = 1)",
+            "sql": "UPDATE users SET is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+          }
+        ]
+      }
+    ],
+    "middleware": [
+      {
+        "file": "middleware/authMiddleware.js",
+        "method": "authenticateJWT",
+        "line": "~207-299",
+        "purpose": "Verify JWT token and check admin suspension (status = 'suspended')",
+        "checks": [
+          "Token validity",
+          "Token not revoked",
+          "User exists",
+          "status !== 'suspended'",
+          "User not blocked"
+        ],
+        "does_not_check": "is_active column"
+      },
+      {
+        "file": "middleware/checkAccountActive.js",
+        "method": "checkAccountActive",
+        "purpose": "Check if user account is active (is_active = 1)",
+        "exception": "Allows /reactivate endpoint even with is_active = 0",
+        "checks": ["is_active = 1"],
+        "does_not_check": "status column"
+      }
+    ],
+    "routes": [
+      {
+        "file": "routes/profileUserRoutes.js",
+        "middleware_order": [
+          "1. authenticateJWT (all routes)",
+          "2. checkAccountActive (all routes)"
+        ],
+        "endpoints": [
+          {
+            "method": "DELETE",
+            "path": "/",
+            "full_path": "/api/profile-user",
+            "controller": "ProfileUserController.deleteProfile",
+            "description": "Deactivate account"
+          },
+          {
+            "method": "PATCH",
+            "path": "/reactivate",
+            "full_path": "/api/profile-user/reactivate",
+            "controller": "ProfileUserController.reactivateProfile",
+            "description": "Reactivate account",
+            "note": "Works even with is_active = 0"
+          }
+        ]
+      }
+    ]
+  },
+
+  "security_considerations": {
+    "authentication_required": {
+      "description": "All endpoints require valid JWT token",
+      "description_ar": "جميع endpoints تتطلب JWT token صالح"
+    },
+    "self_service_only": {
+      "description": "Users can only deactivate/reactivate their own accounts",
+      "description_ar": "المستخدمون يمكنهم فقط إلغاء تفعيل/إعادة تفعيل حساباتهم الخاصة",
+      "implementation": "userId is taken from req.user.id (from JWT token)"
+    },
+    "admin_suspension_priority": {
+      "description": "If admin suspends account (status = 'suspended'), user CANNOT login or reactivate",
+      "description_ar": "إذا قام المسؤول بتعليق الحساب (status = 'suspended')، المستخدم لا يستطيع تسجيل الدخول أو إعادة التفعيل",
+      "priority": "status check happens before is_active check"
+    }
+  },
+
+  "testing_scenarios": {
+    "test_1": {
+      "name": "Deactivate account successfully",
+      "steps": [
+        "Login as user",
+        "Call DELETE /api/profile-user with valid token",
+        "Verify response is success",
+        "Verify database: is_active = 0"
+      ]
+    },
+    "test_2": {
+      "name": "Login with deactivated account",
+      "steps": [
+        "Deactivate account (is_active = 0)",
+        "Call POST /api/auth-user/login",
+        "Verify login succeeds",
+        "Verify receive new token"
+      ]
+    },
+    "test_3": {
+      "name": "Access API with deactivated account",
+      "steps": [
+        "Login with deactivated account",
+        "Call GET /api/profile-user with token",
+        "Verify response is 403 error",
+        "Verify error message mentions reactivation"
+      ]
+    },
+    "test_4": {
+      "name": "Reactivate account successfully",
+      "steps": [
+        "Login with deactivated account",
+        "Call PATCH /api/profile-user/reactivate with token",
+        "Verify response is success",
+        "Verify database: is_active = 1",
+        "Call GET /api/profile-user",
+        "Verify APIs work normally"
+      ]
+    },
+    "test_5": {
+      "name": "Cannot reactivate already active account",
+      "steps": [
+        "Ensure account is active (is_active = 1)",
+        "Call PATCH /api/profile-user/reactivate",
+        "Verify response is 400 error",
+        "Verify message 'Account is already active'"
+      ]
+    },
+    "test_6": {
+      "name": "Admin suspension prevents everything",
+      "steps": [
+        "Admin sets status = 'suspended'",
+        "Try to login",
+        "Verify login fails with 'Account is suspended'",
+        "Verify cannot access any API including /reactivate"
+      ]
+    }
+  },
+
+  "notes": {
+    "why_two_columns": {
+      "question": "Why use both 'status' and 'is_active'?",
+      "question_ar": "لماذا نستخدم كلاً من 'status' و 'is_active'؟",
+      "answer": "To separate admin control (status) from user control (is_active). Admin suspension is permanent until admin removes it. User deactivation is temporary and user can reactivate anytime.",
+      "answer_ar": "للفصل بين تحكم المسؤول (status) وتحكم المستخدم (is_active). تعليق المسؤول دائم حتى يزيله المسؤول. إلغاء تفعيل المستخدم مؤقت ويمكن للمستخدم إعادة التفعيل في أي وقت."
+    },
+    "why_allow_login": {
+      "question": "Why allow login for deactivated accounts?",
+      "question_ar": "لماذا نسمح بتسجيل الدخول للحسابات المعطلة؟",
+      "answer": "So users can get a token and call /reactivate endpoint. If login was blocked, users would never be able to reactivate their accounts.",
+      "answer_ar": "حتى يحصل المستخدمون على token ويستطيعون استدعاء endpoint /reactivate. إذا تم حظر تسجيل الدخول، لن يتمكن المستخدمون أبداً من إعادة تفعيل حساباتهم."
+    },
+    "migration_required": {
+      "note": "You MUST run the SQL migration to add is_active column before using this feature",
+      "note_ar": "يجب تشغيل SQL migration لإضافة عمود is_active قبل استخدام هذه الميزة",
+      "default_value": "is_active defaults to 1 (active) for all existing users"
+    }
+  }
+}

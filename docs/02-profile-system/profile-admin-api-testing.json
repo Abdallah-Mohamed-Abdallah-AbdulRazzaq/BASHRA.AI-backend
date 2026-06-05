@@ -1,0 +1,109 @@
+{
+  "api_base_url": "http://localhost:3006/api/profile-admin",
+  "description": "دليل اختبار شامل لجميع APIs الخاصة بالملف الشخصي للمسؤولين",
+  "version": "1.0.0",
+  "last_updated": "2024-12-19",
+  "authentication": {
+    "type": "JWT Bearer Token",
+    "header": "Authorization: Bearer <token>",
+    "required_role": "admin",
+    "middleware_chain": ["authenticateJWT", "authorizeAdmin", "checkAccountActive"]
+  },
+  "endpoints": [
+    {
+      "id": 1,
+      "name": "Get Admin Profile",
+      "method": "GET",
+      "endpoint": "/api/profile-admin",
+      "description": "جلب الملف الشخصي للمسؤول",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Accept-Language": "ar"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Get Complete Admin Data",
+      "method": "GET",
+      "endpoint": "/api/profile-admin/complete",
+      "description": "جلب البيانات الكاملة",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Update Admin Profile (Single Lang)",
+      "method": "PUT",
+      "endpoint": "/api/profile-admin",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Content-Type": "application/json",
+        "Accept-Language": "ar"
+      },
+      "body": {
+        "full_name": "اسم المسؤول الجديد",
+        "job_title": "مدير",
+        "date_of_birth": "1990-01-01"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Update Admin Profile (Multi Lang)",
+      "method": "PUT",
+      "endpoint": "/api/profile-admin",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "date_of_birth": "1990-01-01",
+        "translations": {
+          "ar": { "full_name": "مدير عربي", "job_title": "مدير" },
+          "en": { "full_name": "English Admin", "job_title": "Manager" }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "Upload Profile Picture",
+      "method": "POST",
+      "endpoint": "/api/profile-admin/picture",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Content-Type": "multipart/form-data"
+      },
+      "body_type": "form-data",
+      "fields": {
+        "profile_picture": "(File)"
+      }
+    },
+    {
+      "id": 6,
+      "name": "Delete Profile Picture",
+      "method": "DELETE",
+      "endpoint": "/api/profile-admin/picture",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Deactivate Account",
+      "method": "DELETE",
+      "endpoint": "/api/profile-admin",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Reactivate Account",
+      "method": "PATCH",
+      "endpoint": "/api/profile-admin/reactivate",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    }
+  ]
+}

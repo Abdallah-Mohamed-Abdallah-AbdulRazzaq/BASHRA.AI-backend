@@ -1,0 +1,466 @@
+{
+  "info": {
+    "name": "Chat System Complete Testing",
+    "description": "Comprehensive testing collection for Chat and Conversations system including Socket.IO events",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "socket_url",
+      "value": "http://localhost:3006",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string",
+      "description": "Patient/User token"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string",
+      "description": "Doctor token"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string",
+      "description": "Admin token"
+    },
+    {
+      "key": "conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recipient_id",
+      "value": "4",
+      "type": "string",
+      "description": "ID of the recipient (doctor/user)"
+    },
+    {
+      "key": "recipient_type",
+      "value": "doctor",
+      "type": "string",
+      "description": "Type: user, doctor, admin, assistant"
+    }
+  ],
+  "item": [
+    {
+      "name": "Chat Users",
+      "item": [
+        {
+          "name": "1. Get All Chat Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"]
+            },
+            "description": "Get all available users for chat (excluding current user)"
+          }
+        },
+        {
+          "name": "2. Get Users by Type (Doctors)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?type=doctor",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "doctor"
+                }
+              ]
+            },
+            "description": "Filter users by type: doctor"
+          }
+        },
+        {
+          "name": "3. Get Users by Type (Patients)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?type=user",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "user"
+                }
+              ]
+            },
+            "description": "Filter users by type: user (patients)"
+          }
+        },
+        {
+          "name": "4. Search Users by Name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?search=أحمد",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "أحمد"
+                }
+              ]
+            },
+            "description": "Search users by name or email"
+          }
+        },
+        {
+          "name": "5. Search Doctors with Filter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?type=doctor&search=د",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "doctor"
+                },
+                {
+                  "key": "search",
+                  "value": "د"
+                }
+              ]
+            },
+            "description": "Search doctors by name"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "1. Get All My Conversations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.conversations && response.conversations.length > 0) {",
+                  "        pm.collectionVariables.set('conversation_id', response.conversations[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            },
+            "description": "Get all conversations for current user, sorted by last message"
+          }
+        },
+        {
+          "name": "2. Create New Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.conversation) {",
+                  "        pm.collectionVariables.set('conversation_id', response.conversation.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_id\": {{recipient_id}},\n  \"recipient_type\": \"{{recipient_type}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            },
+            "description": "Create a new conversation with a recipient"
+          }
+        },
+        {
+          "name": "3. Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}"]
+            },
+            "description": "Get details of a specific conversation"
+          }
+        },
+        {
+          "name": "4. Get Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}/messages?limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get message history for a conversation with pagination"
+          }
+        },
+        {
+          "name": "5. Get Messages - Page 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}/messages?limit=50&offset=50",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get second page of messages"
+          }
+        },
+        {
+          "name": "6. Get Recent Messages (Last 20)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations/{{conversation_id}}/messages?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["conversations", "{{conversation_id}}", "messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get last 20 messages"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctor Conversations",
+      "item": [
+        {
+          "name": "1. Doctor - Get All Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            },
+            "description": "Doctor gets all their conversations"
+          }
+        },
+        {
+          "name": "2. Doctor - Create Conversation with Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_id\": 1,\n  \"recipient_type\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["conversations"]
+            },
+            "description": "Doctor creates conversation with a patient"
+          }
+        },
+        {
+          "name": "3. Doctor - Get Chat Users (Patients)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chat-users?type=user",
+              "host": ["{{base_url}}"],
+              "path": ["chat-users"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "user"
+                }
+              ]
+            },
+            "description": "Doctor gets list of patients to chat with"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Socket.IO Events Guide",
+      "item": [
+        {
+          "name": "Socket.IO Connection Guide",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{socket_url}}",
+              "host": ["{{socket_url}}"]
+            },
+            "description": "# Socket.IO Events Guide\n\n## Connection\n```javascript\nconst socket = io('http://localhost:3006', {\n  auth: {\n    token: 'YOUR_JWT_TOKEN'\n  }\n});\n```\n\n## Events to Emit (Client → Server)\n\n### 1. join_conversation\n```javascript\nsocket.emit('join_conversation', {\n  conversation_id: 1\n});\n```\n\n### 2. send_message\n```javascript\nsocket.emit('send_message', {\n  conversation_id: 1,\n  message: 'Hello!',\n  message_type: 'text' // text, image, file, voice\n});\n```\n\n### 3. typing_start\n```javascript\nsocket.emit('typing_start', {\n  conversation_id: 1\n});\n```\n\n### 4. typing_stop\n```javascript\nsocket.emit('typing_stop', {\n  conversation_id: 1\n});\n```\n\n### 5. mark_as_read\n```javascript\nsocket.emit('mark_as_read', {\n  conversation_id: 1,\n  message_id: 123\n});\n```\n\n### 6. leave_conversation\n```javascript\nsocket.emit('leave_conversation', {\n  conversation_id: 1\n});\n```\n\n## Events to Listen (Server → Client)\n\n### 1. new_message\n```javascript\nsocket.on('new_message', (data) => {\n  console.log('New message:', data);\n  // data: { message_id, conversation_id, sender_id, sender_type, message, message_type, created_at }\n});\n```\n\n### 2. user_typing\n```javascript\nsocket.on('user_typing', (data) => {\n  console.log('User typing:', data);\n  // data: { conversation_id, user_id, user_type, user_name }\n});\n```\n\n### 3. user_stopped_typing\n```javascript\nsocket.on('user_stopped_typing', (data) => {\n  console.log('User stopped typing:', data);\n});\n```\n\n### 4. message_read\n```javascript\nsocket.on('message_read', (data) => {\n  console.log('Message read:', data);\n  // data: { conversation_id, message_id, read_by_id, read_by_type }\n});\n```\n\n### 5. error\n```javascript\nsocket.on('error', (error) => {\n  console.error('Socket error:', error);\n});\n```\n\n### 6. connected\n```javascript\nsocket.on('connected', (data) => {\n  console.log('Connected:', data);\n});\n```\n\n## Complete Example\n```javascript\nconst io = require('socket.io-client');\n\nconst socket = io('http://localhost:3006', {\n  auth: { token: 'YOUR_JWT_TOKEN' }\n});\n\nsocket.on('connected', (data) => {\n  console.log('Connected as:', data);\n  \n  // Join conversation\n  socket.emit('join_conversation', { conversation_id: 1 });\n});\n\nsocket.on('new_message', (message) => {\n  console.log('Received:', message);\n});\n\n// Send message\nsocket.emit('send_message', {\n  conversation_id: 1,\n  message: 'Hello from Socket.IO!',\n  message_type: 'text'\n});\n```"
+          }
+        }
+      ]
+    }
+  ]
+}

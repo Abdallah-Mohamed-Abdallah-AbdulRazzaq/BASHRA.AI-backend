@@ -1,0 +1,2477 @@
+{
+  "name": "BASHRA.AI-backend-V3",
+  "path": "e:\\Work and Projects\\BASHRA.AI\\BASHRA.AI-backend-V3",
+  "type": "directory",
+  "children": [
+    {
+      "name": "config",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "db.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "redis.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "staticFilesConfig.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "controllers",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "AIDermatologyController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "AdminAIUsageController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "AdminDoctorManagementController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "AdminDoctorProfileManagementController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "AdminSecurityController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "AdminUserManagementController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "AuthController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "BlockedEntitiesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "FilesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "addressController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminAppointmentsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminMedicalRecordsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "chatUsersController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "clinicsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "conversationsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "countriesCitiesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "dailyTipsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorAppointmentsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorContactDetailsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorMedicalRecordsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorProfessionalController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorSchedulesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorSubscriptionsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorVerificationDocumentsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorsByLocationController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "featuresController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "medicalArticlesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "medicationsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "packageFeaturesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "packagesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientAppointmentsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientMedicalRecordsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientProfileController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "prescriptionTemplatesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "prescriptionsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileAdminController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileAssistantController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileDoctorController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileUserController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "publicPackagesController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "ratingsController.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "skinDiseasesController.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "docs",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "01-authentication",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "CHANGE_PASSWORD_IN_APP.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CHANGE_PASSWORD_IN_APP_TESTING.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "DOCTOR_AUTH_README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "HOW_TO_IMPORT_POSTMAN.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "Logic_Doctors_Subscription_to_the_System.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "Logic_Doctors_Subscription_to_the_System.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "doctor-authentication-system.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "02-profile-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "PROFILE-SYSTEM-COMPLETE-FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_ADMIN_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_ASSISTANT_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_SYSTEM_README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_USER_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_USER_EXAMPLES.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "PROFILE_USER_IMPLEMENTATION.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_USER_UPDATE_EXAMPLES.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "Profile-API-Examples.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "ProfileService-Usage-Guide.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "USER_BASIC_DATA_API.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "USER_COMPLETE_DATA_API.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "USER_COMPLETE_DATA_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "account-deactivation-reactivation-logic.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "postman-test-data-profile-doctor.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-admin-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-assistant-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-doctor-api-complete-guide.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-doctor-api-testing-complete.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-doctor-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-doctor-endpoints-detailed.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "profile-doctor-fix-summary.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "profile-doctor-update-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "03-file-upload-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "FILE-UPLOAD-COMPLETE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FILE-UPLOAD-FINAL-SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FILE-UPLOAD-QUICK-START.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FILE-UPLOAD-SYSTEM.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FILES_API_EXAMPLES.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "FILES_MANAGEMENT_SYSTEM.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FORM_DATA_SUPPORT.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_PICTURE_FILES_INTEGRATION.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_PICTURE_URL_UPDATE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "UPLOAD_PICTURE_QUICK_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "UPLOAD_PROFILE_PICTURE_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "04-chat-socket-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "CHAT_PHASE_1_COMPLETE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CHAT_PHASE_2_COMPLETE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CONVERSATIONS_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SOCKET_CHAT_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SOCKET_IO_INTEGRATION_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SOCKET_IO_TESTING_POSTMAN.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SOCKET_README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SOCKET_TESTING_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "test-socket-client.js",
+              "type": "file",
+              "icon": "📜"
+            }
+          ]
+        },
+        {
+          "name": "05-testing-guides",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "QUICK_START.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "TESTING_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "TESTING_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "TEST_BASIC_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "test-token-security.js",
+              "type": "file",
+              "icon": "📜"
+            }
+          ]
+        },
+        {
+          "name": "06-security-fixes",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "CORS_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CSP_FINAL_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CSP_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "TOKEN_SECURITY_FIXES.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "07-implementation-summaries",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "BUGFIXES_PHASE_1.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FINAL_INSTRUCTIONS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FRONTEND_BACKEND_SEPARATION.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "IMPLEMENTATION_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "REAL_USERS_INTEGRATION.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "08-api-examples",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "ADDRESSES_API_README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "ADDRESSES_CREATOR_TRACKING.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "BUGFIX_ADDRESSES_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CHANGELOG_ADDRESSES_28-11-2025.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FORM_DATA_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FORM_DATA_TYPE_CONVERSION_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "POSTMAN_TESTING_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README_UPDATE_28-11-2025.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "09-clinics-api",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "CLINICS_API_README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CLINICS_IMAGES_API_README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CLINICS_IMAGES_API_TEST.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "09-doctors-location",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "DOCTORS_BY_LOCATION_COMPLETE_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "DOCTORS_LOCATION_FIX_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "DOCTORS_LOCATION_SYSTEM_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "doctors-by-location-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "test-data-doctors-location.sql",
+              "type": "file",
+              "icon": "📄"
+            },
+            {
+              "name": "test-doctors-location.js",
+              "type": "file",
+              "icon": "📜"
+            }
+          ]
+        },
+        {
+          "name": "10-subscription-management",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "PUBLIC_PACKAGES_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SUBSCRIPTION_MANAGEMENT_README.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "11-doctor-contact-details",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "DOCTOR_CONTACT_DETAILS_API.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "12-doctor-subscriptions",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "DOCTOR_SUBSCRIPTIONS_API.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "13-patient-profiles",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "BUGFIX_NOTES.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "BUGFIX_NOTES_V2.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PATIENT_PROFILES_API_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "STAFF_ACCESS_API.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "14-medications-prescriptions",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-MEDICATIONS_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-PRESCRIPTION_TEMPLATES_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "03-PRESCRIPTIONS_API.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "15-doctors-by-location",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "API_EXAMPLES.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "BUGFIX_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CHANGELOG.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "TECHNICAL_DETAILS.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "16-chat-test-delete",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "CHAT_TEST_REMOVAL_LOG.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "16-doctor-schedules",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-overview.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-api-documentation.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "03-testing-guide.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "04-implementation-summary.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "05-new-apis-documentation.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "06-bug-fixes-and-enhancements.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CHANGELOG.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "doctor-schedules-testing.postman_collection.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "public-schedules-testing.postman_collection.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "17-app-js-analysis",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-COMPLETE_LINE_BY_LINE_ANALYSIS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-MIDDLEWARE_AND_ROUTES_ANALYSIS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "03-SOCKET_IO_AND_ERROR_HANDLING.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "04-STARTUP_AND_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "05-IMPLEMENTATION_PLAN.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "06-IMPLEMENTATION_COMPLETED.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "07-FIXES_APPLIED.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "INDEX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "17-prescriptions-fixes",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-fixes-summary.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-final-report.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "18-appointments-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-overview.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-api-endpoints.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "03-final-summary.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "04-bug-fixes.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "05-day-based-slots-fix.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "19-medical-records-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-overview.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-api-documentation.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "03-final-summary.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "04-testing-guide.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "20-countries_cities",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "LOCATION_IMAGES_UPDATE.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "21-ALL-Logic-For-Upload-image",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "BEFORE_AFTER_COMPARISON.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CHANGES_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "CLEAN_CODE_REFACTORING.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FILE_UPLOAD_SYSTEM_DOCUMENTATION.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "STATIC_FILES_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "STATIC_FILES_QUICK_START.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "22-admin-doctor-management",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "API-TEST.http",
+              "type": "file",
+              "icon": "📄"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "postman-collection.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "23-blocked-entities",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "API-TEST.http",
+              "type": "file",
+              "icon": "📄"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "postman-collection.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "24-admin-user-management",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "API-EXAMPLES.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "postman-collection.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "postman-environment.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "25-medications-prescriptions-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "BUGFIX_JSON_PARSE_ERROR.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "MEDICATIONS_API_TESTING.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "MEDICATIONS_LOGIC.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PRESCRIPTIONS_API_TESTING.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "PRESCRIPTIONS_LOGIC.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PRESCRIPTION_TEMPLATES_API_TESTING.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "PRESCRIPTION_TEMPLATES_LOGIC.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "26-doctors-logic",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "explanation-doctors-logic-schedule.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "27-doctor-professional-data",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "doctor-professional-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "doctor-professional-logic.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "28-doctor-verification-documents",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "doctor-verification-documents-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "doctor-verification-documents-logic.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "29-doctor-logic-complete-update",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "IMPLEMENTATION_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "INDEX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "QUICK_START.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "30-admin-doctor-profile-management",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "admin-doctor-profile-management-api-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "admin-doctor-profile-management-logic.md",
+              "type": "file",
+              "icon": "📝"
+            }
+          ]
+        },
+        {
+          "name": "31-complete-system-review",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "CLINIC_IMAGES_LIMIT_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "DOCUMENT_TYPE_MAPPING_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "FINAL_SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "JSON_FIELDS_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "PROFILE_DOCTOR_UPDATE_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "QUICK_TESTING_GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "SYSTEM_COMPATIBILITY_REVIEW.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "VERIFICATION_DOCUMENTS_FIX.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "clinic-images-limit-testing.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "32-ai-dermatology-system",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "01-ARCHITECTURE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "02-IMPLEMENTATION-SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "03-DATABASE-SCHEMA.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "04-DATABASE-RELATIONS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "05-USER-AI-APIS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "06-DOCTOR-AI-APIS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "07-ADMIN-AI-USAGE-APIS.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "08-SECURITY-AND-PRIVACY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "09-OPENAI-INTEGRATION.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "10-TESTING-GUIDE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "11-ERRORS-REFERENCE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "12-DEPLOYMENT-CHECKLIST.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "13-FINAL-SUMMARY.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "14-POSTMAN-USAGE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "15-CONVERSATIONAL-AI-UPDATE.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "16-CONVERSATIONAL-AI-TESTING.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "17-FRONTEND-INTEGRATION-UPDATES.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "README.md",
+              "type": "file",
+              "icon": "📝"
+            },
+            {
+              "name": "ai-dermatology-postman-collection.json",
+              "type": "file",
+              "icon": "⚙️"
+            },
+            {
+              "name": "ai-dermatology-postman-environment.json",
+              "type": "file",
+              "icon": "⚙️"
+            }
+          ]
+        },
+        {
+          "name": "ADMIN_DOCTOR_VERIFICATION_README.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "ADMIN_DOCTOR_VERIFICATION_STATUS.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "ADMIN_DOCTOR_VERIFICATION_TESTING.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "INDEX.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "INDEX_VERIFICATION_SYSTEM.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "ORGANIZATION_SUMMARY.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "PRODUCTION_DEPLOYMENT_CHECKLIST.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "QUICK_EXAMPLES_AR.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "README.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "VERIFICATION_STATUS_SUMMARY_AR.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "admin-doctor-verification-status.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "admin-doctor-verification-test-queries.sql",
+          "type": "file",
+          "icon": "📄"
+        }
+      ]
+    },
+    {
+      "name": "middleware",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "authMiddleware.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "checkAccountActive.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "fileUploadMiddleware.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "formDataMiddleware.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "healthTipsMiddleware.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "langDetector.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "staticFilesMiddleware.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "uploadMiddleware.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "routes",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "addressRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminAIUsageRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminAppointmentsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminDoctorManagementRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminDoctorProfileManagementRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminMedicalRecordsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "adminUserManagementRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "advancedHealthRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "aiDermatologyRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "authAdminRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "authAssistantRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "authDoctorRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "authUserRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "blockedEntitiesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "chatUsersRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "clinicsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "conversationsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "countriesCitiesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorAppointmentsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorContactDetailsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorMedicalRecordsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorProfessionalRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorSchedulesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorSubscriptionsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorVerificationDocumentsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "doctorsByLocationRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "featuresRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "filesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "healthTipsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "index.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "medicationsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "packageFeaturesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "packagesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientAppointmentsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientMedicalRecordsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientProfileRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "prescriptionTemplatesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "prescriptionsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileAdminRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileAssistantRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileDoctorRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileUserRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "publicClinicsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "publicDoctorSchedulesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "publicFeaturesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "publicPackagesRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "ratingsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "uploadRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "userClinicsRoutes.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "scripts",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "README.md",
+          "type": "file",
+          "icon": "📝"
+        },
+        {
+          "name": "ai-dermatology-migration.sql",
+          "type": "file",
+          "icon": "📄"
+        },
+        {
+          "name": "fix-json-fields.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "initializeDirectories.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "services",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "ai",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "AIDermatologyService.js",
+              "type": "file",
+              "icon": "📜"
+            },
+            {
+              "name": "AIProviderFactory.js",
+              "type": "file",
+              "icon": "📜"
+            },
+            {
+              "name": "AISessionService.js",
+              "type": "file",
+              "icon": "📜"
+            },
+            {
+              "name": "AIShareService.js",
+              "type": "file",
+              "icon": "📜"
+            },
+            {
+              "name": "AIUsageService.js",
+              "type": "file",
+              "icon": "📜"
+            },
+            {
+              "name": "OpenAIProvider.js",
+              "type": "file",
+              "icon": "📜"
+            },
+            {
+              "name": "dermatologyPrompt.js",
+              "type": "file",
+              "icon": "📜"
+            }
+          ]
+        },
+        {
+          "name": "HealthTipsService.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "fileService.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileService.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "sockets",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "chatSocketHandler.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "tests",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "admin-appointments-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "admin-medical-records-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "admin-prescriptions-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "admin-ratings-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "chat-crud-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "chat-system-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "doctor-appointments-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "doctor-medical-records-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "doctor-prescriptions-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "doctor-ratings-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "patient-appointments-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "patient-medical-records-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "patient-prescriptions-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        },
+        {
+          "name": "patient-ratings-testing.postman_collection.json",
+          "type": "file",
+          "icon": "⚙️"
+        }
+      ]
+    },
+    {
+      "name": "upload",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "files",
+          "type": "folder",
+          "icon": "📁",
+          "children": [
+            {
+              "name": "clinic-images",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "clinic_1_2a1afc6d-41d5-4eaa-ad65-0a126a9b3b17_1772977177147.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_522a2923-ae52-40e9-81c0-b70b9cd2d8a7_1765791209814.jpg",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_558089f9-ba06-446f-ab3a-aac2f297bf35_1765791209762.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_59946d46-1315-4515-9b6f-b3a157f4498e_1765791209811.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_65613648-ebc5-4d74-a167-b21a461362f7_1772977206306.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_7fed3820-8f15-4bde-8dbb-b9c14aeb7e16_1765791209799.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_819d2e57-f01e-4530-85a0-c1de8d93db29_1772977206311.jpg",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_acfd3f40-be1f-4870-bc59-15823cf5c3bd_1765791209809.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_b1c3f101-fd2b-4b62-a095-e9abd7728b16_1772977177136.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_b2f1dce1-058b-4140-8c7b-2176f70caf51_1765791209821.jpeg",
+                  "type": "file",
+                  "icon": "📄"
+                },
+                {
+                  "name": "clinic_1_c185c9a9-87c5-4a2b-b0a4-5204d3d73c2c_1765791209804.PNG",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_c727a1fc-6063-4d77-84ea-0cbeb9393dc1_1772977206253.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "clinic_1_fd6450c4-41ee-4776-b49b-d47f51fb1a76_1765791209707.jpg",
+                  "type": "file",
+                  "icon": "🖼️"
+                }
+              ]
+            },
+            {
+              "name": "document",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "document_02f4c7e2-f475-4e06-a021-77ab31e9a297_1780427941204.pdf",
+                  "type": "file",
+                  "icon": "📕"
+                },
+                {
+                  "name": "document_79f09948-5066-4209-a0e8-f0f82cf8b0e5_1772970236737.pdf",
+                  "type": "file",
+                  "icon": "📕"
+                }
+              ]
+            },
+            {
+              "name": "id-document",
+              "type": "folder",
+              "icon": "📁"
+            },
+            {
+              "name": "license",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "license_58030114-2f12-4d98-8d08-024099d773d1_1772970487170.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                }
+              ]
+            },
+            {
+              "name": "location-images",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "location_1765080145258.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "location_1765080605355.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                }
+              ]
+            },
+            {
+              "name": "medical-image",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "medical_image_4df53e5d-74bb-4523-b9b5-092508abca88_1780425579014.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "medical_image_4f6b09e2-c06b-4ece-9124-f38c0e58de9b_1780587662924.jpg",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "medical_image_c82bbcb5-5189-489b-811b-4789a7f59f41_1780581911730.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "medical_image_e2ed9336-efa1-4937-ab0b-f2cc49544629_1780427251856.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                }
+              ]
+            },
+            {
+              "name": "other",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "other_154d29bd-e2c0-48a9-b13a-9172658fedaa_1780582000709.pdf",
+                  "type": "file",
+                  "icon": "📕"
+                },
+                {
+                  "name": "other_44c908cf-546c-47d4-8f42-1d13caaddd2c_1780587814003.pdf",
+                  "type": "file",
+                  "icon": "📕"
+                }
+              ]
+            },
+            {
+              "name": "profile-picture",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "admin",
+                  "type": "folder",
+                  "icon": "📁"
+                },
+                {
+                  "name": "assistant",
+                  "type": "folder",
+                  "icon": "📁"
+                },
+                {
+                  "name": "doctor",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "profile_picture_17726262-12ca-41db-a3b0-a897b5a1b55c_1762733222908.png",
+                      "type": "file",
+                      "icon": "🖼️"
+                    },
+                    {
+                      "name": "profile_picture_463e5682-4c6f-4f62-9ab2-a65cdd56cdc6_1764706773250.png",
+                      "type": "file",
+                      "icon": "🖼️"
+                    },
+                    {
+                      "name": "profile_picture_9be4a61f-1e06-4467-a0d6-a8335dc27bb9_1772973528187.png",
+                      "type": "file",
+                      "icon": "🖼️"
+                    }
+                  ]
+                },
+                {
+                  "name": "user",
+                  "type": "folder",
+                  "icon": "📁",
+                  "children": [
+                    {
+                      "name": "profile_picture_f32e7309-be9b-4f7e-8633-f6035da56e95_1764324520465.png",
+                      "type": "file",
+                      "icon": "🖼️"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "verification-document",
+              "type": "folder",
+              "icon": "📁",
+              "children": [
+                {
+                  "name": "verification_document_75772b65-4024-4e7a-b6f2-433c1ea152c5_1772969117625.png",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "verification_document_940d10ee-ecd5-4da0-942b-f485b57f1fbe_1772970111216.pdf",
+                  "type": "file",
+                  "icon": "📕"
+                },
+                {
+                  "name": "verification_document_a67b93d2-b14f-481a-a3d7-12dab2a527d3_1772969103320.pdf",
+                  "type": "file",
+                  "icon": "📕"
+                },
+                {
+                  "name": "verification_document_c2f2e8d0-797b-48b7-9218-0f2aa29c8470_1772969722038.jpg",
+                  "type": "file",
+                  "icon": "🖼️"
+                },
+                {
+                  "name": "verification_document_f7cd4476-6891-4966-9729-f9c27dd9e305_1772969147786.jpg",
+                  "type": "file",
+                  "icon": "🖼️"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "health-tips",
+          "type": "folder",
+          "icon": "📁"
+        },
+        {
+          "name": "profiles",
+          "type": "folder",
+          "icon": "📁"
+        }
+      ]
+    },
+    {
+      "name": "uploads",
+      "type": "folder",
+      "icon": "📁"
+    },
+    {
+      "name": "utils",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "SecurityCleanup.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "SecurityService.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "cleanupUnverifiedRecords.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "envValidator.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "langHelper.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "notifyUnverifiedUsers.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "otpUtils.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "phoneUtils.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "profileTypeConfig.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "sendCustomMessage.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "shutdownHandler.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": "validations",
+      "type": "folder",
+      "icon": "📁",
+      "children": [
+        {
+          "name": "healthTipsValidation.js",
+          "type": "file",
+          "icon": "📜"
+        },
+        {
+          "name": "patientProfileValidation.js",
+          "type": "file",
+          "icon": "📜"
+        }
+      ]
+    },
+    {
+      "name": ".env.example",
+      "type": "file",
+      "icon": "📄"
+    },
+    {
+      "name": "AI-Chat-Update-Database.sql",
+      "type": "file",
+      "icon": "📄"
+    },
+    {
+      "name": "APPOINTMENTS_SYSTEM_FIXES.md",
+      "type": "file",
+      "icon": "📝"
+    },
+    {
+      "name": "Project-structure.json",
+      "type": "file",
+      "icon": "⚙️"
+    },
+    {
+      "name": "SQL-Database-(Bashraai).sql",
+      "type": "file",
+      "icon": "📄"
+    },
+    {
+      "name": "app.js",
+      "type": "file",
+      "icon": "📜"
+    },
+    {
+      "name": "nodemon.json",
+      "type": "file",
+      "icon": "⚙️"
+    },
+    {
+      "name": "package-lock.json",
+      "type": "file",
+      "icon": "⚙️"
+    },
+    {
+      "name": "package.json",
+      "type": "file",
+      "icon": "📦"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-06-05T12:15:44.414Z",
+    "generator": "FileTree Pro Extension",
+    "version": "0.2.0",
+    "showIcons": true,
+    "maxDepth": 10
+  }
+}

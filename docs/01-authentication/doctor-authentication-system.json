@@ -1,0 +1,604 @@
+{
+  "document_title": "Doctor Authentication & Profile Management System",
+  "document_title_ar": "نظام مصادقة وإدارة ملفات الأطباء",
+  "version": "1.0.0",
+  "last_updated": "2025-11-04",
+  "author": "BASHRA.AI Development Team",
+  
+  "overview": {
+    "description": "Complete authentication and profile management system for doctors, matching the user system functionality",
+    "description_ar": "نظام كامل للمصادقة وإدارة الملفات الشخصية للأطباء، يطابق وظائف نظام المستخدمين",
+    "changes_from_previous": "Changed from admin-only registration to public self-registration, matching user flow",
+    "changes_from_previous_ar": "تم التغيير من التسجيل بواسطة المسؤول فقط إلى التسجيل الذاتي العام، مطابقاً لتدفق المستخدمين"
+  },
+
+  "database_schema": {
+    "tables": {
+      "doctors": {
+        "description": "Main doctors account table",
+        "description_ar": "جدول حسابات الأطباء الرئيسي",
+        "key_columns": {
+          "id": "Primary key",
+          "uuid": "Unique identifier",
+          "email": "Unique email",
+          "phone": "Unique phone number",
+          "password_hash": "Hashed password",
+          "status": "ENUM('active','inactive','suspended','pending_verification')",
+          "is_active": "TINYINT(1) - User self-deactivation flag (NEW)",
+          "license_number_note": "Stored in doctor_profiles table"
+        }
+      },
+      "doctor_profiles": {
+        "description": "Doctor professional information",
+        "description_ar": "معلومات الأطباء المهنية",
+        "key_columns": {
+          "id": "Primary key",
+          "doctor_id": "Foreign key to doctors.id",
+          "license_number": "Unique medical license number (REQUIRED)",
+          "years_of_experience": "Years of medical experience",
+          "specialty_note": "Stored in doctor_profile_translations",
+          "approval_status": "ENUM('pending','approved','rejected','suspended')",
+          "is_verified": "Verification by admin",
+          "rating_average": "Average rating from patients",
+          "total_consultations": "Total number of consultations"
+        }
+      },
+      "doctor_profile_translations": {
+        "description": "Multi-language support for doctor profiles",
+        "description_ar": "دعم اللغات المتعددة لملفات الأطباء",
+        "key_columns": {
+          "doctor_profile_id": "Foreign key to doctor_profiles.id",
+          "language_code": "Language code (ar, en)",
+          "full_name": "Doctor's full name in specified language",
+          "specialty": "Medical specialty",
+          "sub_specialty": "Medical sub-specialty",
+          "biography": "Doctor's biography/description"
+        }
+      }
+    }
+  },
+
+  "authentication_flow": {
+    "registration": {
+      "endpoint": "POST /api/auth-doctor/register",
+      "access": "Public (no authentication required)",
+      "access_ar": "عام (لا يتطلب مصادقة)",
+      "required_fields": {
+        "email": "Valid email address",
+        "password": "Strong password",
+        "license_number": "Medical license number (REQUIRED FOR DOCTORS)",
+        "full_name": "Doctor's full name",
+        "language_code": "ar or en (default: ar)"
+      },
+      "optional_fields": {
+        "phone": "Phone number",
+        "years_of_experience": "Number of years (default: 0)",
+        "specialty": "Medical specialty",
+        "sub_specialty": "Medical sub-specialty",
+        "date_of_birth": "Birth date (YYYY-MM-DD)",
+        "gender": "male|female|other|prefer_not_to_say",
+        "nationality": "Country of nationality"
+      },
+      "request_example": {
+        "email": "doctor@example.com",
+        "password": "SecurePassword123!",
+        "license_number": "MED-12345-2024",
+        "full_name": "د. أحمد محمد",
+        "specialty": "طب القلب",
+        "sub_specialty": "جراحة القلب المفتوح",
+        "years_of_experience": 10,
+        "language_code": "ar",
+        "phone": "+966500000000",
+        "date_of_birth": "1985-05-15",
+        "gender": "male",
+        "nationality": "Saudi Arabia"
+      },
+      "process_flow": [
+        "1. Validate required fields (email, password, license_number)",
+        "2. Check if email already exists in doctors table",
+        "3. Check if phone already exists (if provided)",
+        "4. Check if license_number already exists in doctor_profiles",
+        "5. Hash password using bcrypt (12 rounds)",
+        "6. Generate UUID for doctor",
+        "7. Insert doctor record with status='pending_verification'",
+        "8. Insert doctor_profiles record with approval_status='pending'",
+        "9. Insert doctor_profile_translations record",
+        "10. Generate email OTP (5 minutes expiry)",
+        "11. Send OTP to doctor's email",
+        "12. Return success with userId and profileId"
+      ],
+      "response_success": {
+        "status_code": 201,
+        "body": {
+          "success": true,
+          "message_en": "Registration successful. Please verify your email",
+          "message_ar": "تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني",
+          "userId": 1,
+          "profileId": 1,
+          "uuid": "550e8400-e29b-41d4-a716-446655440000",
+          "requiresVerification": {
+            "email": true,
+            "phone": true
+          }
+        }
+      },
+      "response_errors": {
+        "400_missing_fields": {
+          "success": false,
+          "message_ar": "البريد الإلكتروني وكلمة المرور مطلوبة",
+          "message_en": "Email and password are required"
+        },
+        "400_missing_license": {
+          "success": false,
+          "message_ar": "رقم الترخيص الطبي مطلوب",
+          "message_en": "Medical license number is required"
+        },
+        "409_email_exists": {
+          "success": false,
+          "message_ar": "البريد الإلكتروني مسجل بالفعل",
+          "message_en": "Email already registered"
+        },
+        "409_license_exists": {
+          "success": false,
+          "message_ar": "رقم الترخيص الطبي مسجل بالفعل",
+          "message_en": "Medical license number already registered"
+        }
+      }
+    },
+
+    "verify_otp": {
+      "endpoint": "POST /api/auth-doctor/verify-otp",
+      "access": "Public",
+      "required_fields": {
+        "userId": "Doctor ID from registration response",
+        "otp": "6-digit OTP code",
+        "type": "email or phone"
+      },
+      "request_example": {
+        "userId": 1,
+        "otp": "123456",
+        "type": "email"
+      },
+      "process_flow": [
+        "1. Validate userId, otp, and type",
+        "2. Get doctor from database",
+        "3. Check if OTP matches and not expired",
+        "4. Update email_verified_at or phone_verified_at",
+        "5. Update status to 'active' if both email and phone verified",
+        "6. Clear OTP fields",
+        "7. Return success message"
+      ],
+      "response_success": {
+        "status_code": 200,
+        "body": {
+          "success": true,
+          "message_en": "Email verified successfully",
+          "message_ar": "تم التحقق من البريد الإلكتروني بنجاح",
+          "verified": {
+            "email": true,
+            "phone": false
+          }
+        }
+      }
+    },
+
+    "login": {
+      "endpoint": "POST /api/auth-doctor/login",
+      "access": "Public",
+      "required_fields": {
+        "email": "Doctor's email",
+        "password": "Doctor's password"
+      },
+      "request_example": {
+        "email": "doctor@example.com",
+        "password": "SecurePassword123!"
+      },
+      "process_flow": [
+        "1. Validate email and password",
+        "2. Find doctor by email",
+        "3. Check password hash",
+        "4. Check account status (not suspended)",
+        "5. Check if account verified (email or phone)",
+        "6. Generate access token (7 days expiry)",
+        "7. Generate refresh token (7 days expiry)",
+        "8. Create login session",
+        "9. Update last_login_at",
+        "10. Return tokens and doctor info"
+      ],
+      "response_success": {
+        "status_code": 200,
+        "body": {
+          "success": true,
+          "message_ar": "تم تسجيل الدخول بنجاح",
+          "message_en": "Login successful",
+          "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "doctor": {
+            "id": 1,
+            "uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "email": "doctor@example.com",
+            "entityType": "doctor"
+          }
+        }
+      },
+      "response_errors": {
+        "401_invalid_credentials": {
+          "success": false,
+          "message_ar": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+          "message_en": "Invalid email or password"
+        },
+        "403_not_verified": {
+          "success": false,
+          "accountNotVerified": true,
+          "message_ar": "يرجى إتمام عملية التحقق أولاً عبر رمز التفعيل",
+          "message_en": "Please verify your account first via OTP"
+        },
+        "403_suspended": {
+          "error": "Account is suspended"
+        }
+      }
+    },
+
+    "resend_otp": {
+      "endpoint": "POST /api/auth-doctor/resend-otp",
+      "access": "Public",
+      "required_fields": {
+        "userId": "Doctor ID",
+        "type": "email or phone"
+      }
+    },
+
+    "password_reset": {
+      "request_reset": {
+        "endpoint": "POST /api/auth-doctor/request-password-reset-otp",
+        "access": "Public",
+        "required_fields": {
+          "email": "Doctor's email"
+        }
+      },
+      "verify_reset_otp": {
+        "endpoint": "POST /api/auth-doctor/verify-password-reset-otp",
+        "access": "Public",
+        "required_fields": {
+          "email": "Doctor's email",
+          "otp": "6-digit OTP code"
+        }
+      },
+      "reset_password": {
+        "endpoint": "POST /api/auth-doctor/reset-password-otp",
+        "access": "Public",
+        "required_fields": {
+          "email": "Doctor's email",
+          "otp": "6-digit OTP code",
+          "newPassword": "New password"
+        }
+      }
+    }
+  },
+
+  "profile_management": {
+    "get_profile": {
+      "endpoint": "GET /api/profile-doctor",
+      "access": "Private (Doctor only)",
+      "requires_auth": true,
+      "headers": {
+        "Authorization": "Bearer <access_token>",
+        "Accept-Language": "ar or en (optional)"
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "doctor_id": 1,
+          "license_number": "MED-12345-2024",
+          "full_name": "د. أحمد محمد",
+          "specialty": "طب القلب",
+          "years_of_experience": 10,
+          "rating_average": 4.5,
+          "total_consultations": 150
+        }
+      }
+    },
+
+    "get_basic_data": {
+      "endpoint": "GET /api/profile-doctor/basic",
+      "access": "Private (Doctor only)",
+      "description": "Get basic doctor data (account + profile + current language translation)",
+      "response_includes": [
+        "id, uuid, email, phone, status, is_active (from doctors)",
+        "license_number, years_of_experience, specialty, etc. (from doctor_profiles)",
+        "full_name, specialty, biography (from doctor_profile_translations)"
+      ]
+    },
+
+    "get_complete_data": {
+      "endpoint": "GET /api/profile-doctor/complete",
+      "access": "Private (Doctor only)",
+      "description": "Get complete doctor data including all translations",
+      "response_structure": {
+        "account": "All fields from doctors table",
+        "profile": "All fields from doctor_profiles table",
+        "translations": {
+          "ar": "Arabic translation fields",
+          "en": "English translation fields"
+        }
+      }
+    },
+
+    "update_profile": {
+      "endpoint": "PUT /api/profile-doctor",
+      "access": "Private (Doctor only)",
+      "supports": "Single language or multi-language update",
+      "example_single_language": {
+        "years_of_experience": 12,
+        "specialty": "طب الأطفال",
+        "biography": "طبيب متخصص في طب الأطفال",
+        "consultation_fee": 250.00
+      },
+      "example_multi_language": {
+        "years_of_experience": 12,
+        "consultation_fee": 250.00,
+        "translations": {
+          "ar": {
+            "full_name": "د. أحمد محمد",
+            "specialty": "طب الأطفال",
+            "biography": "طبيب متخصص في طب الأطفال"
+          },
+          "en": {
+            "full_name": "Dr. Ahmed Mohammed",
+            "specialty": "Pediatrics",
+            "biography": "Specialist in Pediatric Medicine"
+          }
+        }
+      }
+    },
+
+    "deactivate_account": {
+      "endpoint": "DELETE /api/profile-doctor",
+      "access": "Private (Doctor only)",
+      "action": "Sets is_active = 0 (soft delete)",
+      "note": "Doctor can still login and reactivate",
+      "response": {
+        "success": true,
+        "message_ar": "تم إلغاء تفعيل الحساب بنجاح. يمكنك إعادة تفعيله في أي وقت",
+        "message_en": "Account deactivated successfully. You can reactivate it anytime"
+      }
+    },
+
+    "reactivate_account": {
+      "endpoint": "PATCH /api/profile-doctor/reactivate",
+      "access": "Private (Doctor only)",
+      "action": "Sets is_active = 1",
+      "note": "Works even if is_active = 0",
+      "response": {
+        "success": true,
+        "message_ar": "تم إعادة تفعيل الحساب بنجاح",
+        "message_en": "Account reactivated successfully"
+      }
+    }
+  },
+
+  "deactivation_reactivation_logic": {
+    "same_as_user_system": true,
+    "reference_document": "account-deactivation-reactivation-logic.json",
+    "summary": {
+      "deactivate": "DELETE /api/profile-doctor → sets is_active = 0",
+      "login_with_deactivated": "Login succeeds (status is still 'active')",
+      "use_apis_with_deactivated": "Blocked by checkAccountActive middleware",
+      "reactivate": "PATCH /api/profile-doctor/reactivate → sets is_active = 1",
+      "use_apis_after_reactivation": "All APIs work normally"
+    },
+    "key_points": [
+      "status column: Admin/system control (suspended by admin)",
+      "is_active column: Doctor self-control (temporary deactivation)",
+      "Doctor can login with is_active=0 but cannot use APIs except /reactivate",
+      "This allows doctor to get token and reactivate account"
+    ]
+  },
+
+  "middleware_and_security": {
+    "authenticateJWT": {
+      "file": "middleware/authMiddleware.js",
+      "checks": [
+        "Token exists in Authorization header",
+        "Token is valid and not expired",
+        "Token not revoked in database",
+        "Doctor exists in doctors table",
+        "status !== 'suspended'",
+        "Doctor not blocked"
+      ],
+      "does_not_check": "is_active (checked by checkAccountActive)"
+    },
+    "authorizeDoctor": {
+      "file": "middleware/authMiddleware.js",
+      "checks": "entityType === 'doctor'"
+    },
+    "checkAccountActive": {
+      "file": "middleware/checkAccountActive.js",
+      "checks": "is_active === 1",
+      "exception": "Allows /reactivate endpoint even with is_active = 0",
+      "supports": "All entity types (user, doctor, assistant, admin)"
+    }
+  },
+
+  "file_structure": {
+    "routes": {
+      "authDoctorRoutes.js": {
+        "path": "routes/authDoctorRoutes.js",
+        "public_endpoints": [
+          "POST /register",
+          "POST /login",
+          "POST /verify-otp",
+          "POST /resend-otp",
+          "POST /refresh-token",
+          "POST /request-password-reset",
+          "POST /request-password-reset-otp",
+          "POST /verify-password-reset-otp",
+          "POST /reset-password",
+          "POST /reset-password-otp"
+        ],
+        "protected_endpoints": [
+          "POST /logout",
+          "GET /sessions",
+          "GET /security-logs"
+        ]
+      },
+      "profileDoctorRoutes.js": {
+        "path": "routes/profileDoctorRoutes.js",
+        "all_protected": true,
+        "endpoints": [
+          "GET /",
+          "GET /basic",
+          "GET /complete",
+          "PUT /",
+          "DELETE /",
+          "PATCH /reactivate"
+        ]
+      }
+    },
+    "controllers": {
+      "AuthController.js": {
+        "path": "controllers/AuthController.js",
+        "updated_methods": [
+          "register (added doctor_profiles and doctor_profile_translations creation)"
+        ],
+        "supports": "All entity types: user, admin, doctor, assistant"
+      },
+      "profileDoctorController.js": {
+        "path": "controllers/profileDoctorController.js",
+        "methods": [
+          "getProfile",
+          "updateProfile",
+          "deleteProfile",
+          "reactivateProfile",
+          "getBasicDoctorData",
+          "getCompleteDoctorData"
+        ]
+      }
+    },
+    "middleware": {
+      "checkAccountActive.js": {
+        "path": "middleware/checkAccountActive.js",
+        "updated": "Dynamic reactivate endpoint based on entityType"
+      }
+    }
+  },
+
+  "comparison_with_user_system": {
+    "similarities": [
+      "Same registration flow (public, self-service)",
+      "Same OTP verification system",
+      "Same login and password reset flow",
+      "Same deactivation/reactivation logic",
+      "Same middleware stack (authenticateJWT → authorize → checkAccountActive)",
+      "Same profile management structure",
+      "Same multi-language support"
+    ],
+    "differences": [
+      {
+        "aspect": "Profile tables",
+        "user": "user_profiles, user_profile_translations",
+        "doctor": "doctor_profiles, doctor_profile_translations"
+      },
+      {
+        "aspect": "Required registration fields",
+        "user": "email, password, full_name",
+        "doctor": "email, password, license_number, full_name"
+      },
+      {
+        "aspect": "Profile fields",
+        "user": "date_of_birth, gender, nationality, emergency_contact",
+        "doctor": "license_number, years_of_experience, specialty, consultation_fee, rating, etc."
+      },
+      {
+        "aspect": "Approval system",
+        "user": "No approval needed",
+        "doctor": "approval_status in doctor_profiles (pending/approved/rejected)"
+      }
+    ]
+  },
+
+  "testing_guide": {
+    "test_1_registration": {
+      "name": "Doctor Registration",
+      "steps": [
+        "POST /api/auth-doctor/register with valid data including license_number",
+        "Verify response contains userId and profileId",
+        "Check email for OTP",
+        "Verify doctors table: status='pending_verification', is_active=1",
+        "Verify doctor_profiles table: approval_status='pending'",
+        "Verify doctor_profile_translations table has translation record"
+      ]
+    },
+    "test_2_verify_otp": {
+      "name": "Email Verification",
+      "steps": [
+        "POST /api/auth-doctor/verify-otp with userId and OTP",
+        "Verify response success",
+        "Check doctors table: email_verified_at is set, status='active'"
+      ]
+    },
+    "test_3_login": {
+      "name": "Doctor Login",
+      "steps": [
+        "POST /api/auth-doctor/login with email and password",
+        "Verify response contains accessToken and refreshToken",
+        "Verify tokens are stored in auth_tokens table",
+        "Verify last_login_at is updated"
+      ]
+    },
+    "test_4_get_profile": {
+      "name": "Get Doctor Profile",
+      "steps": [
+        "GET /api/profile-doctor with Authorization header",
+        "Verify response contains doctor profile data",
+        "Test with different Accept-Language headers (ar, en)"
+      ]
+    },
+    "test_5_update_profile": {
+      "name": "Update Doctor Profile",
+      "steps": [
+        "PUT /api/profile-doctor with updated data",
+        "Verify response success",
+        "GET /api/profile-doctor to verify changes",
+        "Test multi-language update with translations object"
+      ]
+    },
+    "test_6_deactivate_reactivate": {
+      "name": "Account Deactivation and Reactivation",
+      "steps": [
+        "DELETE /api/profile-doctor",
+        "Verify doctors.is_active = 0",
+        "Try GET /api/profile-doctor → expect 403 error",
+        "PATCH /api/profile-doctor/reactivate",
+        "Verify doctors.is_active = 1",
+        "Try GET /api/profile-doctor → expect success"
+      ]
+    }
+  },
+
+  "migration_sql": {
+    "note": "is_active column already added via New-Sql-Update(11-4-2025).sql",
+    "verification": "SELECT * FROM doctors WHERE is_active IS NOT NULL LIMIT 1"
+  },
+
+  "notes": {
+    "registration_change": {
+      "old_behavior": "Only system admins could register doctors",
+      "new_behavior": "Doctors can self-register (public endpoint)",
+      "reason": "Match user experience and allow doctors to sign up independently"
+    },
+    "approval_system": {
+      "note": "doctor_profiles.approval_status still exists for admin verification",
+      "workflow": "Doctor registers → pending → Admin reviews → approved/rejected",
+      "future_feature": "Admin can approve/reject via separate admin endpoints"
+    },
+    "best_practices": [
+      "Always use Accept-Language header for localized responses",
+      "Store tokens securely on client side",
+      "Refresh tokens before expiry",
+      "Handle 403 errors for deactivated accounts",
+      "Provide clear reactivation instructions to users"
+    ]
+  }
+}

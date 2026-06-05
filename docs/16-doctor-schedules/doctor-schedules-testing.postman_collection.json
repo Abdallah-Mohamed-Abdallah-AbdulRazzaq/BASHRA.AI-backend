@@ -1,0 +1,888 @@
+{
+  "info": {
+    "name": "Doctor Schedules API - Complete Testing",
+    "description": "مجموعة اختبارات شاملة لـ API جداول مواعيد الأطباء",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clinic_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "schedule_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Setup - Login",
+      "item": [
+        {
+          "name": "Login as Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doctor_token', jsonData.token);",
+                  "    pm.environment.set('doctor_token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"your_password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-doctor/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth-doctor", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Clinics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('clinic_id', jsonData.data[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/clinics",
+              "host": ["{{base_url}}"],
+              "path": ["clinics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Create Schedules",
+      "item": [
+        {
+          "name": "Create Online Schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has success true', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('schedule_id', jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day_of_week\": \"sunday\",\n  \"start_time\": \"18:00:00\",\n  \"end_time\": \"22:00:00\",\n  \"session_price\": 150.00,\n  \"session_duration\": 30,\n  \"consultation_type\": \"online\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"]
+            }
+          }
+        },
+        {
+          "name": "Create In-Clinic Schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has clinic_id', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.clinic_id).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clinic_id\": {{clinic_id}},\n  \"day_of_week\": \"saturday\",\n  \"start_time\": \"09:00:00\",\n  \"end_time\": \"13:00:00\",\n  \"session_price\": 200.00,\n  \"session_duration\": 30,\n  \"consultation_type\": \"in_clinic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"]
+            }
+          }
+        },
+        {
+          "name": "Create Schedule - Missing Fields (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Response has error message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.message).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day_of_week\": \"monday\",\n  \"start_time\": \"09:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"]
+            }
+          }
+        },
+        {
+          "name": "Create Online with Clinic ID (Should Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clinic_id\": {{clinic_id}},\n  \"day_of_week\": \"monday\",\n  \"start_time\": \"09:00:00\",\n  \"end_time\": \"13:00:00\",\n  \"session_price\": 150.00,\n  \"session_duration\": 30,\n  \"consultation_type\": \"online\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Read Schedules",
+      "item": [
+        {
+          "name": "Get All Schedules",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has data array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"]
+            }
+          }
+        },
+        {
+          "name": "Get Schedules - Filter by Online",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules?consultation_type=online",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "online"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Schedules - Filter by Day",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules?day_of_week=saturday",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"],
+              "query": [
+                {
+                  "key": "day_of_week",
+                  "value": "saturday"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Schedules - Filter by Active",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules?is_active=true",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules"],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Schedule by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has schedule data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('object');",
+                  "    pm.expect(jsonData.data.id).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/{{schedule_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "{{schedule_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Grouped Views",
+      "item": [
+        {
+          "name": "Get Schedules Grouped by Day",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has grouped data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/grouped/by-day",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "grouped", "by-day"]
+            }
+          }
+        },
+        {
+          "name": "Get Schedules Grouped by Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has online and in_clinic groups', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.online).to.be.an('array');",
+                  "    pm.expect(jsonData.data.in_clinic).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/grouped/by-type",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "grouped", "by-type"]
+            }
+          }
+        },
+        {
+          "name": "Get Schedules Grouped by Clinic",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/grouped/by-clinic",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "grouped", "by-clinic"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Summary & Analytics",
+      "item": [
+        {
+          "name": "Get Weekly Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has summary data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.weekly_summary).to.exist;",
+                  "    pm.expect(jsonData.data.daily_breakdown).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/summary/weekly",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "summary", "weekly"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Slots for Sunday",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has slots data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/available-slots/sunday",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "available-slots", "sunday"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Bulk Operations",
+      "item": [
+        {
+          "name": "Bulk Create Schedules",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has summary', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.summary).to.exist;",
+                  "    pm.expect(jsonData.data.created).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schedules\": [\n    {\n      \"day_of_week\": \"monday\",\n      \"start_time\": \"09:00:00\",\n      \"end_time\": \"13:00:00\",\n      \"session_price\": 200.00,\n      \"session_duration\": 30,\n      \"consultation_type\": \"online\"\n    },\n    {\n      \"day_of_week\": \"tuesday\",\n      \"start_time\": \"14:00:00\",\n      \"end_time\": \"18:00:00\",\n      \"session_price\": 180.00,\n      \"session_duration\": 30,\n      \"consultation_type\": \"online\"\n    },\n    {\n      \"clinic_id\": {{clinic_id}},\n      \"day_of_week\": \"wednesday\",\n      \"start_time\": \"10:00:00\",\n      \"end_time\": \"14:00:00\",\n      \"session_price\": 220.00,\n      \"session_duration\": 45,\n      \"consultation_type\": \"in_clinic\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/bulk",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "bulk"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Update Schedules",
+      "item": [
+        {
+          "name": "Update Schedule Price",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Price updated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.session_price).to.equal('250.00');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_price\": 250.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/{{schedule_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "{{schedule_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Schedule Time",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"start_time\": \"19:00:00\",\n  \"end_time\": \"23:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/{{schedule_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "{{schedule_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Schedule Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Status toggled', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.is_active).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/{{schedule_id}}/toggle",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "{{schedule_id}}", "toggle"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Delete Schedules",
+      "item": [
+        {
+          "name": "Soft Delete Schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/{{schedule_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "{{schedule_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Permanent Delete Schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{doctor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/doctor-schedules/{{schedule_id}}/permanent",
+              "host": ["{{base_url}}"],
+              "path": ["doctor-schedules", "{{schedule_id}}", "permanent"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Public API",
+      "item": [
+        {
+          "name": "Get Public Doctor Schedules",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has schedules', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/2",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "2"]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules - Filter Online",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/2?consultation_type=online",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "2"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "online"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

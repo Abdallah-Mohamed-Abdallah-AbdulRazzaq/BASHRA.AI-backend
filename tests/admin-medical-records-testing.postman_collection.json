@@ -1,0 +1,432 @@
+{
+  "info": {
+    "name": "Admin Medical Records API Testing",
+    "description": "Complete testing collection for Admin Medical Records endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medical_record_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patient_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "4",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get Medical Records Statistics",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records/statistics",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records", "statistics"],
+          "query": [
+            {
+              "key": "from_date",
+              "value": "2026-01-01",
+              "disabled": true
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31",
+              "disabled": true
+            },
+            {
+              "key": "doctor_id",
+              "value": "{{doctor_id}}",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Get All Medical Records",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.data && response.data.length > 0) {",
+              "        pm.collectionVariables.set('medical_record_id', response.data[0].id);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "patient_id",
+              "value": "{{patient_id}}",
+              "disabled": true
+            },
+            {
+              "key": "doctor_id",
+              "value": "{{doctor_id}}",
+              "disabled": true
+            },
+            {
+              "key": "record_status",
+              "value": "final",
+              "disabled": true
+            },
+            {
+              "key": "from_date",
+              "value": "2026-01-01",
+              "disabled": true
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Get Medical Record by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records", "{{medical_record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Patient Medical History",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records/patient/{{patient_id}}/history",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records", "patient", "{{patient_id}}", "history"]
+        }
+      }
+    },
+    {
+      "name": "5. Delete Medical Record (Permanent)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records/{{medical_record_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records", "{{medical_record_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Patient",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records?patient_id={{patient_id}}&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records"],
+          "query": [
+            {
+              "key": "patient_id",
+              "value": "{{patient_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Doctor",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records?doctor_id={{doctor_id}}&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records"],
+          "query": [
+            {
+              "key": "doctor_id",
+              "value": "{{doctor_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records?record_status=final&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records"],
+          "query": [
+            {
+              "key": "record_status",
+              "value": "final"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Date Range",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records?from_date=2026-01-01&to_date=2026-12-31&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records"],
+          "query": [
+            {
+              "key": "from_date",
+              "value": "2026-01-01"
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Statistics: By Date Range",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records/statistics?from_date=2026-01-01&to_date=2026-12-31",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records", "statistics"],
+          "query": [
+            {
+              "key": "from_date",
+              "value": "2026-01-01"
+            },
+            {
+              "key": "to_date",
+              "value": "2026-12-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Statistics: By Doctor",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/medical-records/statistics?doctor_id={{doctor_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["admin", "medical-records", "statistics"],
+          "query": [
+            {
+              "key": "doctor_id",
+              "value": "{{doctor_id}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

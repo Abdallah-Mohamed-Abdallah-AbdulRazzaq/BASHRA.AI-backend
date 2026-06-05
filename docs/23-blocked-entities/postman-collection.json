@@ -1,0 +1,555 @@
+{
+  "info": {
+    "_postman_id": "blocked-entities-api",
+    "name": "Blocked Entities API",
+    "description": "API Collection for Blocked Entities Management - إدارة الكيانات المحظورة",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "YOUR_ADMIN_JWT_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "entityId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "entityType",
+      "value": "user",
+      "type": "string"
+    },
+    {
+      "key": "blockId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bashraai.com\",\n  \"password\": \"your_password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth-admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth-admin", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read Operations",
+      "item": [
+        {
+          "name": "Get All Blocked Entities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Blocked Entities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities?is_active=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities"],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Blocked Entities with Filters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities?entity_type={{entityType}}&block_type=temporary&is_active=true&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities"],
+              "query": [
+                {
+                  "key": "entity_type",
+                  "value": "{{entityType}}"
+                },
+                {
+                  "key": "block_type",
+                  "value": "temporary"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Block Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "statistics"]
+            }
+          }
+        },
+        {
+          "name": "Check Entity Block Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/check?entity_id={{entityId}}&entity_type={{entityType}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "check"],
+              "query": [
+                {
+                  "key": "entity_id",
+                  "value": "{{entityId}}"
+                },
+                {
+                  "key": "entity_type",
+                  "value": "{{entityType}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Block Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/{{blockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "{{blockId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Entity Block History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/history/{{entityType}}/{{entityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "history", "{{entityType}}", "{{entityId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Block Operations",
+      "item": [
+        {
+          "name": "Block Entity - Temporary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 1,\n  \"entity_type\": \"user\",\n  \"block_type\": \"temporary\",\n  \"blocked_until\": \"2025-02-15T00:00:00.000Z\",\n  \"reason\": \"مخالفة سياسات الاستخدام - تم التحذير مسبقاً\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "block"]
+            }
+          }
+        },
+        {
+          "name": "Block Entity - Permanent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 1,\n  \"entity_type\": \"user\",\n  \"block_type\": \"permanent\",\n  \"reason\": \"انتهاك خطير لسياسات المنصة\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "block"]
+            }
+          }
+        },
+        {
+          "name": "Block Entity - Warning",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 1,\n  \"entity_type\": \"user\",\n  \"block_type\": \"warning\",\n  \"reason\": \"تحذير أول بسبب سلوك غير لائق\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "block"]
+            }
+          }
+        },
+        {
+          "name": "Block Doctor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 1,\n  \"entity_type\": \"doctor\",\n  \"block_type\": \"temporary\",\n  \"blocked_until\": \"2025-01-30T00:00:00.000Z\",\n  \"reason\": \"شكاوى متعددة من المرضى\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "block"]
+            }
+          }
+        },
+        {
+          "name": "Block Assistant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 1,\n  \"entity_type\": \"assistant\",\n  \"block_type\": \"temporary\",\n  \"blocked_until\": \"2025-01-20T00:00:00.000Z\",\n  \"reason\": \"عدم الالتزام بمواعيد العمل\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "block"]
+            }
+          }
+        },
+        {
+          "name": "Block Admin (Super Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 2,\n  \"entity_type\": \"admin\",\n  \"block_type\": \"permanent\",\n  \"reason\": \"إساءة استخدام صلاحيات الأدمن\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "block"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unblock Operations",
+      "item": [
+        {
+          "name": "Unblock Entity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_id\": 1,\n  \"entity_type\": \"user\",\n  \"reason\": \"تم مراجعة الحالة وإلغاء الحظر\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/unblock",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "unblock"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Operations",
+      "item": [
+        {
+          "name": "Update Block Record",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"block_type\": \"permanent\",\n  \"blocked_until\": null,\n  \"reason\": \"تحويل إلى حظر دائم بسبب تكرار المخالفات\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/{{blockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "{{blockId}}"]
+            }
+          }
+        },
+        {
+          "name": "Extend Temporary Block",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocked_until\": \"2025-03-01T00:00:00.000Z\",\n  \"reason\": \"تم تمديد فترة الحظر\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/{{blockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "{{blockId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Operations",
+      "item": [
+        {
+          "name": "Bulk Block Entities",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entities\": [\n    { \"entity_id\": 1, \"entity_type\": \"user\" },\n    { \"entity_id\": 2, \"entity_type\": \"user\" },\n    { \"entity_id\": 3, \"entity_type\": \"user\" }\n  ],\n  \"block_type\": \"temporary\",\n  \"blocked_until\": \"2025-02-01T00:00:00.000Z\",\n  \"reason\": \"حظر جماعي بسبب نشاط مشبوه\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/bulk/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "bulk", "block"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Unblock Entities",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entities\": [\n    { \"entity_id\": 1, \"entity_type\": \"user\" },\n    { \"entity_id\": 2, \"entity_type\": \"user\" }\n  ],\n  \"reason\": \"إلغاء حظر جماعي\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/bulk/unblock",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "bulk", "unblock"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System Operations",
+      "item": [
+        {
+          "name": "Auto-Unblock Expired",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blocked-entities/auto-unblock",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "blocked-entities", "auto-unblock"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

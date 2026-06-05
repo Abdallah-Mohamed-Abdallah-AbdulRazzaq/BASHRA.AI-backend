@@ -1,0 +1,280 @@
+{
+  "api_name": "Get Complete User Data API",
+  "description": "API لجلب جميع بيانات المستخدم من الجداول الثلاثة (users, user_profiles, user_profile_translations)",
+  "base_url": "http://localhost:3006/api/profile-user",
+  "endpoint": {
+    "name": "Get Complete User Data",
+    "method": "GET",
+    "url": "{{baseUrl}}/complete",
+    "description": "جلب البيانات الكاملة للمستخدم الحالي (الحساب + الملف الشخصي + جميع الترجمات)",
+    "authentication": {
+      "type": "Bearer Token",
+      "required": true,
+      "header": "Authorization: Bearer USER_TOKEN"
+    },
+    "headers": {
+      "Authorization": "Bearer {{user_token}}",
+      "Accept-Language": "ar or en (optional)"
+    },
+    "request_example": {
+      "method": "GET",
+      "url": "http://localhost:3006/api/profile-user/complete",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept-Language": "ar"
+      }
+    },
+    "response_structure": {
+      "success": "boolean",
+      "message": "string (Arabic or English based on Accept-Language)",
+      "data": {
+        "account": {
+          "description": "بيانات الحساب من جدول users (بدون البيانات الحساسة)",
+          "fields": [
+            "id - معرف المستخدم",
+            "uuid - UUID فريد",
+            "email - البريد الإلكتروني",
+            "phone - رقم الهاتف",
+            "email_verified_at - تاريخ التحقق من البريد",
+            "phone_verified_at - تاريخ التحقق من الهاتف",
+            "status - حالة الحساب (active/inactive/suspended/pending_verification)",
+            "last_login_at - آخر تسجيل دخول",
+            "last_activity_at - آخر نشاط",
+            "is_email_otp - هل OTP البريد مفعل",
+            "is_phone_otp - هل OTP الهاتف مفعل",
+            "is_id_verified - هل الهوية موثقة",
+            "created_at - تاريخ الإنشاء",
+            "updated_at - تاريخ آخر تحديث"
+          ]
+        },
+        "profile": {
+          "description": "الملف الشخصي من جدول user_profiles",
+          "fields": [
+            "id - معرف الملف الشخصي",
+            "user_id - معرف المستخدم",
+            "date_of_birth - تاريخ الميلاد",
+            "gender - الجنس (male/female/other/prefer_not_to_say)",
+            "nationality - الجنسية",
+            "profile_picture_url - رابط الصورة الشخصية",
+            "emergency_contact_phone - هاتف الطوارئ",
+            "timezone - المنطقة الزمنية",
+            "language_preference - اللغة المفضلة (ar/en)",
+            "created_at - تاريخ الإنشاء",
+            "updated_at - تاريخ آخر تحديث"
+          ]
+        },
+        "translations": {
+          "description": "جميع الترجمات من جدول user_profile_translations مُنظمة حسب language_code",
+          "structure": {
+            "ar": {
+              "full_name": "الاسم الكامل بالعربي",
+              "emergency_contact_name": "اسم جهة الاتصال بالعربي",
+              "emergency_contact_relationship": "العلاقة بالعربي"
+            },
+            "en": {
+              "full_name": "Full name in English",
+              "emergency_contact_name": "Emergency contact name in English",
+              "emergency_contact_relationship": "Relationship in English"
+            }
+          }
+        }
+      }
+    },
+    "response_example_success": {
+      "success": true,
+      "message": "تم جلب البيانات الكاملة بنجاح",
+      "data": {
+        "account": {
+          "id": 24,
+          "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "email": "ahmed@example.com",
+          "phone": "+201234567890",
+          "email_verified_at": "2025-11-01T10:00:00.000Z",
+          "phone_verified_at": "2025-11-01T10:05:00.000Z",
+          "status": "active",
+          "last_login_at": "2025-11-03T20:30:00.000Z",
+          "last_activity_at": "2025-11-03T21:00:00.000Z",
+          "is_email_otp": 0,
+          "is_phone_otp": 0,
+          "is_id_verified": 1,
+          "created_at": "2025-11-01T09:00:00.000Z",
+          "updated_at": "2025-11-03T20:30:00.000Z"
+        },
+        "profile": {
+          "id": 23,
+          "user_id": 24,
+          "date_of_birth": "1990-05-15",
+          "gender": "male",
+          "nationality": "Egyptian",
+          "profile_picture_url": "http://localhost:3006/upload/files/profile-picture/profile_picture_43000a53-be5c-4246-ad92-4582e08b7870_1762196258647.png",
+          "emergency_contact_phone": "+20123456789",
+          "timezone": "Africa/Cairo",
+          "language_preference": "ar",
+          "created_at": "2025-11-01T09:00:00.000Z",
+          "updated_at": "2025-11-03T20:45:00.000Z"
+        },
+        "translations": {
+          "ar": {
+            "full_name": "أحمد محمد علي",
+            "emergency_contact_name": "فاطمة أحمد",
+            "emergency_contact_relationship": "أخت"
+          },
+          "en": {
+            "full_name": "Ahmed Mohamed Ali",
+            "emergency_contact_name": "Fatima Ahmed",
+            "emergency_contact_relationship": "Sister"
+          }
+        }
+      }
+    },
+    "response_example_no_profile": {
+      "success": true,
+      "message": "Complete data retrieved successfully",
+      "data": {
+        "account": {
+          "id": 25,
+          "uuid": "b2c3d4e5-f6g7-8901-bcde-fg2345678901",
+          "email": "newuser@example.com",
+          "phone": "+201098765432",
+          "email_verified_at": null,
+          "phone_verified_at": null,
+          "status": "pending_verification",
+          "last_login_at": null,
+          "last_activity_at": null,
+          "is_email_otp": 0,
+          "is_phone_otp": 0,
+          "is_id_verified": 0,
+          "created_at": "2025-11-04T01:00:00.000Z",
+          "updated_at": "2025-11-04T01:00:00.000Z"
+        },
+        "profile": null,
+        "translations": {}
+      }
+    },
+    "response_example_error": {
+      "success": false,
+      "message": "المستخدم غير موجود",
+      "error": "User not found"
+    }
+  },
+  "data_tables_mapping": {
+    "users_table": {
+      "description": "جدول الحسابات الأساسية",
+      "excluded_fields": [
+        "password_hash - لا يتم إرجاعه للأمان",
+        "email_otp - لا يتم إرجاعه للأمان",
+        "phone_otp - لا يتم إرجاعه للأمان",
+        "email_otp_expiry - داخلي فقط",
+        "phone_otp_expiry - داخلي فقط",
+        "login_attempts - داخلي فقط",
+        "locked_until - داخلي فقط"
+      ],
+      "included_fields": [
+        "id, uuid, email, phone",
+        "email_verified_at, phone_verified_at",
+        "status, last_login_at, last_activity_at",
+        "is_email_otp, is_phone_otp, is_id_verified",
+        "created_at, updated_at"
+      ]
+    },
+    "user_profiles_table": {
+      "description": "جدول الملفات الشخصية",
+      "all_fields_included": true,
+      "fields": [
+        "id, user_id, date_of_birth, gender, nationality",
+        "profile_picture_url, emergency_contact_phone",
+        "timezone, language_preference",
+        "created_at, updated_at"
+      ]
+    },
+    "user_profile_translations_table": {
+      "description": "جدول الترجمات - يتم إرجاع جميع اللغات",
+      "format": "organized by language_code as object keys",
+      "fields": [
+        "language_code - مفتاح الكائن",
+        "full_name - الاسم الكامل",
+        "emergency_contact_name - اسم جهة الاتصال",
+        "emergency_contact_relationship - العلاقة"
+      ]
+    }
+  },
+  "use_cases": [
+    {
+      "case": "عرض الملف الشخصي الكامل",
+      "description": "عرض جميع معلومات المستخدم في صفحة واحدة"
+    },
+    {
+      "case": "تطبيق موبايل",
+      "description": "جلب البيانات الكاملة عند فتح التطبيق لعرضها في Profile Screen"
+    },
+    {
+      "case": "Dashboard إداري",
+      "description": "Admin يريد رؤية البيانات الكاملة لمستخدم معين"
+    },
+    {
+      "case": "Export Data",
+      "description": "تصدير بيانات المستخدم بصيغة JSON"
+    },
+    {
+      "case": "Debugging",
+      "description": "مراجعة البيانات الكاملة للتأكد من صحتها"
+    }
+  ],
+  "comparison_with_other_endpoints": {
+    "GET /api/profile-user": {
+      "description": "يرجع الملف الشخصي فقط مع ترجمة واحدة (حسب Accept-Language)",
+      "data_returned": "profile + one translation (merged)",
+      "use_when": "تحتاج فقط بيانات الملف الشخصي للغة واحدة"
+    },
+    "GET /api/profile-user/complete": {
+      "description": "يرجع الحساب + الملف الشخصي + جميع الترجمات",
+      "data_returned": "account + profile + all translations (separate)",
+      "use_when": "تحتاج البيانات الكاملة من جميع الجداول"
+    }
+  },
+  "security_notes": [
+    "✅ يتطلب JWT token صالح",
+    "✅ المستخدم يمكنه جلب بياناته فقط",
+    "✅ لا يتم إرجاع password_hash أو OTP codes",
+    "✅ لا يتم إرجاع login_attempts أو locked_until",
+    "⚠️ email و phone يتم إرجاعهما (المستخدم يرى بياناته)"
+  ],
+  "testing_examples": {
+    "postman": {
+      "step1": "Login أولاً للحصول على token",
+      "step2": "Copy token من response",
+      "step3": "Create new GET request",
+      "step4": "URL: http://localhost:3006/api/profile-user/complete",
+      "step5": "Add Header: Authorization: Bearer YOUR_TOKEN",
+      "step6": "Add Header: Accept-Language: ar (optional)",
+      "step7": "Send request"
+    },
+    "curl": "curl -X GET 'http://localhost:3006/api/profile-user/complete' \\\n  -H 'Authorization: Bearer YOUR_TOKEN' \\\n  -H 'Accept-Language: ar'",
+    "javascript_fetch": "fetch('http://localhost:3006/api/profile-user/complete', {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer ' + token,\n    'Accept-Language': 'ar'\n  }\n})\n.then(res => res.json())\n.then(data => console.log(data));"
+  },
+  "error_responses": [
+    {
+      "status": 401,
+      "message": "Unauthorized",
+      "cause": "Token غير موجود أو منتهي الصلاحية"
+    },
+    {
+      "status": 404,
+      "message": "المستخدم غير موجود",
+      "cause": "User ID في token غير موجود في قاعدة البيانات"
+    },
+    {
+      "status": 500,
+      "message": "خطأ في جلب البيانات الكاملة",
+      "cause": "خطأ في قاعدة البيانات أو السيرفر"
+    }
+  ],
+  "notes": [
+    "✅ الـ API يعمل للمستخدم الحالي فقط (من JWT token)",
+    "✅ إذا لم يكن لدى المستخدم profile، سيكون profile: null",
+    "✅ إذا لم تكن هناك ترجمات، سيكون translations: {}",
+    "✅ جميع الترجمات المتاحة يتم إرجاعها (ar, en, أي لغة أخرى)",
+    "✅ Accept-Language يؤثر فقط على رسالة الـ response",
+    "⚠️ البيانات الحساسة (passwords, OTPs) لا يتم إرجاعها"
+  ]
+}

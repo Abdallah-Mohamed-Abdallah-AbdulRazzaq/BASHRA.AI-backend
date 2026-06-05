@@ -1,0 +1,550 @@
+{
+  "info": {
+    "name": "Prescriptions API Testing | اختبار API الوصفات الطبية",
+    "description": "مجموعة اختبارات شاملة لنظام الوصفات الطبية\nComprehensive test collection for Prescriptions System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "doctorToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prescriptionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prescriptionUuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "medicalRecordId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup - Login",
+      "item": [
+        {
+          "name": "Login as Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('doctorToken', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"password\": \"DoctorPassword123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-doctor/login", "host": ["{{baseUrl}}"], "path": ["auth-doctor", "login"]},
+            "description": "تسجيل دخول الطبيب | Login as Doctor"
+          }
+        },
+        {
+          "name": "Login as Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('patientToken', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"PatientPassword123\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-user/login", "host": ["{{baseUrl}}"], "path": ["auth-user", "login"]},
+            "description": "تسجيل دخول المريض | Login as Patient"
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('adminToken', jsonData.tokens.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"AdminPassword123\",\n  \"entityType\": \"admin\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/auth-admin/login", "host": ["{{baseUrl}}"], "path": ["auth-admin", "login"]},
+            "description": "تسجيل دخول المسؤول | Login as Admin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Prescription | إنشاء وصفة",
+      "item": [
+        {
+          "name": "✅ Create Complete Prescription",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('prescriptionId', jsonData.data.id);",
+                  "    pm.collectionVariables.set('prescriptionUuid', jsonData.data.uuid);",
+                  "    pm.test('Prescription created', () => pm.expect(jsonData.success).to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medical_record_id\": {{medicalRecordId}},\n  \"patient_id\": {{patientId}},\n  \"medication_name\": \"أموكسيسيلين 500mg\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"3 مرات يومياً\",\n  \"duration\": \"7 أيام\",\n  \"quantity\": \"21 كبسولة\",\n  \"route_of_administration\": \"فموي\",\n  \"refills_allowed\": 1,\n  \"is_generic_allowed\": true,\n  \"expiry_date\": \"2024-12-31\",\n  \"translations\": {\n    \"ar\": {\n      \"instructions\": \"تؤخذ بعد الأكل مع كوب ماء كامل\",\n      \"indication\": \"التهاب الحلق البكتيري\",\n      \"pharmacy_notes\": \"يرجى التأكد من عدم وجود حساسية للبنسلين\"\n    },\n    \"en\": {\n      \"instructions\": \"Take after meals with a full glass of water\",\n      \"indication\": \"Bacterial throat infection\",\n      \"pharmacy_notes\": \"Please ensure no penicillin allergy\"\n    }\n  }\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "إنشاء وصفة كاملة مع ترجمات\nCreate complete prescription with translations"
+          }
+        },
+        {
+          "name": "✅ Create Simple Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medical_record_id\": {{medicalRecordId}},\n  \"patient_id\": {{patientId}},\n  \"medication_name\": \"باراسيتامول 500mg\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"عند الحاجة\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "إنشاء وصفة بسيطة\nCreate simple prescription"
+          }
+        },
+        {
+          "name": "❌ Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medical_record_id\": {{medicalRecordId}},\n  \"patient_id\": {{patientId}},\n  \"medication_name\": \"دواء اختبار\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "خطأ: حقول مطلوبة مفقودة\nError: Missing required fields"
+          }
+        },
+        {
+          "name": "❌ Invalid Medical Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medical_record_id\": 99999,\n  \"patient_id\": {{patientId}},\n  \"medication_name\": \"دواء اختبار\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"مرتين يومياً\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "خطأ: سجل طبي غير موجود\nError: Invalid medical record"
+          }
+        },
+        {
+          "name": "❌ Patient Cannot Create",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{patientToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medical_record_id\": {{medicalRecordId}},\n  \"patient_id\": {{patientId}},\n  \"medication_name\": \"دواء\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"مرتين يومياً\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "خطأ: المريض لا يمكنه إنشاء وصفة\nError: Patient cannot create prescription"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Prescriptions | عرض الوصفات",
+      "item": [
+        {
+          "name": "✅ Doctor - Get Own Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "الطبيب يعرض وصفاته\nDoctor views own prescriptions"
+          }
+        },
+        {
+          "name": "✅ Patient - Get Own Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patientToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "المريض يعرض وصفاته\nPatient views own prescriptions"
+          }
+        },
+        {
+          "name": "✅ Admin - Get All Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions", "host": ["{{baseUrl}}"], "path": ["prescriptions"]},
+            "description": "المسؤول يعرض جميع الوصفات\nAdmin views all prescriptions"
+          }
+        },
+        {
+          "name": "✅ Get Prescription by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}"]},
+            "description": "عرض وصفة بالـ ID\nGet prescription by ID"
+          }
+        },
+        {
+          "name": "✅ Get Prescription by UUID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionUuid}}", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionUuid}}"]},
+            "description": "عرض وصفة بالـ UUID\nGet prescription by UUID"
+          }
+        },
+        {
+          "name": "✅ Filter by Status",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["prescriptions"],
+              "query": [{"key": "status", "value": "active"}]
+            },
+            "description": "فلترة حسب الحالة\nFilter by status"
+          }
+        },
+        {
+          "name": "✅ Filter by Patient",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions?patient_id={{patientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["prescriptions"],
+              "query": [{"key": "patient_id", "value": "{{patientId}}"}]
+            },
+            "description": "فلترة حسب المريض\nFilter by patient"
+          }
+        },
+        {
+          "name": "✅ Get by Medical Record",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/medical-record/{{medicalRecordId}}", "host": ["{{baseUrl}}"], "path": ["prescriptions", "medical-record", "{{medicalRecordId}}"]},
+            "description": "عرض وصفات سجل طبي\nGet prescriptions by medical record"
+          }
+        },
+        {
+          "name": "✅ Pagination",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/prescriptions?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["prescriptions"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "10"}
+              ]
+            },
+            "description": "تقسيم النتائج\nPagination"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Prescription | تعديل وصفة",
+      "item": [
+        {
+          "name": "✅ Doctor - Update Own Prescription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dosage\": \"1000mg\",\n  \"frequency\": \"مرتين يومياً\",\n  \"duration\": \"10 أيام\",\n  \"quantity\": \"20 كبسولة\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}"]},
+            "description": "الطبيب يعدل وصفته\nDoctor updates own prescription"
+          }
+        },
+        {
+          "name": "❌ Patient Cannot Update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{patientToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dosage\": \"500mg\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}"]},
+            "description": "خطأ: المريض لا يمكنه التعديل\nError: Patient cannot update"
+          }
+        },
+        {
+          "name": "❌ Update Non-existent",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dosage\": \"500mg\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/99999", "host": ["{{baseUrl}}"], "path": ["prescriptions", "99999"]},
+            "description": "خطأ: وصفة غير موجودة\nError: Prescription not found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cancel Prescription | إلغاء وصفة",
+      "item": [
+        {
+          "name": "✅ Doctor - Cancel Prescription",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/cancel", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "cancel"]},
+            "description": "الطبيب يلغي وصفة\nDoctor cancels prescription"
+          }
+        },
+        {
+          "name": "❌ Patient Cannot Cancel",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{patientToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/cancel", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "cancel"]},
+            "description": "خطأ: المريض لا يمكنه الإلغاء\nError: Patient cannot cancel"
+          }
+        },
+        {
+          "name": "❌ Cancel Already Cancelled",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/cancel", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "cancel"]},
+            "description": "خطأ: وصفة ملغاة بالفعل\nError: Already cancelled"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fill Prescription | صرف وصفة",
+      "item": [
+        {
+          "name": "✅ Fill Prescription (First Time)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/fill", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "fill"]},
+            "description": "صرف وصفة لأول مرة\nFill prescription first time"
+          }
+        },
+        {
+          "name": "✅ Refill Prescription",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/fill", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "fill"]},
+            "description": "إعادة صرف وصفة\nRefill prescription"
+          }
+        },
+        {
+          "name": "❌ Fill Cancelled Prescription",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/fill", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "fill"]},
+            "description": "خطأ: لا يمكن صرف وصفة ملغاة\nError: Cannot fill cancelled prescription"
+          }
+        },
+        {
+          "name": "❌ No Refills Available",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{doctorToken}}"}],
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/fill", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "fill"]},
+            "description": "خطأ: لا توجد إعادات صرف متاحة\nError: No refills available"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Translations | الترجمات",
+      "item": [
+        {
+          "name": "✅ Add Arabic Translation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language_code\": \"ar\",\n  \"instructions\": \"تؤخذ الحبة كاملة مع الماء\",\n  \"indication\": \"التهاب بكتيري\",\n  \"pharmacy_notes\": \"تحفظ في مكان بارد\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/translations", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "translations"]},
+            "description": "إضافة ترجمة عربية\nAdd Arabic translation"
+          }
+        },
+        {
+          "name": "✅ Add English Translation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language_code\": \"en\",\n  \"instructions\": \"Take whole tablet with water\",\n  \"indication\": \"Bacterial infection\",\n  \"pharmacy_notes\": \"Store in cool place\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/translations", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "translations"]},
+            "description": "إضافة ترجمة إنجليزية\nAdd English translation"
+          }
+        },
+        {
+          "name": "✅ Update Translation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language_code\": \"ar\",\n  \"instructions\": \"تعليمات محدثة\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/translations", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "translations"]},
+            "description": "تحديث ترجمة موجودة\nUpdate existing translation"
+          }
+        },
+        {
+          "name": "❌ Missing Language Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{doctorToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instructions\": \"تعليمات\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/translations", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "translations"]},
+            "description": "خطأ: كود اللغة مفقود\nError: Missing language code"
+          }
+        },
+        {
+          "name": "❌ Patient Cannot Add Translation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{patientToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language_code\": \"ar\",\n  \"instructions\": \"تعليمات\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/prescriptions/{{prescriptionId}}/translations", "host": ["{{baseUrl}}"], "path": ["prescriptions", "{{prescriptionId}}", "translations"]},
+            "description": "خطأ: المريض لا يمكنه إضافة ترجمة\nError: Patient cannot add translation"
+          }
+        }
+      ]
+    }
+  ]
+}

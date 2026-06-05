@@ -1,0 +1,334 @@
+{
+  "api_name": "User Basic Data API",
+  "description": "API لجلب وتحديث البيانات الأساسية للمستخدم من الجداول الثلاثة",
+  "base_url": "http://localhost:3006/api/profile-user",
+  "endpoints": [
+    {
+      "name": "1. Get Basic User Data",
+      "method": "GET",
+      "url": "{{baseUrl}}/basic",
+      "description": "جلب البيانات الأساسية للمستخدم (حقول محددة فقط)",
+      "authentication": {
+        "type": "Bearer Token",
+        "required": true,
+        "header": "Authorization: Bearer USER_TOKEN"
+      },
+      "headers": {
+        "Authorization": "Bearer {{user_token}}",
+        "Accept-Language": "ar or en (optional)"
+      },
+      "fields_returned": {
+        "from_users": ["id", "uuid", "email", "phone"],
+        "from_user_profiles": [
+          "date_of_birth",
+          "gender",
+          "nationality",
+          "profile_picture_url",
+          "emergency_contact_phone",
+          "timezone",
+          "language_preference"
+        ],
+        "from_user_profile_translations": [
+          "full_name",
+          "emergency_contact_name",
+          "emergency_contact_relationship"
+        ],
+        "note": "Translation fields are for Accept-Language only"
+      },
+      "request_example": {
+        "url": "http://localhost:3006/api/profile-user/basic",
+        "headers": {
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "Accept-Language": "ar"
+        }
+      },
+      "response_example_success": {
+        "success": true,
+        "message": "تم جلب البيانات الأساسية بنجاح",
+        "data": {
+          "id": 24,
+          "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "email": "ahmed@example.com",
+          "phone": "+201234567890",
+          "date_of_birth": "1990-05-15",
+          "gender": "male",
+          "nationality": "Egyptian",
+          "profile_picture_url": "http://localhost:3006/upload/files/profile-picture/...",
+          "emergency_contact_phone": "+20123456789",
+          "timezone": "Africa/Cairo",
+          "language_preference": "ar",
+          "full_name": "أحمد محمد علي",
+          "emergency_contact_name": "فاطمة أحمد",
+          "emergency_contact_relationship": "أخت"
+        }
+      },
+      "response_example_error": {
+        "success": false,
+        "message": "المستخدم غير موجود"
+      }
+    },
+    {
+      "name": "2. Update Basic User Data",
+      "method": "PUT",
+      "url": "{{baseUrl}}/basic",
+      "description": "تحديث البيانات الأساسية للمستخدم (users + user_profiles + user_profile_translations)",
+      "authentication": {
+        "type": "Bearer Token",
+        "required": true,
+        "header": "Authorization: Bearer USER_TOKEN"
+      },
+      "headers": {
+        "Authorization": "Bearer {{user_token}}",
+        "Accept-Language": "ar or en (optional)",
+        "Content-Type": "application/json or multipart/form-data"
+      },
+      "body_fields": {
+        "from_users": {
+          "email": "string (optional) - البريد الإلكتروني الجديد",
+          "phone": "string (optional) - رقم الهاتف الجديد"
+        },
+        "from_user_profiles": {
+          "date_of_birth": "string (optional) - تاريخ الميلاد YYYY-MM-DD",
+          "gender": "string (optional) - male|female|other|prefer_not_to_say",
+          "nationality": "string (optional) - الجنسية",
+          "emergency_contact_phone": "string (optional) - هاتف الطوارئ",
+          "timezone": "string (optional) - المنطقة الزمنية",
+          "language_preference": "string (optional) - ar|en"
+        },
+        "from_user_profile_translations": {
+          "full_name": "string (optional) - الاسم الكامل",
+          "emergency_contact_name": "string (optional) - اسم جهة الاتصال",
+          "emergency_contact_relationship": "string (optional) - العلاقة"
+        },
+        "notes": [
+          "uuid و id لا يمكن تحديثهما",
+          "profile_picture_url لا يُحدث هنا (استخدم POST /picture)",
+          "Translation fields تُحدث للغة المحددة في Accept-Language فقط",
+          "جميع الحقول اختيارية - أرسل فقط الحقول التي تريد تحديثها"
+        ]
+      },
+      "request_example_json": {
+        "url": "http://localhost:3006/api/profile-user/basic",
+        "method": "PUT",
+        "headers": {
+          "Authorization": "Bearer YOUR_TOKEN",
+          "Accept-Language": "ar",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "newemail@example.com",
+          "phone": "+201111111111",
+          "date_of_birth": "1990-05-15",
+          "gender": "male",
+          "nationality": "مصري",
+          "emergency_contact_phone": "+20123456789",
+          "timezone": "Africa/Cairo",
+          "language_preference": "ar",
+          "full_name": "أحمد محمد علي المحدث",
+          "emergency_contact_name": "فاطمة أحمد محمد",
+          "emergency_contact_relationship": "أخت"
+        }
+      },
+      "request_example_form_data": {
+        "url": "http://localhost:3006/api/profile-user/basic",
+        "method": "PUT",
+        "headers": {
+          "Authorization": "Bearer YOUR_TOKEN",
+          "Accept-Language": "ar",
+          "Content-Type": "multipart/form-data"
+        },
+        "form_data": {
+          "full_name": "أحمد محمد",
+          "gender": "male",
+          "nationality": "مصري",
+          "date_of_birth": "1990-05-15"
+        }
+      },
+      "response_example_success": {
+        "success": true,
+        "message": "تم تحديث البيانات الأساسية بنجاح",
+        "data": {
+          "id": 24,
+          "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "email": "newemail@example.com",
+          "phone": "+201111111111",
+          "date_of_birth": "1990-05-15",
+          "gender": "male",
+          "nationality": "مصري",
+          "profile_picture_url": "http://localhost:3006/upload/files/profile-picture/...",
+          "emergency_contact_phone": "+20123456789",
+          "timezone": "Africa/Cairo",
+          "language_preference": "ar",
+          "full_name": "أحمد محمد علي المحدث",
+          "emergency_contact_name": "فاطمة أحمد محمد",
+          "emergency_contact_relationship": "أخت"
+        }
+      },
+      "response_example_errors": [
+        {
+          "status": 400,
+          "response": {
+            "success": false,
+            "message": "البريد الإلكتروني مستخدم بالفعل"
+          }
+        },
+        {
+          "status": 400,
+          "response": {
+            "success": false,
+            "message": "رقم الهاتف مستخدم بالفعل"
+          }
+        },
+        {
+          "status": 400,
+          "response": {
+            "success": false,
+            "message": "صيغة تاريخ الميلاد غير صحيحة. استخدم YYYY-MM-DD"
+          }
+        },
+        {
+          "status": 400,
+          "response": {
+            "success": false,
+            "message": "قيمة الجنس غير صحيحة"
+          }
+        },
+        {
+          "status": 404,
+          "response": {
+            "success": false,
+            "message": "الملف الشخصي غير موجود"
+          }
+        }
+      ]
+    }
+  ],
+  "validation_rules": {
+    "email": "يجب أن يكون فريد (لا يستخدمه مستخدم آخر)",
+    "phone": "يجب أن يكون فريد (لا يستخدمه مستخدم آخر)",
+    "date_of_birth": "صيغة YYYY-MM-DD",
+    "gender": "male|female|other|prefer_not_to_say فقط",
+    "emergency_contact_phone": "8-20 رقم، يسمح بـ +()-spaces",
+    "timezone": "أي string صحيح",
+    "language_preference": "ar أو en فقط",
+    "full_name": "أي string",
+    "emergency_contact_name": "أي string",
+    "emergency_contact_relationship": "أي string"
+  },
+  "comparison_table": {
+    "endpoints": [
+      {
+        "endpoint": "GET /api/profile-user",
+        "returns": "Profile + one translation (merged)",
+        "use_case": "عرض profile للعرض العادي"
+      },
+      {
+        "endpoint": "GET /api/profile-user/basic",
+        "returns": "Selected fields from users + profile + translation",
+        "use_case": "جلب البيانات الأساسية فقط"
+      },
+      {
+        "endpoint": "GET /api/profile-user/complete",
+        "returns": "All data from 3 tables (separate objects)",
+        "use_case": "جلب كل شيء للتحليل أو Export"
+      },
+      {
+        "endpoint": "PUT /api/profile-user",
+        "updates": "Profile + translations only",
+        "use_case": "تحديث profile فقط"
+      },
+      {
+        "endpoint": "PUT /api/profile-user/basic",
+        "updates": "Users (email, phone) + profile + translations",
+        "use_case": "تحديث شامل للبيانات الأساسية"
+      }
+    ]
+  },
+  "use_cases": [
+    {
+      "case": "Settings Page",
+      "description": "عرض وتحديث جميع البيانات في صفحة Settings",
+      "endpoints": ["GET /basic", "PUT /basic"]
+    },
+    {
+      "case": "Profile Edit Form",
+      "description": "نموذج تعديل Profile يسمح بتغيير email و phone أيضاً",
+      "endpoints": ["GET /basic", "PUT /basic"]
+    },
+    {
+      "case": "Account Management",
+      "description": "إدارة معلومات الحساب الأساسية",
+      "endpoints": ["GET /basic", "PUT /basic"]
+    },
+    {
+      "case": "Mobile App Profile Screen",
+      "description": "عرض وتحديث البيانات في تطبيق الموبايل",
+      "endpoints": ["GET /basic", "PUT /basic"]
+    }
+  ],
+  "security_notes": [
+    "✅ يتطلب JWT token صالح",
+    "✅ المستخدم يمكنه تحديث بياناته فقط",
+    "✅ email يجب أن يكون فريد",
+    "✅ phone يجب أن يكون فريد",
+    "✅ uuid و id لا يمكن تحديثهما",
+    "✅ password لا يُحدث هنا (استخدم reset password)",
+    "✅ profile_picture_url لا يُحدث هنا (استخدم POST /picture)",
+    "⚠️ عند تغيير email أو phone، قد تحتاج لإعادة verification"
+  ],
+  "testing_postman": {
+    "step1_get": {
+      "description": "جلب البيانات الأساسية",
+      "method": "GET",
+      "url": "http://localhost:3006/api/profile-user/basic",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN",
+        "Accept-Language": "ar"
+      }
+    },
+    "step2_update_json": {
+      "description": "تحديث بـ JSON",
+      "method": "PUT",
+      "url": "http://localhost:3006/api/profile-user/basic",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN",
+        "Accept-Language": "ar",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "full_name": "أحمد محمد الجديد",
+        "gender": "male"
+      }
+    },
+    "step3_update_form_data": {
+      "description": "تحديث بـ form-data",
+      "method": "PUT",
+      "url": "http://localhost:3006/api/profile-user/basic",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN",
+        "Accept-Language": "ar"
+      },
+      "body_type": "form-data",
+      "form_fields": {
+        "full_name": "أحمد محمد",
+        "nationality": "مصري"
+      }
+    }
+  },
+  "curl_examples": {
+    "get_basic_data": "curl -X GET 'http://localhost:3006/api/profile-user/basic' \\\n  -H 'Authorization: Bearer YOUR_TOKEN' \\\n  -H 'Accept-Language: ar'",
+    "update_basic_data": "curl -X PUT 'http://localhost:3006/api/profile-user/basic' \\\n  -H 'Authorization: Bearer YOUR_TOKEN' \\\n  -H 'Accept-Language: ar' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n    \"full_name\": \"أحمد محمد\",\n    \"gender\": \"male\",\n    \"nationality\": \"مصري\"\n  }'"
+  },
+  "javascript_examples": {
+    "get_basic_data": "// Get basic data\nconst response = await fetch('http://localhost:3006/api/profile-user/basic', {\n  method: 'GET',\n  headers: {\n    'Authorization': 'Bearer ' + token,\n    'Accept-Language': 'ar'\n  }\n});\nconst data = await response.json();\nconsole.log(data);",
+    "update_basic_data": "// Update basic data\nconst response = await fetch('http://localhost:3006/api/profile-user/basic', {\n  method: 'PUT',\n  headers: {\n    'Authorization': 'Bearer ' + token,\n    'Accept-Language': 'ar',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    full_name: 'أحمد محمد الجديد',\n    gender: 'male',\n    nationality: 'مصري'\n  })\n});\nconst result = await response.json();\nconsole.log(result);"
+  },
+  "notes": [
+    "✅ الـ API يدعم JSON و form-data",
+    "✅ جميع الحقول اختيارية في PUT - أرسل فقط ما تريد تحديثه",
+    "✅ Translation fields تُحدث للغة الحالية (Accept-Language) فقط",
+    "✅ عند تحديث email أو phone، يتم التحقق من عدم وجودهما لمستخدم آخر",
+    "⚠️ uuid و id للقراءة فقط - لا يمكن تحديثهما",
+    "⚠️ profile_picture_url للقراءة فقط - استخدم POST /picture للتحديث"
+  ]
+}

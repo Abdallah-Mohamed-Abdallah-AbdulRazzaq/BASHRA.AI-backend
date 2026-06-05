@@ -1,0 +1,309 @@
+{
+  "info": {
+    "name": "Doctor Ratings API Testing",
+    "description": "Complete testing collection for Doctor Ratings endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rating_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rating_uuid",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get All My Ratings",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    if (response.data && response.data.length > 0) {",
+              "        pm.collectionVariables.set('rating_id', response.data[0].id);",
+              "        pm.collectionVariables.set('rating_uuid', response.data[0].uuid);",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. Get Rating by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}"]
+        }
+      }
+    },
+    {
+      "name": "3. Get Rating by UUID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_uuid}}"]
+        }
+      }
+    },
+    {
+      "name": "4. Respond to Rating (Arabic)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"language_code\": \"ar\",\n  \"response\": \"شكراً جزيلاً على تقييمك الإيجابي. يسعدني أن الخدمة كانت على مستوى توقعاتك. نتطلع لخدمتك مرة أخرى.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}/respond",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}", "respond"]
+        }
+      }
+    },
+    {
+      "name": "5. Respond to Rating (English)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "en",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"language_code\": \"en\",\n  \"response\": \"Thank you very much for your positive feedback. I'm glad the service met your expectations. Looking forward to serving you again.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/ratings/{{rating_id}}/respond",
+          "host": ["{{base_url}}"],
+          "path": ["ratings", "{{rating_id}}", "respond"]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Rating (5 stars)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?min_rating=5&max_rating=5&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "min_rating",
+              "value": "5"
+            },
+            {
+              "key": "max_rating",
+              "value": "5"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: By Status (Active)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?status=active&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "status",
+              "value": "active"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Filter: Low Ratings (1-2 stars)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/ratings?min_rating=1&max_rating=2&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["ratings"],
+          "query": [
+            {
+              "key": "min_rating",
+              "value": "1"
+            },
+            {
+              "key": "max_rating",
+              "value": "2"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

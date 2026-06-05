@@ -1,0 +1,770 @@
+{
+  "info": {
+    "name": "Public Doctor Schedules API - Testing",
+    "description": "اختبارات شاملة لـ APIs جداول المواعيد العامة للأطباء",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "4",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Basic Public APIs",
+      "item": [
+        {
+          "name": "Get All Public Schedules",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has data array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response has count', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.count).to.exist;",
+                  "});",
+                  "",
+                  "pm.test('Schedule structure is correct', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        const schedule = jsonData.data[0];",
+                  "        pm.expect(schedule.id).to.exist;",
+                  "        pm.expect(schedule.day_of_week).to.exist;",
+                  "        pm.expect(schedule.start_time).to.exist;",
+                  "        pm.expect(schedule.end_time).to.exist;",
+                  "        pm.expect(schedule.session_price).to.exist;",
+                  "        pm.expect(schedule.session_duration).to.exist;",
+                  "        pm.expect(schedule.consultation_type).to.exist;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules - Filter Online",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All schedules are online', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        jsonData.data.forEach(schedule => {",
+                  "            pm.expect(schedule.consultation_type).to.equal('online');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}?consultation_type=online",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "online"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules - Filter In-Clinic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('In-clinic schedules have clinic and location info', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        jsonData.data.forEach(schedule => {",
+                  "            if (schedule.consultation_type === 'in_clinic') {",
+                  "                pm.expect(schedule.clinic).to.exist;",
+                  "                pm.expect(schedule.clinic.name).to.exist;",
+                  "                pm.expect(schedule.clinic.address).to.exist;",
+                  "                // Location may or may not exist depending on region_id",
+                  "            }",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}?consultation_type=in_clinic",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "in_clinic"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules - Filter by Day",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All schedules are for saturday', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        jsonData.data.forEach(schedule => {",
+                  "            pm.expect(schedule.day_of_week).to.equal('saturday');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}?day_of_week=saturday",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}"],
+              "query": [
+                {
+                  "key": "day_of_week",
+                  "value": "saturday"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules - Invalid Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message exists', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.message).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/99999",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "99999"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Grouped Views",
+      "item": [
+        {
+          "name": "Get Public Schedules Grouped by Day",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has grouped data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('object');",
+                  "});",
+                  "",
+                  "pm.test('Days are properly grouped', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    const validDays = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];",
+                  "    Object.keys(jsonData.data).forEach(day => {",
+                  "        pm.expect(validDays).to.include(day);",
+                  "        pm.expect(jsonData.data[day]).to.be.an('array');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/grouped/by-day",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "grouped", "by-day"]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules Grouped by Day - Filter Online",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All schedules are online', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    Object.keys(jsonData.data).forEach(day => {",
+                  "        jsonData.data[day].forEach(schedule => {",
+                  "            pm.expect(schedule.consultation_type).to.equal('online');",
+                  "        });",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/grouped/by-day?consultation_type=online",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "grouped", "by-day"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "online"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Public Schedules Grouped by Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has online and in_clinic groups', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.online).to.be.an('array');",
+                  "    pm.expect(jsonData.data.in_clinic).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response has count object', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.count).to.exist;",
+                  "    pm.expect(jsonData.count.online).to.exist;",
+                  "    pm.expect(jsonData.count.in_clinic).to.exist;",
+                  "    pm.expect(jsonData.count.total).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/grouped/by-type",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "grouped", "by-type"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Available Slots",
+      "item": [
+        {
+          "name": "Get Available Slots for Saturday",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has day and data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.day).to.equal('saturday');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Slots are properly formatted', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        jsonData.data.forEach(schedule => {",
+                  "            pm.expect(schedule.schedule_id).to.exist;",
+                  "            pm.expect(schedule.consultation_type).to.exist;",
+                  "            pm.expect(schedule.total_slots).to.be.a('number');",
+                  "            pm.expect(schedule.slots).to.be.an('array');",
+                  "            ",
+                  "            if (schedule.slots.length > 0) {",
+                  "                schedule.slots.forEach(slot => {",
+                  "                    pm.expect(slot.start).to.exist;",
+                  "                    pm.expect(slot.end).to.exist;",
+                  "                    pm.expect(slot.price).to.exist;",
+                  "                    pm.expect(slot.duration).to.exist;",
+                  "                });",
+                  "            }",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/available-slots/saturday",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "available-slots", "saturday"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Slots - Filter Online",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All slots are online', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        jsonData.data.forEach(schedule => {",
+                  "            pm.expect(schedule.consultation_type).to.equal('online');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/available-slots/sunday?consultation_type=online",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "available-slots", "sunday"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "online"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Slots - Filter In-Clinic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('All slots are in_clinic with clinic info', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        jsonData.data.forEach(schedule => {",
+                  "            pm.expect(schedule.consultation_type).to.equal('in_clinic');",
+                  "            pm.expect(schedule.clinic).to.exist;",
+                  "            pm.expect(schedule.clinic.name).to.exist;",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/available-slots/saturday?consultation_type=in_clinic",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "available-slots", "saturday"],
+              "query": [
+                {
+                  "key": "consultation_type",
+                  "value": "in_clinic"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Weekly Summary",
+      "item": [
+        {
+          "name": "Get Public Weekly Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has summary data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.weekly_summary).to.exist;",
+                  "    pm.expect(jsonData.data.daily_breakdown).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Weekly summary has required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    const summary = jsonData.data.weekly_summary;",
+                  "    pm.expect(summary.total_schedules).to.exist;",
+                  "    pm.expect(summary.working_days_count).to.exist;",
+                  "    pm.expect(summary.online_schedules).to.exist;",
+                  "    pm.expect(summary.in_clinic_schedules).to.exist;",
+                  "    pm.expect(summary.price_range).to.exist;",
+                  "    pm.expect(summary.price_range.min).to.exist;",
+                  "    pm.expect(summary.price_range.max).to.exist;",
+                  "    pm.expect(summary.price_range.avg).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/summary/weekly",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "summary", "weekly"]
+            }
+          }
+        },
+        {
+          "name": "Get Public Weekly Summary - English",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}/summary/weekly",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}", "summary", "weekly"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Error Handling",
+      "item": [
+        {
+          "name": "Invalid Doctor ID - Grouped by Day",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/99999/grouped/by-day",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "99999", "grouped", "by-day"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Doctor ID - Grouped by Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/99999/grouped/by-type",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "99999", "grouped", "by-type"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Doctor ID - Available Slots",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/99999/available-slots/saturday",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "99999", "available-slots", "saturday"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Doctor ID - Weekly Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/99999/summary/weekly",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "99999", "summary", "weekly"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Language Support",
+      "item": [
+        {
+          "name": "Arabic Response",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "ar"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}"]
+            }
+          }
+        },
+        {
+          "name": "English Response",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "en"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/public/doctor-schedules/{{doctor_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["public", "doctor-schedules", "{{doctor_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

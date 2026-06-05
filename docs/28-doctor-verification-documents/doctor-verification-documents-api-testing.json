@@ -1,0 +1,406 @@
+{
+  "info": {
+    "name": "Doctor Verification Documents APIs",
+    "description": "اختبار APIs مستندات التحقق للأطباء",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Upload Medical License",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "medical_license",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/medical-license.pdf"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "رفع رخصة مزاولة المهنة"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Upload National ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "national_id",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/national-id.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "رفع الهوية الوطنية"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Upload Passport",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "passport",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/passport.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "رفع جواز السفر"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Upload Board Certificate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "board_certificate",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/board-certificate.pdf"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "رفع شهادة البورد"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Upload University Degree",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "university_degree",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/university-degree.pdf"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "رفع الشهادة الجامعية"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Upload Other Document",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "other",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/other-document.pdf"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "رفع مستند آخر"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get All Documents",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "جلب جميع المستندات للطبيب الحالي"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Get Documents Summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents/summary",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents", "summary"]
+        },
+        "description": "جلب ملخص المستندات (العدد حسب الحالة)"
+      },
+      "response": []
+    },
+    {
+      "name": "9. Get Document by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents", "1"]
+        },
+        "description": "جلب مستند محدد بواسطة ID"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Update Document (Re-upload)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/new-document.pdf"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents", "1"]
+        },
+        "description": "تحديث مستند (إعادة رفع) - مفيد عند رفض المستند"
+      },
+      "response": []
+    },
+    {
+      "name": "11. Delete Document",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents", "1"]
+        },
+        "description": "حذف مستند (لا يمكن حذف المستندات المعتمدة)"
+      },
+      "response": []
+    },
+    {
+      "name": "12. Test Invalid Document Type",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "invalid_type",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/path/to/document.pdf"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "اختبار رفع مستند بنوع غير صالح (يجب أن يفشل)"
+      },
+      "response": []
+    },
+    {
+      "name": "13. Test No File Upload",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "document_type",
+              "value": "medical_license",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/profile-doctor/verification-documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile-doctor", "verification-documents"]
+        },
+        "description": "اختبار رفع بدون ملف (يجب أن يفشل)"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "YOUR_DOCTOR_TOKEN_HERE",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,446 @@
+{
+  "info": {
+    "name": "Admin Doctor Profile Management APIs",
+    "description": "اختبار APIs إدارة ملفات الأطباء للأدمن",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get Doctor Complete Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/complete",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "complete"]
+        },
+        "description": "جلب جميع بيانات الطبيب (حساب + ملف شخصي + ترجمات + مستندات)"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get Doctor Personal Data",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/personal",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "personal"]
+        },
+        "description": "جلب البيانات الشخصية فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Doctor Professional Data",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "professional"]
+        },
+        "description": "جلب البيانات المهنية فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Doctor Documents",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/documents",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "documents"]
+        },
+        "description": "جلب جميع مستندات التحقق للطبيب"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Get Documents Summary",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/documents/summary",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "documents", "summary"]
+        },
+        "description": "جلب ملخص إحصائي للمستندات"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Update Personal Data (Single Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"phone\": \"+201234567890\",\n  \"date_of_birth\": \"1985-05-15\",\n  \"gender\": \"male\",\n  \"nationality\": \"Egyptian\",\n  \"emergency_contact_phone\": \"+201234567891\",\n  \"timezone\": \"Africa/Cairo\",\n  \"language_preference\": \"ar\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/personal",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "personal"]
+        },
+        "description": "تحديث البيانات الشخصية (بدون ترجمات)"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Update Personal Data (Multi-Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"doctor@example.com\",\n  \"phone\": \"+201234567890\",\n  \"date_of_birth\": \"1985-05-15\",\n  \"gender\": \"male\",\n  \"nationality\": \"Egyptian\",\n  \"emergency_contact_phone\": \"+201234567891\",\n  \"timezone\": \"Africa/Cairo\",\n  \"language_preference\": \"ar\",\n  \"translations\": {\n    \"ar\": {\n      \"full_name\": \"د. أحمد محمد علي\",\n      \"emergency_contact_name\": \"محمد أحمد\",\n      \"emergency_contact_relationship\": \"أخ\"\n    },\n    \"en\": {\n      \"full_name\": \"Dr. Ahmed Mohamed Ali\",\n      \"emergency_contact_name\": \"Mohamed Ahmed\",\n      \"emergency_contact_relationship\": \"Brother\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/personal",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "personal"]
+        },
+        "description": "تحديث البيانات الشخصية مع الترجمات"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Update Professional Data (Single Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"license_number\": \"MED123456\",\n  \"years_of_experience\": 11,\n  \"medical_school\": \"Cairo University\",\n  \"graduation_year\": 2013,\n  \"board_certifications\": [\"Board Certified in Cardiology\", \"FACC\"],\n  \"languages_spoken\": [\"Arabic\", \"English\", \"French\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "professional"]
+        },
+        "description": "تحديث البيانات المهنية (بدون ترجمات)"
+      },
+      "response": []
+    },
+    {
+      "name": "9. Update Professional Data (Multi-Language)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"license_number\": \"MED123456\",\n  \"years_of_experience\": 12,\n  \"medical_school\": \"Cairo University\",\n  \"graduation_year\": 2013,\n  \"board_certifications\": [\"Board Certified in Cardiology\", \"FACC\", \"FESC\"],\n  \"languages_spoken\": [\"Arabic\", \"English\", \"French\"],\n  \"translations\": {\n    \"ar\": {\n      \"specialty\": \"أمراض القلب والأوعية الدموية\",\n      \"sub_specialty\": \"قسطرة القلب التداخلية\",\n      \"biography\": \"طبيب قلب استشاري مع خبرة 12 سنة في مجال أمراض القلب والأوعية الدموية. متخصص في إجراء القسطرة القلبية التداخلية وتركيب الدعامات.\"\n    },\n    \"en\": {\n      \"specialty\": \"Cardiovascular Medicine\",\n      \"sub_specialty\": \"Interventional Cardiology\",\n      \"biography\": \"Consultant cardiologist with 12 years of experience in cardiovascular medicine. Specialized in interventional cardiac catheterization and stent placement.\"\n    }\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "professional"]
+        },
+        "description": "تحديث البيانات المهنية مع الترجمات"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Approve Document",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"approved\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/documents/{{document_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "documents", "{{document_id}}"]
+        },
+        "description": "الموافقة على مستند التحقق"
+      },
+      "response": []
+    },
+    {
+      "name": "11. Reject Document",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"rejected\",\n  \"rejection_reason\": \"الصورة غير واضحة، يرجى إعادة رفع صورة أوضح\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/documents/{{document_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "documents", "{{document_id}}"]
+        },
+        "description": "رفض مستند التحقق مع تحديد السبب"
+      },
+      "response": []
+    },
+    {
+      "name": "12. Reset Document to Pending",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"pending\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/documents/{{document_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "documents", "{{document_id}}"]
+        },
+        "description": "إعادة تعيين حالة المستند إلى قيد المراجعة"
+      },
+      "response": []
+    },
+    {
+      "name": "13. Delete Doctor Profile",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"مخالفة سياسات المنصة - تقديم معلومات غير صحيحة\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile"]
+        },
+        "description": "حذف الملف الشخصي للطبيب (حذف ناعم - تعطيل الحساب)"
+      },
+      "response": []
+    },
+    {
+      "name": "14. Update Only Email",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"newemail@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/personal",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "personal"]
+        },
+        "description": "تحديث البريد الإلكتروني فقط"
+      },
+      "response": []
+    },
+    {
+      "name": "15. Update Only License Number",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"license_number\": \"MED789012\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/{{doctor_id}}/profile/professional",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "{{doctor_id}}", "profile", "professional"]
+        },
+        "description": "تحديث رقم الترخيص فقط"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "YOUR_ADMIN_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "doctor_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "document_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

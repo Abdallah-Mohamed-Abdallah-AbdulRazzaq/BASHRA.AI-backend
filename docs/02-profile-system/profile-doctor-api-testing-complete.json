@@ -1,0 +1,174 @@
+{
+  "api_documentation": {
+    "title": "Profile Doctor API - دليل اختبار شامل",
+    "base_url": "http://localhost:3006/api/profile-doctor",
+    "version": "1.0.0",
+    "last_updated": "2024-11-23",
+    "description": "دليل اختبار شامل ومفصل لجميع APIs الخاصة بالملف الشخصي للأطباء مع أمثلة كاملة على جميع البيانات المطلوبة وغير المطلوبة"
+  },
+  
+  "authentication": {
+    "type": "JWT Bearer Token",
+    "header_format": "Authorization: Bearer <token>",
+    "required_for_all_endpoints": true,
+    "required_role": "doctor",
+    "middleware_chain": [
+      "authenticateJWT - التحقق من صحة JWT token",
+      "authorizeDoctor - التحقق من صلاحيات الطبيب",
+      "checkAccountActive - التحقق من تفعيل الحساب"
+    ],
+    "how_to_get_token": {
+      "endpoint": "POST /api/auth-doctor/login",
+      "request_example": {
+        "email": "doctor@example.com",
+        "password": "YourPassword123!"
+      },
+      "response_example": {
+        "success": true,
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "user": {
+          "id": 1,
+          "email": "doctor@example.com",
+          "role": "doctor"
+        }
+      }
+    }
+  },
+
+  "common_headers": {
+    "required": {
+      "Authorization": "Bearer YOUR_JWT_TOKEN_HERE"
+    },
+    "optional": {
+      "Accept-Language": "ar | en (default: ar)",
+      "Content-Type": "application/json | multipart/form-data"
+    }
+  },
+
+  "language_support": {
+    "supported_languages": ["ar", "en"],
+    "header_name": "Accept-Language",
+    "default_language": "ar",
+    "how_it_works": "يتم استخدام Accept-Language header أو language_preference من بيانات المستخدم لتحديد اللغة",
+    "examples": {
+      "arabic": "Accept-Language: ar",
+      "english": "Accept-Language: en",
+      "with_region": "Accept-Language: ar-EG, en-US"
+    }
+  },
+
+  "database_schema": {
+    "doctors": {
+      "description": "جدول حسابات الأطباء الأساسية",
+      "fields": {
+        "id": {"type": "INT", "primary_key": true, "auto_increment": true},
+        "uuid": {"type": "VARCHAR(36)", "unique": true, "nullable": false},
+        "email": {"type": "VARCHAR(255)", "unique": true, "nullable": false},
+        "phone": {"type": "VARCHAR(20)", "unique": true, "nullable": false},
+        "password": {"type": "VARCHAR(255)", "nullable": false},
+        "status": {"type": "ENUM", "values": ["active", "inactive", "suspended"], "default": "active"},
+        "is_active": {"type": "TINYINT(1)", "default": 1, "description": "0 = معطل, 1 = مفعل"},
+        "email_verified_at": {"type": "TIMESTAMP", "nullable": true},
+        "phone_verified_at": {"type": "TIMESTAMP", "nullable": true},
+        "last_login_at": {"type": "TIMESTAMP", "nullable": true},
+        "last_activity_at": {"type": "TIMESTAMP", "nullable": true},
+        "is_email_otp": {"type": "TINYINT(1)", "default": 0},
+        "is_phone_otp": {"type": "TINYINT(1)", "default": 0},
+        "is_id_verified": {"type": "TINYINT(1)", "default": 0},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+      }
+    },
+    "doctor_profiles": {
+      "description": "جدول الملفات الشخصية للأطباء",
+      "fields": {
+        "id": {"type": "INT", "primary_key": true, "auto_increment": true},
+        "doctor_id": {"type": "INT", "foreign_key": "doctors(id)", "nullable": false},
+        "license_number": {"type": "VARCHAR(100)", "unique": true, "nullable": true},
+        "years_of_experience": {"type": "INT", "nullable": true, "description": "عدد سنوات الخبرة"},
+        "medical_school": {"type": "VARCHAR(255)", "nullable": true, "description": "الكلية الطبية"},
+        "graduation_year": {"type": "INT", "nullable": true, "description": "سنة التخرج"},
+        "board_certifications": {"type": "JSON", "nullable": true, "description": "الشهادات والبوردات"},
+        "languages_spoken": {"type": "JSON", "nullable": true, "description": "اللغات المتحدثة"},
+        "consultation_fee": {"type": "DECIMAL(10,2)", "nullable": true, "description": "رسوم الاستشارة"},
+        "consultation_duration": {"type": "INT", "nullable": true, "description": "مدة الاستشارة بالدقائق"},
+        "working_hours": {"type": "JSON", "nullable": true, "description": "ساعات العمل"},
+        "profile_picture_url": {"type": "VARCHAR(500)", "nullable": true},
+        "is_verified": {"type": "TINYINT(1)", "default": 0, "description": "تم التحقق من الطبيب"},
+        "approval_status": {"type": "ENUM", "values": ["pending", "approved", "rejected"], "default": "pending"},
+        "rating_average": {"type": "DECIMAL(3,2)", "nullable": true, "description": "متوسط التقييم"},
+        "rating_count": {"type": "INT", "default": 0, "description": "عدد التقييمات"},
+        "total_consultations": {"type": "INT", "default": 0, "description": "إجمالي الاستشارات"},
+        "is_available": {"type": "TINYINT(1)", "default": 1, "description": "متاح للاستشارات"},
+        "date_of_birth": {"type": "DATE", "nullable": true},
+        "gender": {"type": "ENUM", "values": ["male", "female", "other", "prefer_not_to_say"], "nullable": true},
+        "nationality": {"type": "VARCHAR(100)", "nullable": true},
+        "emergency_contact_phone": {"type": "VARCHAR(20)", "nullable": true},
+        "timezone": {"type": "VARCHAR(50)", "nullable": true, "default": "Africa/Cairo"},
+        "language_preference": {"type": "ENUM", "values": ["ar", "en"], "default": "ar"},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}
+      }
+    },
+    "doctor_profile_translations": {
+      "description": "جدول ترجمات الملفات الشخصية للأطباء",
+      "fields": {
+        "id": {"type": "INT", "primary_key": true, "auto_increment": true},
+        "doctor_profile_id": {"type": "INT", "foreign_key": "doctor_profiles(id)", "nullable": false},
+        "language_code": {"type": "ENUM", "values": ["ar", "en"], "nullable": false},
+        "full_name": {"type": "VARCHAR(255)", "nullable": true, "description": "الاسم الكامل"},
+        "specialty": {"type": "VARCHAR(255)", "nullable": true, "description": "التخصص"},
+        "sub_specialty": {"type": "VARCHAR(255)", "nullable": true, "description": "التخصص الفرعي"},
+        "biography": {"type": "TEXT", "nullable": true, "description": "السيرة الذاتية"},
+        "emergency_contact_name": {"type": "VARCHAR(255)", "nullable": true},
+        "emergency_contact_relationship": {"type": "VARCHAR(100)", "nullable": true}
+      }
+    }
+  },
+
+  "field_requirements": {
+    "note": "هذا القسم يوضح الحقول المطلوبة وغير المطلوبة لكل عملية",
+    "update_profile": {
+      "all_fields_optional": true,
+      "note": "جميع الحقول اختيارية - يمكن تحديث أي حقل أو مجموعة حقول",
+      "profile_fields": {
+        "years_of_experience": {"required": false, "type": "number", "example": 10},
+        "medical_school": {"required": false, "type": "string", "example": "كلية الطب - جامعة القاهرة"},
+        "graduation_year": {"required": false, "type": "number", "example": 2013},
+        "board_certifications": {"required": false, "type": "array", "example": ["البورد المصري", "FACC"]},
+        "languages_spoken": {"required": false, "type": "array", "example": ["العربية", "الإنجليزية"]},
+        "consultation_fee": {"required": false, "type": "number", "example": 500.00},
+        "consultation_duration": {"required": false, "type": "number", "example": 30},
+        "working_hours": {"required": false, "type": "object", "example": {}},
+        "date_of_birth": {"required": false, "type": "string", "format": "YYYY-MM-DD", "example": "1990-01-15"},
+        "gender": {"required": false, "type": "enum", "values": ["male", "female", "other", "prefer_not_to_say"]},
+        "nationality": {"required": false, "type": "string", "example": "مصري"},
+        "emergency_contact_phone": {"required": false, "type": "string", "example": "+201234567890"},
+        "timezone": {"required": false, "type": "string", "example": "Africa/Cairo"},
+        "language_preference": {"required": false, "type": "enum", "values": ["ar", "en"]}
+      },
+      "translation_fields": {
+        "full_name": {"required": false, "type": "string", "example": "د. أحمد محمد علي"},
+        "specialty": {"required": false, "type": "string", "example": "أمراض القلب"},
+        "sub_specialty": {"required": false, "type": "string", "example": "قسطرة القلب"},
+        "biography": {"required": false, "type": "text", "example": "طبيب قلب متخصص..."},
+        "emergency_contact_name": {"required": false, "type": "string", "example": "محمد أحمد"},
+        "emergency_contact_relationship": {"required": false, "type": "string", "example": "أخ"}
+      }
+    },
+    "update_basic_data": {
+      "all_fields_optional": true,
+      "doctor_table_fields": {
+        "email": {"required": false, "type": "string", "unique": true, "example": "doctor@example.com"},
+        "phone": {"required": false, "type": "string", "unique": true, "example": "+201234567890"}
+      },
+      "profile_fields": "نفس حقول update_profile",
+      "translation_fields": "نفس حقول update_profile"
+    },
+    "upload_picture": {
+      "profile_picture": {"required": true, "type": "file", "formats": ["jpg", "jpeg", "png", "gif", "webp"], "max_size": "5MB"}
+    }
+  },
+
+  "endpoints": []
+}

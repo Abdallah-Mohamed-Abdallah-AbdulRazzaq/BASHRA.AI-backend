@@ -1,0 +1,447 @@
+{
+  "postman_collection_name": "Profile Doctor API - Test Data",
+  "description": "بيانات اختبار جاهزة للاستخدام في Postman",
+  "base_url": "http://localhost:3006",
+  
+  "environment_variables": {
+    "note": "قم بإنشاء Environment في Postman وأضف هذه المتغيرات",
+    "variables": {
+      "base_url": "http://localhost:3006",
+      "jwt_token": "YOUR_JWT_TOKEN_HERE",
+      "doctor_id": "1"
+    }
+  },
+
+  "how_to_get_jwt_token": {
+    "step_1": "قم بتسجيل الدخول أولاً",
+    "endpoint": "POST {{base_url}}/api/auth-doctor/login",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "doctor@example.com",
+      "password": "your_password"
+    },
+    "step_2": "انسخ الـ token من الاستجابة",
+    "step_3": "ضعه في متغير jwt_token في Environment"
+  },
+
+  "endpoints": [
+    {
+      "endpoint_name": "PUT /api/profile-doctor - Update Profile",
+      "endpoint_number": 1,
+      "method": "PUT",
+      "url": "{{base_url}}/api/profile-doctor",
+      
+      "headers": {
+        "Authorization": "Bearer {{jwt_token}}",
+        "Content-Type": "application/json",
+        "Accept-Language": "ar"
+      },
+
+      "test_cases": [
+        {
+          "test_case_1": "تحديث لغة واحدة - جميع الحقول",
+          "description": "تحديث جميع الحقول المتاحة للغة العربية فقط",
+          "body": {
+            "years_of_experience": 12,
+            "medical_school": "كلية الطب - جامعة القاهرة",
+            "graduation_year": 2011,
+            "board_certifications": [
+              "البورد المصري في أمراض القلب",
+              "البورد الأمريكي في أمراض القلب (FACC)",
+              "زمالة الجمعية الأوروبية لأمراض القلب (FESC)"
+            ],
+            "languages_spoken": [
+              "العربية",
+              "الإنجليزية",
+              "الفرنسية"
+            ],
+            "consultation_fee": 600.00,
+            "consultation_duration": 45,
+            "working_hours": {
+              "saturday": {
+                "start": "09:00",
+                "end": "17:00",
+                "available": true
+              },
+              "sunday": {
+                "start": "09:00",
+                "end": "17:00",
+                "available": true
+              },
+              "monday": {
+                "start": "09:00",
+                "end": "17:00",
+                "available": true
+              },
+              "tuesday": {
+                "start": "09:00",
+                "end": "17:00",
+                "available": true
+              },
+              "wednesday": {
+                "start": "09:00",
+                "end": "17:00",
+                "available": true
+              },
+              "thursday": {
+                "start": "09:00",
+                "end": "14:00",
+                "available": true
+              },
+              "friday": {
+                "available": false
+              }
+            },
+            "date_of_birth": "1989-05-15",
+            "gender": "male",
+            "nationality": "مصري",
+            "emergency_contact_phone": "+201234567890",
+            "timezone": "Africa/Cairo",
+            "language_preference": "ar",
+            "full_name": "د. أحمد محمد علي السيد",
+            "specialty": "أمراض القلب والأوعية الدموية",
+            "sub_specialty": "قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية",
+            "biography": "طبيب قلب متخصص مع خبرة 12 سنة في مجال قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية. حاصل على البورد المصري والأمريكي والأوروبي في أمراض القلب. عضو الجمعية المصرية لأمراض القلب والجمعية الأمريكية لأمراض القلب.",
+            "emergency_contact_name": "محمد أحمد علي السيد",
+            "emergency_contact_relationship": "أخ"
+          }
+        },
+        {
+          "test_case_2": "تحديث عدة لغات - جميع الحقول",
+          "description": "تحديث جميع الحقول مع ترجمات عربية وإنجليزية",
+          "body": {
+            "years_of_experience": 12,
+            "medical_school": "كلية الطب - جامعة القاهرة",
+            "graduation_year": 2011,
+            "board_certifications": [
+              "البورد المصري في أمراض القلب",
+              "البورد الأمريكي في أمراض القلب (FACC)",
+              "زمالة الجمعية الأوروبية لأمراض القلب (FESC)"
+            ],
+            "languages_spoken": [
+              "العربية",
+              "الإنجليزية",
+              "الفرنسية"
+            ],
+            "consultation_fee": 600.00,
+            "consultation_duration": 45,
+            "working_hours": {
+              "saturday": {"start": "09:00", "end": "17:00", "available": true},
+              "sunday": {"start": "09:00", "end": "17:00", "available": true},
+              "monday": {"start": "09:00", "end": "17:00", "available": true},
+              "tuesday": {"start": "09:00", "end": "17:00", "available": true},
+              "wednesday": {"start": "09:00", "end": "17:00", "available": true},
+              "thursday": {"start": "09:00", "end": "14:00", "available": true},
+              "friday": {"available": false}
+            },
+            "date_of_birth": "1989-05-15",
+            "gender": "male",
+            "nationality": "مصري",
+            "emergency_contact_phone": "+201234567890",
+            "timezone": "Africa/Cairo",
+            "language_preference": "ar",
+            "translations": {
+              "ar": {
+                "full_name": "د. أحمد محمد علي السيد",
+                "specialty": "أمراض القلب والأوعية الدموية",
+                "sub_specialty": "قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية",
+                "biography": "طبيب قلب متخصص مع خبرة 12 سنة في مجال قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية. حاصل على البورد المصري والأمريكي والأوروبي في أمراض القلب. عضو الجمعية المصرية لأمراض القلب والجمعية الأمريكية لأمراض القلب.",
+                "emergency_contact_name": "محمد أحمد علي السيد",
+                "emergency_contact_relationship": "أخ"
+              },
+              "en": {
+                "full_name": "Dr. Ahmed Mohamed Ali Elsayed",
+                "specialty": "Cardiovascular Medicine",
+                "sub_specialty": "Interventional Cardiology and Echocardiography",
+                "biography": "Specialized cardiologist with 12 years of experience in interventional cardiology and echocardiography. Board certified in Egypt, USA (FACC), and Europe (FESC). Member of Egyptian Society of Cardiology and American College of Cardiology.",
+                "emergency_contact_name": "Mohamed Ahmed Ali Elsayed",
+                "emergency_contact_relationship": "Brother"
+              }
+            }
+          }
+        },
+        {
+          "test_case_3": "تحديث جزئي - حقول قليلة فقط",
+          "description": "تحديث بعض الحقول فقط (consultation_fee, consultation_duration, full_name)",
+          "body": {
+            "consultation_fee": 700.00,
+            "consultation_duration": 40,
+            "full_name": "د. أحمد محمد علي - محدث"
+          }
+        },
+        {
+          "test_case_4": "تحديث معلومات الاتصال والطوارئ",
+          "description": "تحديث معلومات الاتصال في حالات الطوارئ",
+          "body": {
+            "emergency_contact_phone": "+201098765432",
+            "emergency_contact_name": "فاطمة أحمد علي",
+            "emergency_contact_relationship": "أخت"
+          }
+        },
+        {
+          "test_case_5": "تحديث ساعات العمل فقط",
+          "description": "تحديث جدول ساعات العمل",
+          "body": {
+            "working_hours": {
+              "saturday": {"start": "10:00", "end": "18:00", "available": true},
+              "sunday": {"start": "10:00", "end": "18:00", "available": true},
+              "monday": {"start": "10:00", "end": "18:00", "available": true},
+              "tuesday": {"start": "10:00", "end": "18:00", "available": true},
+              "wednesday": {"start": "10:00", "end": "18:00", "available": true},
+              "thursday": {"start": "10:00", "end": "15:00", "available": true},
+              "friday": {"available": false}
+            }
+          }
+        },
+        {
+          "test_case_6": "تحديث الشهادات واللغات",
+          "description": "تحديث قائمة الشهادات واللغات المتحدثة",
+          "body": {
+            "board_certifications": [
+              "البورد المصري في أمراض القلب",
+              "البورد الأمريكي في أمراض القلب (FACC)",
+              "زمالة الجمعية الأوروبية لأمراض القلب (FESC)",
+              "دبلوم قسطرة القلب التداخلية"
+            ],
+            "languages_spoken": [
+              "العربية",
+              "الإنجليزية",
+              "الفرنسية",
+              "الألمانية"
+            ]
+          }
+        },
+        {
+          "test_case_7": "تحديث السيرة الذاتية فقط",
+          "description": "تحديث السيرة الذاتية بنص أطول",
+          "body": {
+            "biography": "طبيب قلب استشاري متخصص في قسطرة القلب التداخلية والتصوير بالموجات فوق الصوتية. خبرة 12 سنة في مجال أمراض القلب والأوعية الدموية. حاصل على البورد المصري والأمريكي (FACC) والأوروبي (FESC) في أمراض القلب.\n\nالخبرات:\n- قسطرة القلب التشخيصية والعلاجية\n- توسيع الشرايين التاجية بالبالون والدعامات\n- التصوير بالموجات فوق الصوتية للقلب\n- تخطيط القلب بالمجهود\n- علاج اضطرابات نظم القلب\n\nعضويات:\n- الجمعية المصرية لأمراض القلب\n- الجمعية الأمريكية لأمراض القلب (ACC)\n- الجمعية الأوروبية لأمراض القلب (ESC)"
+          }
+        },
+        {
+          "test_case_8": "تحديث البيانات الشخصية",
+          "description": "تحديث تاريخ الميلاد والجنسية والمنطقة الزمنية",
+          "body": {
+            "date_of_birth": "1988-03-20",
+            "gender": "male",
+            "nationality": "مصري",
+            "timezone": "Africa/Cairo",
+            "language_preference": "en"
+          }
+        }
+      ]
+    },
+
+    {
+      "endpoint_name": "PUT /api/profile-doctor/basic - Update Basic Data",
+      "endpoint_number": 2,
+      "method": "PUT",
+      "url": "{{base_url}}/api/profile-doctor/basic",
+      
+      "headers": {
+        "Authorization": "Bearer {{jwt_token}}",
+        "Content-Type": "application/json",
+        "Accept-Language": "ar"
+      },
+
+      "test_cases": [
+        {
+          "test_case_1": "تحديث جميع الحقول الأساسية",
+          "description": "تحديث كل الحقول المتاحة في endpoint /basic",
+          "body": {
+            "email": "doctor.updated@example.com",
+            "phone": "+201098765432",
+            "years_of_experience": 11,
+            "medical_school": "كلية الطب - جامعة الإسكندرية",
+            "graduation_year": 2012,
+            "consultation_fee": 550.00,
+            "consultation_duration": 40,
+            "date_of_birth": "1990-03-20",
+            "gender": "male",
+            "nationality": "مصري",
+            "emergency_contact_phone": "+201234567890",
+            "timezone": "Africa/Cairo",
+            "language_preference": "en",
+            "full_name": "د. أحمد محمد علي",
+            "specialty": "أمراض القلب والأوعية الدموية",
+            "sub_specialty": "قسطرة القلب التداخلية",
+            "biography": "طبيب قلب متخصص مع خبرة 11 سنة في مجال قسطرة القلب",
+            "emergency_contact_name": "محمد أحمد علي",
+            "emergency_contact_relationship": "أخ"
+          }
+        },
+        {
+          "test_case_2": "تحديث البريد الإلكتروني فقط",
+          "description": "تحديث البريد الإلكتروني للطبيب",
+          "body": {
+            "email": "new.doctor.email@example.com"
+          }
+        },
+        {
+          "test_case_3": "تحديث رقم الهاتف فقط",
+          "description": "تحديث رقم الهاتف للطبيب",
+          "body": {
+            "phone": "+201123456789"
+          }
+        },
+        {
+          "test_case_4": "تحديث البريد الإلكتروني والهاتف معاً",
+          "description": "تحديث معلومات الاتصال الأساسية",
+          "body": {
+            "email": "doctor.new@example.com",
+            "phone": "+201098765432"
+          }
+        },
+        {
+          "test_case_5": "تحديث معلومات الاستشارة",
+          "description": "تحديث رسوم ومدة الاستشارة",
+          "body": {
+            "consultation_fee": 650.00,
+            "consultation_duration": 50
+          }
+        },
+        {
+          "test_case_6": "تحديث المعلومات الأكاديمية",
+          "description": "تحديث الكلية وسنة التخرج وسنوات الخبرة",
+          "body": {
+            "medical_school": "كلية الطب - جامعة عين شمس",
+            "graduation_year": 2010,
+            "years_of_experience": 13
+          }
+        },
+        {
+          "test_case_7": "تحديث الاسم والتخصص",
+          "description": "تحديث الاسم الكامل والتخصص للغة الحالية",
+          "body": {
+            "full_name": "د. أحمد محمد علي السيد المحدث",
+            "specialty": "أمراض القلب والأوعية الدموية والقسطرة التداخلية",
+            "sub_specialty": "قسطرة القلب التداخلية المتقدمة"
+          }
+        },
+        {
+          "test_case_8": "تحديث معلومات الطوارئ",
+          "description": "تحديث معلومات جهة الاتصال في حالات الطوارئ",
+          "body": {
+            "emergency_contact_phone": "+201234567890",
+            "emergency_contact_name": "فاطمة أحمد محمد",
+            "emergency_contact_relationship": "زوجة"
+          }
+        },
+        {
+          "test_case_9": "تحديث التفضيلات الشخصية",
+          "description": "تحديث المنطقة الزمنية وتفضيل اللغة",
+          "body": {
+            "timezone": "Africa/Cairo",
+            "language_preference": "ar"
+          }
+        },
+        {
+          "test_case_10": "تحديث مختلط - email + consultation + name",
+          "description": "تحديث مجموعة متنوعة من الحقول",
+          "body": {
+            "email": "doctor.mixed.update@example.com",
+            "consultation_fee": 750.00,
+            "consultation_duration": 60,
+            "full_name": "د. أحمد محمد علي - استشاري",
+            "biography": "استشاري أمراض القلب والأوعية الدموية - خبرة 13 سنة"
+          }
+        }
+      ]
+    }
+  ],
+
+  "postman_setup_instructions": {
+    "step_1": {
+      "title": "إنشاء Collection جديدة",
+      "instructions": [
+        "افتح Postman",
+        "اضغط على 'New' ثم 'Collection'",
+        "سمِّها 'Profile Doctor API Tests'"
+      ]
+    },
+    "step_2": {
+      "title": "إنشاء Environment",
+      "instructions": [
+        "اضغط على 'Environments' من القائمة الجانبية",
+        "اضغط على 'Create Environment'",
+        "سمِّها 'Doctor API Local'",
+        "أضف المتغيرات: base_url, jwt_token, doctor_id"
+      ]
+    },
+    "step_3": {
+      "title": "الحصول على JWT Token",
+      "instructions": [
+        "أنشئ request جديد: POST {{base_url}}/api/auth-doctor/login",
+        "في Body اختر 'raw' و 'JSON'",
+        "أدخل: {\"email\": \"doctor@example.com\", \"password\": \"your_password\"}",
+        "اضغط Send",
+        "انسخ الـ token من الاستجابة",
+        "ضعه في متغير jwt_token في Environment"
+      ]
+    },
+    "step_4": {
+      "title": "إنشاء Request للتحديث",
+      "instructions": [
+        "أنشئ request جديد في Collection",
+        "اختر Method: PUT",
+        "URL: {{base_url}}/api/profile-doctor",
+        "في Headers أضف:",
+        "  - Authorization: Bearer {{jwt_token}}",
+        "  - Content-Type: application/json",
+        "  - Accept-Language: ar",
+        "في Body اختر 'raw' و 'JSON'",
+        "انسخ أي test case من الملف أعلاه",
+        "اضغط Send"
+      ]
+    },
+    "step_5": {
+      "title": "اختبار الـ Test Cases",
+      "instructions": [
+        "جرب كل test case على حدة",
+        "تحقق من الاستجابة (status 200)",
+        "تحقق من أن البيانات تم تحديثها",
+        "استخدم GET /api/profile-doctor للتحقق من التحديثات"
+      ]
+    }
+  },
+
+  "common_errors_and_solutions": {
+    "error_1": {
+      "error": "401 Unauthorized",
+      "cause": "JWT token غير صالح أو منتهي",
+      "solution": "قم بتسجيل الدخول مرة أخرى واحصل على token جديد"
+    },
+    "error_2": {
+      "error": "400 Bad Request - البريد الإلكتروني مستخدم بالفعل",
+      "cause": "Email موجود لطبيب آخر",
+      "solution": "استخدم email مختلف"
+    },
+    "error_3": {
+      "error": "400 Bad Request - رقم الهاتف مستخدم بالفعل",
+      "cause": "Phone موجود لطبيب آخر",
+      "solution": "استخدم رقم هاتف مختلف"
+    },
+    "error_4": {
+      "error": "404 Not Found - الملف الشخصي غير موجود",
+      "cause": "لا يوجد profile للطبيب",
+      "solution": "تأكد من أن الطبيب لديه profile في قاعدة البيانات"
+    },
+    "error_5": {
+      "error": "500 Internal Server Error",
+      "cause": "خطأ في السيرفر أو قاعدة البيانات",
+      "solution": "تحقق من logs السيرفر وتأكد من اتصال قاعدة البيانات"
+    }
+  },
+
+  "tips_and_best_practices": [
+    "احفظ الـ test cases كـ requests منفصلة في Postman Collection",
+    "استخدم Pre-request Scripts للحصول على token تلقائياً",
+    "استخدم Tests tab لكتابة assertions تلقائية",
+    "قم بعمل backup للـ Collection بعد إعدادها",
+    "استخدم Variables لتسهيل تغيير البيانات",
+    "جرب كل test case على حدة قبل الاختبار الشامل",
+    "تحقق من البيانات بعد كل تحديث باستخدام GET endpoints"
+  ]
+}

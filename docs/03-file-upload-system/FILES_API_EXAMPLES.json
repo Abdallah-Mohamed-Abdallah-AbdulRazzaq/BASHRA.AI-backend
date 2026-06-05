@@ -1,0 +1,565 @@
+{
+  "api_name": "Files Management API",
+  "description": "API شامل لإدارة جميع الملفات في النظام - Admin Only",
+  "base_url": "http://localhost:3006/api/files",
+  "authentication": {
+    "type": "Bearer Token",
+    "header": "Authorization: Bearer ADMIN_TOKEN",
+    "note": "جميع endpoints تتطلب Admin authentication"
+  },
+  "endpoints": [
+    {
+      "name": "1. Get All Files (مع فلاتر)",
+      "method": "GET",
+      "url": "{{baseUrl}}",
+      "description": "جلب جميع الملفات مع إمكانية الفلترة والبحث",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}",
+        "Accept-Language": "ar"
+      },
+      "query_parameters": {
+        "page": "رقم الصفحة (default: 1)",
+        "limit": "عدد النتائج (default: 50)",
+        "entityType": "نوع الرافع: user|admin|doctor|assistant",
+        "entityId": "معرف الرافع",
+        "fileCategory": "فئة الملف: profile_picture|medical_image|document|prescription|license|id_document|other",
+        "relatedToType": "نوع الكيان المرتبط",
+        "relatedToId": "معرف الكيان المرتبط",
+        "virusScanStatus": "حالة الفحص: pending|clean|infected|error",
+        "isPublic": "عام أم خاص: true|false",
+        "storageProvider": "مزود التخزين: local|s3|etc",
+        "searchTerm": "كلمة البحث في اسم الملف أو UUID"
+      },
+      "examples": [
+        {
+          "description": "جلب جميع الملفات - الصفحة الأولى",
+          "url": "http://localhost:3006/api/files?page=1&limit=20"
+        },
+        {
+          "description": "جلب الصور الطبية فقط",
+          "url": "http://localhost:3006/api/files?fileCategory=medical_image"
+        },
+        {
+          "description": "جلب ملفات مستخدم محدد",
+          "url": "http://localhost:3006/api/files?entityType=user&entityId=23"
+        },
+        {
+          "description": "جلب الملفات المصابة بفيروسات",
+          "url": "http://localhost:3006/api/files?virusScanStatus=infected"
+        },
+        {
+          "description": "البحث عن ملفات",
+          "url": "http://localhost:3006/api/files?searchTerm=prescription"
+        }
+      ],
+      "response_example": {
+        "success": true,
+        "message": "Files retrieved successfully",
+        "data": {
+          "files": [
+            {
+              "id": 1,
+              "uuid": "550e8400-e29b-41d4-a716-446655440000",
+              "uploaded_by_user_id": 23,
+              "uploaded_by_admin_id": null,
+              "uploaded_by_doctor_id": null,
+              "uploaded_by_assistant_id": null,
+              "related_to_type": "user_profile",
+              "related_to_id": 15,
+              "file_category": "profile_picture",
+              "original_filename": "my-photo.jpg",
+              "stored_filename": "profile_picture_550e8400_1699012345678.jpg",
+              "file_path": "/upload/files/profile-picture/profile_picture_550e8400_1699012345678.jpg",
+              "file_url": "http://localhost:3006/upload/files/profile-picture/profile_picture_550e8400_1699012345678.jpg",
+              "mime_type": "image/jpeg",
+              "file_size": 524288,
+              "file_extension": "jpg",
+              "is_public": 1,
+              "is_encrypted": 0,
+              "encryption_key": null,
+              "thumbnail_url": null,
+              "metadata": {
+                "uploaded_from": "profile_update",
+                "profile_type": "user"
+              },
+              "virus_scan_status": "clean",
+              "virus_scan_date": "2024-11-03T10:30:00.000Z",
+              "storage_provider": "local",
+              "storage_reference": null,
+              "access_count": 15,
+              "last_accessed_at": "2024-11-03T18:00:00.000Z",
+              "expires_at": null,
+              "is_deleted": 0,
+              "deleted_at": null,
+              "created_at": "2024-11-01T12:00:00.000Z"
+            }
+          ],
+          "pagination": {
+            "total": 1250,
+            "page": 1,
+            "limit": 20,
+            "totalPages": 63
+          }
+        }
+      }
+    },
+    {
+      "name": "2. Get File Statistics (الإحصائيات)",
+      "method": "GET",
+      "url": "{{baseUrl}}/statistics",
+      "description": "الحصول على إحصائيات شاملة عن الملفات",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "query_parameters": {
+        "entityType": "(اختياري) تصفية حسب نوع الرافع",
+        "entityId": "(اختياري) تصفية حسب معرف الرافع"
+      },
+      "examples": [
+        {
+          "description": "إحصائيات عامة",
+          "url": "http://localhost:3006/api/files/statistics"
+        },
+        {
+          "description": "إحصائيات مستخدم محدد",
+          "url": "http://localhost:3006/api/files/statistics?entityType=user&entityId=23"
+        }
+      ],
+      "response_example": {
+        "success": true,
+        "message": "Statistics retrieved successfully",
+        "data": {
+          "overall": {
+            "total_files": 1250,
+            "total_size": 524288000,
+            "total_uploaders": 350
+          },
+          "byCategory": [
+            {
+              "file_category": "profile_picture",
+              "count": 450,
+              "total_size": 45000000,
+              "avg_size": 100000
+            },
+            {
+              "file_category": "medical_image",
+              "count": 300,
+              "total_size": 300000000,
+              "avg_size": 1000000
+            },
+            {
+              "file_category": "document",
+              "count": 250,
+              "total_size": 125000000,
+              "avg_size": 500000
+            },
+            {
+              "file_category": "prescription",
+              "count": 150,
+              "total_size": 37500000,
+              "avg_size": 250000
+            },
+            {
+              "file_category": "other",
+              "count": 100,
+              "total_size": 16788000,
+              "avg_size": 167880
+            }
+          ],
+          "byVirusScan": [
+            {
+              "virus_scan_status": "clean",
+              "count": 1100
+            },
+            {
+              "virus_scan_status": "pending",
+              "count": 145
+            },
+            {
+              "virus_scan_status": "infected",
+              "count": 3
+            },
+            {
+              "virus_scan_status": "error",
+              "count": 2
+            }
+          ],
+          "byStorageProvider": [
+            {
+              "storage_provider": "local",
+              "count": 1200,
+              "total_size": 500000000
+            },
+            {
+              "storage_provider": "s3",
+              "count": 50,
+              "total_size": 24288000
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. Get File by UUID (ملف محدد)",
+      "method": "GET",
+      "url": "{{baseUrl}}/:uuid",
+      "description": "جلب ملف محدد بواسطة UUID",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "url_parameters": {
+        "uuid": "UUID الملف"
+      },
+      "example": {
+        "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000"
+      },
+      "response_example": {
+        "success": true,
+        "message": "File retrieved successfully",
+        "data": {
+          "id": 1,
+          "uuid": "550e8400-e29b-41d4-a716-446655440000",
+          "uploaded_by_user_id": 23,
+          "file_category": "profile_picture",
+          "original_filename": "my-photo.jpg",
+          "file_url": "http://localhost:3006/upload/files/profile-picture/profile_picture_550e8400_1699012345678.jpg",
+          "mime_type": "image/jpeg",
+          "file_size": 524288,
+          "virus_scan_status": "clean",
+          "created_at": "2024-11-01T12:00:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "4. Get Files by Uploader (ملفات مستخدم)",
+      "method": "GET",
+      "url": "{{baseUrl}}/uploader/:entityType/:entityId",
+      "description": "جلب جميع ملفات مستخدم/طبيب/مساعد/مدير محدد",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "url_parameters": {
+        "entityType": "user|admin|doctor|assistant",
+        "entityId": "معرف المستخدم"
+      },
+      "query_parameters": {
+        "fileCategory": "(اختياري) فلترة حسب الفئة",
+        "limit": "(اختياري) عدد النتائج (default: 50)",
+        "offset": "(اختياري) البداية (default: 0)"
+      },
+      "examples": [
+        {
+          "description": "جميع ملفات المستخدم 23",
+          "url": "http://localhost:3006/api/files/uploader/user/23"
+        },
+        {
+          "description": "الصور الطبية للمستخدم 23 فقط",
+          "url": "http://localhost:3006/api/files/uploader/user/23?fileCategory=medical_image"
+        },
+        {
+          "description": "جميع ملفات الطبيب 5",
+          "url": "http://localhost:3006/api/files/uploader/doctor/5"
+        }
+      ],
+      "response_example": {
+        "success": true,
+        "message": "Files retrieved successfully",
+        "data": [
+          {
+            "id": 1,
+            "uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "file_category": "profile_picture",
+            "file_url": "http://localhost:3006/upload/files/profile-picture/profile_picture_550e8400_1699012345678.jpg",
+            "created_at": "2024-11-01T12:00:00.000Z"
+          },
+          {
+            "id": 5,
+            "uuid": "660e8400-e29b-41d4-a716-446655440001",
+            "file_category": "medical_image",
+            "file_url": "http://localhost:3006/upload/files/medical-image/medical_image_660e8400_1699012345679.jpg",
+            "created_at": "2024-11-02T14:30:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "5. Get Files by Related Entity (ملفات كيان)",
+      "method": "GET",
+      "url": "{{baseUrl}}/related/:relatedToType/:relatedToId",
+      "description": "جلب جميع الملفات المرتبطة بكيان محدد (موعد، سجل طبي، إلخ)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "url_parameters": {
+        "relatedToType": "نوع الكيان (user_profile, appointment, medical_record, etc.)",
+        "relatedToId": "معرف الكيان"
+      },
+      "query_parameters": {
+        "fileCategory": "(اختياري) فلترة حسب الفئة",
+        "limit": "(اختياري) عدد النتائج",
+        "offset": "(اختياري) البداية"
+      },
+      "examples": [
+        {
+          "description": "جميع الملفات المرتبطة بالموعد 100",
+          "url": "http://localhost:3006/api/files/related/appointment/100"
+        },
+        {
+          "description": "الوصفات الطبية للموعد 100 فقط",
+          "url": "http://localhost:3006/api/files/related/appointment/100?fileCategory=prescription"
+        },
+        {
+          "description": "الصور الطبية للسجل الطبي 50",
+          "url": "http://localhost:3006/api/files/related/medical_record/50?fileCategory=medical_image"
+        }
+      ],
+      "response_example": {
+        "success": true,
+        "message": "Files retrieved successfully",
+        "data": [
+          {
+            "id": 10,
+            "uuid": "770e8400-e29b-41d4-a716-446655440010",
+            "file_category": "prescription",
+            "original_filename": "prescription_nov_2024.pdf",
+            "file_url": "http://localhost:3006/upload/files/prescription/prescription_770e8400_1699012345680.pdf",
+            "created_at": "2024-11-03T10:00:00.000Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "6. Update File Metadata (تحديث البيانات)",
+      "method": "PUT",
+      "url": "{{baseUrl}}/:uuid",
+      "description": "تحديث البيانات الوصفية للملف",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}",
+        "Content-Type": "application/json"
+      },
+      "url_parameters": {
+        "uuid": "UUID الملف"
+      },
+      "body": {
+        "is_public": "تغيير إلى عام/خاص (boolean)",
+        "metadata": "البيانات الوصفية (object)",
+        "virus_scan_status": "تحديث حالة الفحص (string)",
+        "virus_scan_date": "تاريخ الفحص (datetime)",
+        "expires_at": "تاريخ الانتهاء (datetime)"
+      },
+      "examples": [
+        {
+          "description": "تحديث حالة الفحص",
+          "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000",
+          "body": {
+            "virus_scan_status": "clean",
+            "virus_scan_date": "2024-11-03T18:00:00.000Z"
+          }
+        },
+        {
+          "description": "جعل الملف عام",
+          "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000",
+          "body": {
+            "is_public": true
+          }
+        },
+        {
+          "description": "إضافة metadata",
+          "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000",
+          "body": {
+            "metadata": {
+              "description": "X-ray image of patient's chest",
+              "body_part": "chest",
+              "doctor_notes": "Shows improvement"
+            }
+          }
+        },
+        {
+          "description": "إضافة تاريخ انتهاء",
+          "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000",
+          "body": {
+            "expires_at": "2025-11-03T18:00:00.000Z"
+          }
+        }
+      ],
+      "response_example": {
+        "success": true,
+        "message": "File metadata updated successfully"
+      }
+    },
+    {
+      "name": "7. Delete File (حذف ملف)",
+      "method": "DELETE",
+      "url": "{{baseUrl}}/:uuid",
+      "description": "حذف ملف (soft delete افتراضياً)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "url_parameters": {
+        "uuid": "UUID الملف"
+      },
+      "query_parameters": {
+        "deleteFromDisk": "حذف من القرص أيضاً: true|false (default: false)"
+      },
+      "examples": [
+        {
+          "description": "حذف ناعم (soft delete) - البيانات تبقى",
+          "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000"
+        },
+        {
+          "description": "حذف كامل (من القاعدة والقرص)",
+          "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000?deleteFromDisk=true"
+        }
+      ],
+      "response_example": {
+        "success": true,
+        "message": "File deleted successfully"
+      }
+    },
+    {
+      "name": "8. Restore Deleted File (استعادة ملف)",
+      "method": "POST",
+      "url": "{{baseUrl}}/:uuid/restore",
+      "description": "استعادة ملف محذوف (إلغاء soft delete)",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "url_parameters": {
+        "uuid": "UUID الملف"
+      },
+      "example": {
+        "url": "http://localhost:3006/api/files/550e8400-e29b-41d4-a716-446655440000/restore"
+      },
+      "response_example": {
+        "success": true,
+        "message": "File restored successfully"
+      }
+    },
+    {
+      "name": "9. Cleanup Expired Files (تنظيف الملفات المنتهية)",
+      "method": "POST",
+      "url": "{{baseUrl}}/cleanup/expired",
+      "description": "حذف جميع الملفات التي انتهت صلاحيتها تلقائياً",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}"
+      },
+      "example": {
+        "url": "http://localhost:3006/api/files/cleanup/expired"
+      },
+      "response_example": {
+        "success": true,
+        "message": "Cleaned up 25 expired files",
+        "data": {
+          "deletedCount": 25
+        }
+      }
+    },
+    {
+      "name": "10. Bulk Delete Files (حذف جماعي)",
+      "method": "POST",
+      "url": "{{baseUrl}}/bulk-delete",
+      "description": "حذف مجموعة من الملفات دفعة واحدة",
+      "headers": {
+        "Authorization": "Bearer {{admin_token}}",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "uuids": ["array of file UUIDs"],
+        "deleteFromDisk": "boolean - حذف من القرص أيضاً"
+      },
+      "example": {
+        "url": "http://localhost:3006/api/files/bulk-delete",
+        "body": {
+          "uuids": [
+            "550e8400-e29b-41d4-a716-446655440000",
+            "660e8400-e29b-41d4-a716-446655440001",
+            "770e8400-e29b-41d4-a716-446655440002"
+          ],
+          "deleteFromDisk": false
+        }
+      },
+      "response_example": {
+        "success": true,
+        "message": "Deleted 3 files, 0 failed",
+        "data": {
+          "success": [
+            "550e8400-e29b-41d4-a716-446655440000",
+            "660e8400-e29b-41d4-a716-446655440001",
+            "770e8400-e29b-41d4-a716-446655440002"
+          ],
+          "failed": []
+        }
+      }
+    }
+  ],
+  "file_categories": {
+    "profile_picture": "صورة شخصية",
+    "medical_image": "صورة طبية (أشعة، فحوصات، إلخ)",
+    "document": "مستند عام",
+    "prescription": "وصفة طبية",
+    "license": "رخصة (رخصة طبيب، ترخيص، إلخ)",
+    "id_document": "وثيقة هوية",
+    "other": "أخرى"
+  },
+  "virus_scan_statuses": {
+    "pending": "في انتظار الفحص",
+    "clean": "نظيف (لا فيروسات)",
+    "infected": "مصاب بفيروس",
+    "error": "خطأ في الفحص"
+  },
+  "storage_providers": {
+    "local": "تخزين محلي على السيرفر",
+    "s3": "Amazon S3",
+    "azure": "Microsoft Azure Storage",
+    "gcs": "Google Cloud Storage"
+  },
+  "common_errors": [
+    {
+      "status": 404,
+      "message": "File not found",
+      "description": "الملف غير موجود أو محذوف"
+    },
+    {
+      "status": 400,
+      "message": "Please provide an array of UUIDs",
+      "description": "في bulk delete - يجب إرسال array من UUIDs"
+    },
+    {
+      "status": 401,
+      "message": "Unauthorized",
+      "description": "لم يتم المصادقة أو التوكن غير صحيح"
+    },
+    {
+      "status": 403,
+      "message": "Forbidden - Admin access required",
+      "description": "يتطلب صلاحيات Admin"
+    },
+    {
+      "status": 500,
+      "message": "Error retrieving files",
+      "description": "خطأ في السيرفر"
+    }
+  ],
+  "integration_examples": {
+    "profile_picture_upload": {
+      "description": "عند رفع صورة شخصية، يتم تسجيلها تلقائياً في جدول files",
+      "endpoint": "POST /api/profile-user/picture",
+      "result": "يتم إنشاء سجل في files table مع file_category='profile_picture' و related_to_type='user_profile'"
+    },
+    "medical_record_images": {
+      "description": "رفع صور طبية لسجل طبي",
+      "code_example": {
+        "javascript": "const FileService = require('./services/fileService');\n\nconst fileRecord = await FileService.uploadFile(\n  req.file,\n  { entityType: 'doctor', entityId: doctorId },\n  {\n    fileCategory: 'medical_image',\n    relatedToType: 'medical_record',\n    relatedToId: medicalRecordId,\n    isPublic: false,\n    metadata: {\n      body_part: 'chest',\n      image_type: 'x-ray'\n    }\n  }\n);"
+      }
+    }
+  },
+  "postman_collection_url": "Import this JSON into Postman as a collection",
+  "notes": [
+    "جميع endpoints تتطلب Admin authentication",
+    "التواريخ بصيغة ISO 8601",
+    "الأحجام بالـ bytes",
+    "UUID format: 8-4-4-4-12 hexadecimal",
+    "soft delete يعني is_deleted=1 (البيانات تبقى في القاعدة)",
+    "hard delete يعني حذف من القرص والقاعدة"
+  ]
+}

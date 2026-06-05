@@ -1,0 +1,387 @@
+{
+  "info": {
+    "name": "Admin Doctor Verification Status API",
+    "description": "اختبار API لتحديث حالة التحقق الشاملة للأطباء من قبل الأدمن",
+    "_postman_id": "verification-status-api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Update Doctor Verification Status - Verify & Approve",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}",
+            "description": "توكن الأدمن"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "description": "اللغة المفضلة"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": true,\n  \"approval_status\": \"approved\",\n  \"reason\": \"تم التحقق من جميع المستندات والبيانات المهنية\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "1",
+              "description": "معرف الطبيب"
+            }
+          ]
+        },
+        "description": "تحديث حالة التحقق للطبيب - التحقق والموافقة\n\nيقوم بتحديث:\n- is_verified = true\n- verification_date = الوقت الحالي\n- verified_by = معرف الأدمن\n- approval_status = approved\n- doctor status = active"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Update Doctor Verification Status - Verify Only",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": true,\n  \"reason\": \"تم التحقق من الهوية والمستندات الأساسية\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "2"
+            }
+          ]
+        },
+        "description": "التحقق من الطبيب فقط بدون تحديد حالة الموافقة\n\nيقوم بتحديث:\n- is_verified = true\n- verification_date = الوقت الحالي\n- verified_by = معرف الأدمن\n- approval_status = approved (تلقائياً)"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Update Doctor Verification Status - Unverify",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": false,\n  \"approval_status\": \"pending\",\n  \"reason\": \"يتطلب مراجعة إضافية للمستندات\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "3"
+            }
+          ]
+        },
+        "description": "إلغاء التحقق من الطبيب\n\nيقوم بتحديث:\n- is_verified = false\n- verification_date = null\n- verified_by = null\n- approval_status = pending\n- doctor status = pending_verification"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Doctor Verification Status - Reject",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": false,\n  \"approval_status\": \"rejected\",\n  \"reason\": \"المستندات المقدمة غير صحيحة أو منتهية الصلاحية\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "4"
+            }
+          ]
+        },
+        "description": "رفض التحقق من الطبيب\n\nيقوم بتحديث:\n- is_verified = false\n- verification_date = null\n- verified_by = null\n- approval_status = rejected\n- doctor status = inactive"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Update Doctor Verification Status - Suspend",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": false,\n  \"approval_status\": \"suspended\",\n  \"reason\": \"تم تعليق الحساب بسبب شكاوى متعددة\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "تعليق حساب الطبيب\n\nيقوم بتحديث:\n- is_verified = false\n- verification_date = null\n- verified_by = null\n- approval_status = suspended\n- doctor status = suspended"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Doctor Details - Check Verification Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "جلب تفاصيل الطبيب للتحقق من حالة التحقق\n\nيعرض:\n- is_verified\n- verification_date\n- verified_by\n- approval_status\n- doctor status"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get All Doctors - Filter by Verification",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors?is_verified=true&approval_status=approved&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors"],
+          "query": [
+            {
+              "key": "is_verified",
+              "value": "true",
+              "description": "فلترة حسب حالة التحقق"
+            },
+            {
+              "key": "approval_status",
+              "value": "approved",
+              "description": "فلترة حسب حالة الموافقة"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "جلب جميع الأطباء مع فلترة حسب حالة التحقق والموافقة"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Error - Missing is_verified",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"approval_status\": \"approved\",\n  \"reason\": \"محاولة تحديث بدون is_verified\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "اختبار خطأ - is_verified مطلوب\n\nالنتيجة المتوقعة:\n- Status: 400\n- message_ar: حالة التحقق مطلوبة (is_verified)"
+      },
+      "response": []
+    },
+    {
+      "name": "9. Error - Invalid approval_status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": true,\n  \"approval_status\": \"invalid_status\",\n  \"reason\": \"محاولة استخدام حالة غير صحيحة\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/:doctorId/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", ":doctorId", "verification-status"],
+          "variable": [
+            {
+              "key": "doctorId",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "اختبار خطأ - approval_status غير صحيح\n\nالنتيجة المتوقعة:\n- Status: 400\n- message_ar: حالة الموافقة غير صحيحة"
+      },
+      "response": []
+    },
+    {
+      "name": "10. Error - Doctor Not Found",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"is_verified\": true,\n  \"approval_status\": \"approved\",\n  \"reason\": \"محاولة تحديث طبيب غير موجود\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/admin/doctors/99999/verification-status",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "doctors", "99999", "verification-status"]
+        },
+        "description": "اختبار خطأ - الطبيب غير موجود\n\nالنتيجة المتوقعة:\n- Status: 404\n- message_ar: ملف الطبيب غير موجود"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3006",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "YOUR_ADMIN_TOKEN_HERE",
+      "type": "string"
+    }
+  ]
+}

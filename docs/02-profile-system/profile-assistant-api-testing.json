@@ -1,0 +1,109 @@
+{
+  "api_base_url": "http://localhost:3006/api/profile-assistant",
+  "description": "دليل اختبار شامل لجميع APIs الخاصة بالملف الشخصي للمساعدين",
+  "version": "1.0.0",
+  "last_updated": "2024-12-19",
+  "authentication": {
+    "type": "JWT Bearer Token",
+    "header": "Authorization: Bearer <token>",
+    "required_role": "assistant",
+    "middleware_chain": ["authenticateJWT", "authorizeAssistant", "checkAccountActive"]
+  },
+  "endpoints": [
+    {
+      "id": 1,
+      "name": "Get Assistant Profile",
+      "method": "GET",
+      "endpoint": "/api/profile-assistant",
+      "description": "جلب الملف الشخصي للمساعد",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Accept-Language": "ar"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Get Complete Assistant Data",
+      "method": "GET",
+      "endpoint": "/api/profile-assistant/complete",
+      "description": "جلب البيانات الكاملة",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Update Assistant Profile (Single Lang)",
+      "method": "PUT",
+      "endpoint": "/api/profile-assistant",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Content-Type": "application/json",
+        "Accept-Language": "ar"
+      },
+      "body": {
+        "full_name": "اسم المساعد الجديد",
+        "job_title": "مساعد إداري",
+        "date_of_birth": "1995-01-01"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Update Assistant Profile (Multi Lang)",
+      "method": "PUT",
+      "endpoint": "/api/profile-assistant",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "date_of_birth": "1995-01-01",
+        "translations": {
+          "ar": { "full_name": "مساعد عربي", "job_title": "مساعد" },
+          "en": { "full_name": "English Assistant", "job_title": "Assistant" }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "Upload Profile Picture",
+      "method": "POST",
+      "endpoint": "/api/profile-assistant/picture",
+      "headers": {
+        "Authorization": "Bearer TOKEN",
+        "Content-Type": "multipart/form-data"
+      },
+      "body_type": "form-data",
+      "fields": {
+        "profile_picture": "(File)"
+      }
+    },
+    {
+      "id": 6,
+      "name": "Delete Profile Picture",
+      "method": "DELETE",
+      "endpoint": "/api/profile-assistant/picture",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Deactivate Account",
+      "method": "DELETE",
+      "endpoint": "/api/profile-assistant",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Reactivate Account",
+      "method": "PATCH",
+      "endpoint": "/api/profile-assistant/reactivate",
+      "headers": {
+        "Authorization": "Bearer TOKEN"
+      }
+    }
+  ]
+}

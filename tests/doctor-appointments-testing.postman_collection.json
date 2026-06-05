@@ -1,0 +1,483 @@
+{
+  "info": {
+    "name": "Doctor Appointments Testing",
+    "description": "Complete testing collection for doctor appointments management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "doctor_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointment_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get Today's Appointments",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Response contains appointments array\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.be.an('array');",
+              "});",
+              "",
+              "// Save first appointment ID if exists",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.data && jsonData.data.length > 0) {",
+              "    pm.collectionVariables.set('appointment_id', jsonData.data[0].id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/today",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "today"]
+        },
+        "description": "Get today's appointments for the doctor"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Get My Appointments",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Appointments have schedule_id\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.length > 0) {",
+              "        pm.expect(jsonData.data[0]).to.have.property('schedule_id');",
+              "        pm.expect(jsonData.data[0]).to.have.property('consultation_fee');",
+              "        pm.expect(jsonData.data[0]).to.have.property('currency_code');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments?status=pending&page=1&limit=20",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments"],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending",
+              "description": "Optional: pending, confirmed, in_progress, completed, cancelled, no_show, rescheduled"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            }
+          ]
+        },
+        "description": "Get doctor's appointments with optional filters"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Appointment By ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Appointment has schedule data\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('schedule_id');",
+              "    pm.expect(jsonData.data).to.have.property('actual_start_time');",
+              "    pm.expect(jsonData.data).to.have.property('consultation_fee');",
+              "    pm.expect(jsonData.data).to.have.property('currency_code');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/{{appointment_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "{{appointment_id}}"]
+        },
+        "description": "Get single appointment details"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Confirm Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/{{appointment_id}}/confirm",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "{{appointment_id}}", "confirm"]
+        },
+        "description": "Confirm a pending appointment"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Start Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/{{appointment_id}}/start",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "{{appointment_id}}", "start"]
+        },
+        "description": "Start an appointment (mark as in progress)"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Complete Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/{{appointment_id}}/complete",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "{{appointment_id}}", "complete"]
+        },
+        "description": "Complete an appointment"
+      },
+      "response": []
+    },
+    {
+      "name": "7. Mark No Show",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/{{appointment_id}}/no-show",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "{{appointment_id}}", "no-show"]
+        },
+        "description": "Mark appointment as no-show"
+      },
+      "response": []
+    },
+    {
+      "name": "8. Cancel Appointment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cancellation_reason\": \"ظرف طارئ\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/{{appointment_id}}/cancel",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "{{appointment_id}}", "cancel"]
+        },
+        "description": "Cancel an appointment with optional reason"
+      },
+      "response": []
+    },
+    {
+      "name": "9. Get Statistics",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has success true\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "});",
+              "",
+              "pm.test(\"Statistics contain required fields\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.data).to.have.property('total_appointments');",
+              "    pm.expect(jsonData.data).to.have.property('by_status');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{doctor_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "ar",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/doctor/appointments/statistics?from_date=2026-03-01&to_date=2026-03-31",
+          "host": ["{{base_url}}"],
+          "path": ["doctor", "appointments", "statistics"],
+          "query": [
+            {
+              "key": "from_date",
+              "value": "2026-03-01",
+              "description": "Optional start date"
+            },
+            {
+              "key": "to_date",
+              "value": "2026-03-31",
+              "description": "Optional end date"
+            }
+          ]
+        },
+        "description": "Get appointment statistics for the doctor"
+      },
+      "response": []
+    }
+  ]
+}
