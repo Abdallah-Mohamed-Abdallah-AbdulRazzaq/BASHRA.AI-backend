@@ -5,42 +5,120 @@ const db = require('../config/db');
  * Handles appointment management for doctors
  * الأطباء - إدارة المواعيد
  */
-
 class DoctorAppointmentsController {
-  /**
-   * Helper: Normalize language code
-   */
+  static VALID_STATUS = ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'];
+  static VALID_APPOINTMENT_TYPES = ['consultation', 'follow_up', 'urgent', 'routine'];
+
   static normalizeLanguage(langHeader, userPreference) {
     const lang = langHeader || userPreference || 'ar';
     return lang.toLowerCase().startsWith('ar') ? 'ar' : 'en';
   }
 
-  /**
-   * Get doctor's appointments
-   * جلب مواعيد الطبيب
-   * GET /api/doctor/appointments
-   */
+  static parsePositiveInt(value, fallback, max = 100) {
+    const parsed = parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static getPagination(page, limit) {
+    const pageNum = DoctorAppointmentsController.parsePositiveInt(page, 1, 1000000);
+    const limitNum = DoctorAppointmentsController.parsePositiveInt(limit, 20, 100);
+    return { pageNum, limitNum, offsetNum: (pageNum - 1) * limitNum };
+  }
+
+  static isValidDateString(dateStr) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dateStr || ''))) return false;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  }
+
+  static buildDoctorAppointmentWhere(doctorId, filters = {}) {
+    let whereClause = 'WHERE a.doctor_id = ?';
+    const params = [doctorId];
+
+    if (filters.status) {
+      whereClause += ' AND a.status = ?';
+      params.push(filters.status);
+    }
+
+    if (filters.appointment_type) {
+      whereClause += ' AND a.appointment_type = ?';
+      params.push(filters.appointment_type);
+    }
+
+    if (filters.from_date) {
+      whereClause += ' AND a.scheduled_date >= ?';
+      params.push(filters.from_date);
+    }
+
+    if (filters.to_date) {
+      whereClause += ' AND a.scheduled_date <= ?';
+      params.push(filters.to_date);
+    }
+
+    return { whereClause, params };
+  }
+
+  static async getAppointmentTranslations(connection, appointmentId, lang = null) {
+    if (lang) {
+      const [translations] = await connection.execute(
+        'SELECT * FROM appointment_translations WHERE appointment_id = ? AND language_code = ?',
+        [appointmentId, lang]
+      );
+      return translations[0] || null;
+    }
+
+    const [translations] = await connection.execute(
+      'SELECT * FROM appointment_translations WHERE appointment_id = ?',
+      [appointmentId]
+    );
+
+    const translationsMap = {};
+    translations.forEach((t) => {
+      translationsMap[t.language_code] = {
+        chief_complaint: t.chief_complaint,
+        symptoms_description: t.symptoms_description,
+        cancellation_reason: t.cancellation_reason,
+        notes: t.notes
+      };
+    });
+    return translationsMap;
+  }
+
+  /** Get doctor's appointments */
   static async getMyAppointments(req, res) {
     const connection = await db.getConnection();
-    
+
     try {
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      const { status, from_date, to_date, appointment_type, page = 1, limit = 20 } = req.query;
 
-      const { 
-        status, 
-        from_date, 
-        to_date,
-        appointment_type,
-        page = 1,
-        limit = 20
-      } = req.query;
+      if (status && !DoctorAppointmentsController.VALID_STATUS.includes(status)) {
+        return res.status(400).json({ success: false, message: lang === 'ar' ? 'حالة الموعد غير صحيحة' : 'Invalid appointment status' });
+      }
 
-      let query = `
-        SELECT 
+      if (appointment_type && !DoctorAppointmentsController.VALID_APPOINTMENT_TYPES.includes(appointment_type)) {
+        return res.status(400).json({ success: false, message: lang === 'ar' ? 'نوع الموعد غير صحيح' : 'Invalid appointment type' });
+      }
+
+      if ((from_date && !DoctorAppointmentsController.isValidDateString(from_date)) || (to_date && !DoctorAppointmentsController.isValidDateString(to_date))) {
+        return res.status(400).json({ success: false, message: lang === 'ar' ? 'صيغة التاريخ غير صحيحة' : 'Invalid date format' });
+      }
+
+      const { pageNum, limitNum, offsetNum } = DoctorAppointmentsController.getPagination(page, limit);
+      const { whereClause, params: whereParams } = DoctorAppointmentsController.buildDoctorAppointmentWhere(doctorId, { status, appointment_type, from_date, to_date });
+
+      const [countResult] = await connection.execute(`
+        SELECT COUNT(*) as total
+        FROM appointments a
+        ${whereClause}
+      `, whereParams);
+      const total = Number(countResult[0]?.total || 0);
+
+      const [appointments] = await connection.execute(`
+        SELECT
           a.*,
           upt.full_name as patient_name,
           u.email as patient_email,
@@ -48,79 +126,34 @@ class DoctorAppointmentsController {
           c.name as clinic_name
         FROM appointments a
         INNER JOIN users u ON a.patient_id = u.id
-        INNER JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
         LEFT JOIN user_profile_translations upt ON up.id = upt.profile_id AND upt.language_code = ?
         LEFT JOIN clinics c ON a.clinic_id = c.id
-        WHERE a.doctor_id = ?
-      `;
-      const params = [lang, doctorId];
+        ${whereClause}
+        ORDER BY a.scheduled_date ASC, a.actual_start_time ASC
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+      `, [lang, ...whereParams]);
 
-      if (status) {
-        query += ' AND a.status = ?';
-        params.push(status);
-      }
-
-      if (appointment_type) {
-        query += ' AND a.appointment_type = ?';
-        params.push(appointment_type);
-      }
-
-      if (from_date) {
-        query += ' AND a.scheduled_date >= ?';
-        params.push(from_date);
-      }
-
-      if (to_date) {
-        query += ' AND a.scheduled_date <= ?';
-        params.push(to_date);
-      }
-
-      // Get total count
-      const countQuery = query.replace(/SELECT.*FROM/, 'SELECT COUNT(*) as total FROM');
-      const [countResult] = await connection.execute(countQuery, params);
-      const total = countResult[0].total;
-
-      // Add pagination
-      const offset = (page - 1) * limit;
-      const limitNum = parseInt(limit);
-      const offsetNum = parseInt(offset);
-      query += ` ORDER BY a.scheduled_date ASC, a.actual_start_time ASC LIMIT ${limitNum} OFFSET ${offsetNum}`;
-
-      const [appointments] = await connection.execute(query, params);
-
-      // Get translations for each appointment
-      const formattedAppointments = await Promise.all(appointments.map(async (apt) => {
-        const [translations] = await connection.execute(
-          'SELECT * FROM appointment_translations WHERE appointment_id = ? AND language_code = ?',
-          [apt.id, lang]
-        );
-
-        return {
-          ...apt,
-          translations: translations[0] || null
-        };
-      }));
+      const formattedAppointments = await Promise.all(appointments.map(async (apt) => ({
+        ...apt,
+        translations: await DoctorAppointmentsController.getAppointmentTranslations(connection, apt.id, lang)
+      })));
 
       res.json({
         success: true,
         count: formattedAppointments.length,
-        total: total,
-        page: parseInt(page),
-        pages: Math.ceil(total / limit),
+        total,
+        page: pageNum,
+        pages: Math.ceil(total / limitNum),
         data: formattedAppointments
       });
 
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       res.status(500).json({
         success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في جلب المواعيد' 
-          : 'Error fetching appointments',
+        message: lang === 'ar' ? 'خطأ في جلب المواعيد' : 'Error fetching appointments',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     } finally {
@@ -128,25 +161,18 @@ class DoctorAppointmentsController {
     }
   }
 
-  /**
-   * Get single appointment details
-   * جلب تفاصيل موعد واحد
-   * GET /api/doctor/appointments/:id
-   */
+  /** Get single appointment details */
   static async getAppointmentById(req, res) {
     const connection = await db.getConnection();
-    
+
     try {
       const { id } = req.params;
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       const isUUID = id.includes('-');
+
       const [appointments] = await connection.execute(`
-        SELECT 
+        SELECT
           a.*,
           upt.full_name as patient_name,
           u.email as patient_email,
@@ -158,423 +184,166 @@ class DoctorAppointmentsController {
           c.address_line_1 as clinic_address
         FROM appointments a
         INNER JOIN users u ON a.patient_id = u.id
-        INNER JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
         LEFT JOIN user_profile_translations upt ON up.id = upt.profile_id AND upt.language_code = ?
         LEFT JOIN clinics c ON a.clinic_id = c.id
         WHERE ${isUUID ? 'a.uuid' : 'a.id'} = ? AND a.doctor_id = ?
       `, [lang, id, doctorId]);
 
       if (appointments.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found'
-        });
+        return res.status(404).json({ success: false, message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found' });
       }
 
       const appointment = appointments[0];
-
-      // Get all translations
-      const [translations] = await connection.execute(
-        'SELECT * FROM appointment_translations WHERE appointment_id = ?',
-        [appointment.id]
-      );
-
-      const translationsMap = {};
-      translations.forEach(t => {
-        translationsMap[t.language_code] = {
-          chief_complaint: t.chief_complaint,
-          symptoms_description: t.symptoms_description,
-          cancellation_reason: t.cancellation_reason,
-          notes: t.notes
-        };
-      });
-
       res.json({
         success: true,
         data: {
           ...appointment,
-          translations: translationsMap
+          translations: await DoctorAppointmentsController.getAppointmentTranslations(connection, appointment.id)
         }
       });
 
     } catch (error) {
       console.error('Error fetching appointment:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في جلب الموعد' 
-          : 'Error fetching appointment',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في جلب الموعد' : 'Error fetching appointment', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Confirm appointment
-   * تأكيد موعد
-   * PATCH /api/doctor/appointments/:id/confirm
-   */
   static async confirmAppointment(req, res) {
     const connection = await db.getConnection();
-    
     try {
       const { id } = req.params;
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       const isUUID = id.includes('-');
-      const [appointments] = await connection.execute(`
-        SELECT id, status
-        FROM appointments
-        WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?
-      `, [id, doctorId]);
 
-      if (appointments.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found'
-        });
-      }
+      const [appointments] = await connection.execute(`SELECT id, status FROM appointments WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?`, [id, doctorId]);
+      if (appointments.length === 0) return res.status(404).json({ success: false, message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found' });
 
       const appointment = appointments[0];
+      if (appointment.status !== 'pending') return res.status(400).json({ success: false, message: lang === 'ar' ? 'لا يمكن تأكيد هذا الموعد' : 'Cannot confirm this appointment' });
 
-      if (appointment.status !== 'pending') {
-        return res.status(400).json({
-          success: false,
-          message: lang === 'ar' 
-            ? 'لا يمكن تأكيد هذا الموعد' 
-            : 'Cannot confirm this appointment'
-        });
-      }
-
-      await connection.execute(`
-        UPDATE appointments
-        SET status = 'confirmed'
-        WHERE id = ?
-      `, [appointment.id]);
-
-      res.json({
-        success: true,
-        message: lang === 'ar' 
-          ? 'تم تأكيد الموعد بنجاح' 
-          : 'Appointment confirmed successfully'
-      });
-
+      await connection.execute(`UPDATE appointments SET status = 'confirmed' WHERE id = ?`, [appointment.id]);
+      res.json({ success: true, message: lang === 'ar' ? 'تم تأكيد الموعد بنجاح' : 'Appointment confirmed successfully' });
     } catch (error) {
       console.error('Error confirming appointment:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في تأكيد الموعد' 
-          : 'Error confirming appointment',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في تأكيد الموعد' : 'Error confirming appointment', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Start appointment (mark as in progress)
-   * بدء الموعد
-   * PATCH /api/doctor/appointments/:id/start
-   */
   static async startAppointment(req, res) {
     const connection = await db.getConnection();
-    
     try {
       const { id } = req.params;
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       const isUUID = id.includes('-');
-      const [appointments] = await connection.execute(`
-        SELECT id, status
-        FROM appointments
-        WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?
-      `, [id, doctorId]);
 
-      if (appointments.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found'
-        });
-      }
+      const [appointments] = await connection.execute(`SELECT id, status FROM appointments WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?`, [id, doctorId]);
+      if (appointments.length === 0) return res.status(404).json({ success: false, message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found' });
 
       const appointment = appointments[0];
+      if (!['pending', 'confirmed'].includes(appointment.status)) return res.status(400).json({ success: false, message: lang === 'ar' ? 'لا يمكن بدء هذا الموعد' : 'Cannot start this appointment' });
 
-      if (appointment.status !== 'confirmed' && appointment.status !== 'pending') {
-        return res.status(400).json({
-          success: false,
-          message: lang === 'ar' 
-            ? 'لا يمكن بدء هذا الموعد' 
-            : 'Cannot start this appointment'
-        });
-      }
-
-      await connection.execute(`
-        UPDATE appointments
-        SET status = 'in_progress'
-        WHERE id = ?
-      `, [appointment.id]);
-
-      res.json({
-        success: true,
-        message: lang === 'ar' 
-          ? 'تم بدء الموعد بنجاح' 
-          : 'Appointment started successfully'
-      });
-
+      await connection.execute(`UPDATE appointments SET status = 'in_progress' WHERE id = ?`, [appointment.id]);
+      res.json({ success: true, message: lang === 'ar' ? 'تم بدء الموعد بنجاح' : 'Appointment started successfully' });
     } catch (error) {
       console.error('Error starting appointment:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في بدء الموعد' 
-          : 'Error starting appointment',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في بدء الموعد' : 'Error starting appointment', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Complete appointment
-   * إكمال موعد
-   * PATCH /api/doctor/appointments/:id/complete
-   */
   static async completeAppointment(req, res) {
     const connection = await db.getConnection();
-    
     try {
       const { id } = req.params;
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       const isUUID = id.includes('-');
-      const [appointments] = await connection.execute(`
-        SELECT id, status
-        FROM appointments
-        WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?
-      `, [id, doctorId]);
 
-      if (appointments.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found'
-        });
-      }
+      const [appointments] = await connection.execute(`SELECT id, status FROM appointments WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?`, [id, doctorId]);
+      if (appointments.length === 0) return res.status(404).json({ success: false, message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found' });
 
       const appointment = appointments[0];
+      if (appointment.status !== 'in_progress') return res.status(400).json({ success: false, message: lang === 'ar' ? 'لا يمكن إكمال هذا الموعد' : 'Cannot complete this appointment' });
 
-      if (appointment.status !== 'in_progress') {
-        return res.status(400).json({
-          success: false,
-          message: lang === 'ar' 
-            ? 'لا يمكن إكمال هذا الموعد' 
-            : 'Cannot complete this appointment'
-        });
-      }
-
-      await connection.execute(`
-        UPDATE appointments
-        SET status = 'completed'
-        WHERE id = ?
-      `, [appointment.id]);
-
-      res.json({
-        success: true,
-        message: lang === 'ar' 
-          ? 'تم إكمال الموعد بنجاح' 
-          : 'Appointment completed successfully'
-      });
-
+      await connection.execute(`UPDATE appointments SET status = 'completed' WHERE id = ?`, [appointment.id]);
+      res.json({ success: true, message: lang === 'ar' ? 'تم إكمال الموعد بنجاح' : 'Appointment completed successfully' });
     } catch (error) {
       console.error('Error completing appointment:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في إكمال الموعد' 
-          : 'Error completing appointment',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في إكمال الموعد' : 'Error completing appointment', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Mark appointment as no-show
-   * تسجيل عدم حضور
-   * PATCH /api/doctor/appointments/:id/no-show
-   */
   static async markNoShow(req, res) {
     const connection = await db.getConnection();
-    
     try {
       const { id } = req.params;
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       const isUUID = id.includes('-');
-      const [appointments] = await connection.execute(`
-        SELECT id, status
-        FROM appointments
-        WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?
-      `, [id, doctorId]);
 
-      if (appointments.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found'
-        });
-      }
+      const [appointments] = await connection.execute(`SELECT id, status FROM appointments WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?`, [id, doctorId]);
+      if (appointments.length === 0) return res.status(404).json({ success: false, message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found' });
 
       const appointment = appointments[0];
+      if (['completed', 'cancelled'].includes(appointment.status)) return res.status(400).json({ success: false, message: lang === 'ar' ? 'لا يمكن تسجيل عدم حضور لهذا الموعد' : 'Cannot mark this appointment as no-show' });
 
-      if (appointment.status === 'completed' || appointment.status === 'cancelled') {
-        return res.status(400).json({
-          success: false,
-          message: lang === 'ar' 
-            ? 'لا يمكن تسجيل عدم حضور لهذا الموعد' 
-            : 'Cannot mark this appointment as no-show'
-        });
-      }
-
-      await connection.execute(`
-        UPDATE appointments
-        SET status = 'no_show'
-        WHERE id = ?
-      `, [appointment.id]);
-
-      res.json({
-        success: true,
-        message: lang === 'ar' 
-          ? 'تم تسجيل عدم الحضور بنجاح' 
-          : 'Appointment marked as no-show successfully'
-      });
-
+      await connection.execute(`UPDATE appointments SET status = 'no_show' WHERE id = ?`, [appointment.id]);
+      res.json({ success: true, message: lang === 'ar' ? 'تم تسجيل عدم الحضور بنجاح' : 'Appointment marked as no-show successfully' });
     } catch (error) {
       console.error('Error marking no-show:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في تسجيل عدم الحضور' 
-          : 'Error marking no-show',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في تسجيل عدم الحضور' : 'Error marking no-show', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Cancel appointment
-   * إلغاء موعد
-   * PATCH /api/doctor/appointments/:id/cancel
-   */
   static async cancelAppointment(req, res) {
     const connection = await db.getConnection();
-    
     try {
       await connection.beginTransaction();
-
       const { id } = req.params;
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       let { cancellation_reason } = req.body;
 
-      // Parse if string
       if (typeof cancellation_reason === 'string') {
-        try {
-          cancellation_reason = JSON.parse(cancellation_reason);
-        } catch (e) {
-          // Keep as string
-        }
+        try { cancellation_reason = JSON.parse(cancellation_reason); } catch (e) { /* keep string */ }
       }
 
       const isUUID = id.includes('-');
-      const [appointments] = await connection.execute(`
-        SELECT id, status
-        FROM appointments
-        WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?
-      `, [id, doctorId]);
-
+      const [appointments] = await connection.execute(`SELECT id, status FROM appointments WHERE ${isUUID ? 'uuid' : 'id'} = ? AND doctor_id = ?`, [id, doctorId]);
       if (appointments.length === 0) {
         await connection.rollback();
-        return res.status(404).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found'
-        });
+        return res.status(404).json({ success: false, message: lang === 'ar' ? 'الموعد غير موجود' : 'Appointment not found' });
       }
 
       const appointment = appointments[0];
-
       if (appointment.status === 'cancelled') {
         await connection.rollback();
-        return res.status(400).json({
-          success: false,
-          message: lang === 'ar' ? 'الموعد ملغى بالفعل' : 'Appointment already cancelled'
-        });
+        return res.status(400).json({ success: false, message: lang === 'ar' ? 'الموعد ملغى بالفعل' : 'Appointment already cancelled' });
       }
-
-      if (appointment.status === 'completed') {
+      if (['completed', 'no_show'].includes(appointment.status)) {
         await connection.rollback();
-        return res.status(400).json({
-          success: false,
-          message: lang === 'ar' 
-            ? 'لا يمكن إلغاء موعد مكتمل' 
-            : 'Cannot cancel completed appointment'
-        });
+        return res.status(400).json({ success: false, message: lang === 'ar' ? 'لا يمكن إلغاء هذا الموعد' : 'Cannot cancel this appointment' });
       }
 
-      // Update appointment
-      await connection.execute(`
-        UPDATE appointments
-        SET status = 'cancelled', cancelled_by_doctor_id = ?, cancelled_at = NOW()
-        WHERE id = ?
-      `, [doctorId, appointment.id]);
+      await connection.execute(`UPDATE appointments SET status = 'cancelled', cancelled_by_doctor_id = ?, cancelled_at = NOW() WHERE id = ?`, [doctorId, appointment.id]);
 
-      // Update translation if cancellation reason provided
       if (cancellation_reason) {
         if (typeof cancellation_reason === 'object') {
           for (const [langCode, reason] of Object.entries(cancellation_reason)) {
@@ -594,112 +363,64 @@ class DoctorAppointmentsController {
       }
 
       await connection.commit();
-
-      res.json({
-        success: true,
-        message: lang === 'ar' 
-          ? 'تم إلغاء الموعد بنجاح' 
-          : 'Appointment cancelled successfully'
-      });
-
+      res.json({ success: true, message: lang === 'ar' ? 'تم إلغاء الموعد بنجاح' : 'Appointment cancelled successfully' });
     } catch (error) {
       await connection.rollback();
       console.error('Error cancelling appointment:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في إلغاء الموعد' 
-          : 'Error cancelling appointment',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في إلغاء الموعد' : 'Error cancelling appointment', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Get today's appointments
-   * جلب مواعيد اليوم
-   * GET /api/doctor/appointments/today
-   */
   static async getTodayAppointments(req, res) {
     const connection = await db.getConnection();
-    
     try {
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
       const today = new Date().toISOString().split('T')[0];
 
       const [appointments] = await connection.execute(`
-        SELECT 
+        SELECT
           a.*,
           upt.full_name as patient_name,
           u.phone as patient_phone,
           c.name as clinic_name
         FROM appointments a
         INNER JOIN users u ON a.patient_id = u.id
-        INNER JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
         LEFT JOIN user_profile_translations upt ON up.id = upt.profile_id AND upt.language_code = ?
         LEFT JOIN clinics c ON a.clinic_id = c.id
-        WHERE a.doctor_id = ? 
+        WHERE a.doctor_id = ?
           AND a.scheduled_date = ?
           AND a.status NOT IN ('cancelled', 'no_show')
         ORDER BY a.actual_start_time ASC
       `, [lang, doctorId, today]);
 
-      res.json({
-        success: true,
-        date: today,
-        count: appointments.length,
-        data: appointments
-      });
-
+      res.json({ success: true, date: today, count: appointments.length, data: appointments });
     } catch (error) {
       console.error('Error fetching today appointments:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في جلب مواعيد اليوم' 
-          : 'Error fetching today appointments',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في جلب مواعيد اليوم' : 'Error fetching today appointments', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }
   }
 
-  /**
-   * Get appointment statistics
-   * إحصائيات المواعيد
-   * GET /api/doctor/appointments/statistics
-   */
   static async getStatistics(req, res) {
     const connection = await db.getConnection();
-    
     try {
       const doctorId = req.user.doctor_id || req.user.id;
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-
       const { from_date, to_date } = req.query;
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+
+      if ((from_date && !DoctorAppointmentsController.isValidDateString(from_date)) || (to_date && !DoctorAppointmentsController.isValidDateString(to_date))) {
+        return res.status(400).json({ success: false, message: lang === 'ar' ? 'صيغة التاريخ غير صحيحة' : 'Invalid date format' });
+      }
 
       let dateFilter = '';
       const params = [doctorId];
-
       if (from_date && to_date) {
         dateFilter = ' AND scheduled_date BETWEEN ? AND ?';
         params.push(from_date, to_date);
@@ -712,37 +433,24 @@ class DoctorAppointmentsController {
       }
 
       const [stats] = await connection.execute(`
-        SELECT 
+        SELECT
           COUNT(*) as total,
-          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-          SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
-          SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
-          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-          SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
-          SUM(CASE WHEN status = 'no_show' THEN 1 ELSE 0 END) as no_show,
-          SUM(CASE WHEN status = 'rescheduled' THEN 1 ELSE 0 END) as rescheduled
+          COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) as pending,
+          COALESCE(SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END), 0) as confirmed,
+          COALESCE(SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END), 0) as in_progress,
+          COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) as completed,
+          COALESCE(SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END), 0) as cancelled,
+          COALESCE(SUM(CASE WHEN status = 'no_show' THEN 1 ELSE 0 END), 0) as no_show,
+          COALESCE(SUM(CASE WHEN status = 'rescheduled' THEN 1 ELSE 0 END), 0) as rescheduled
         FROM appointments
         WHERE doctor_id = ?${dateFilter}
       `, params);
 
-      res.json({
-        success: true,
-        data: stats[0]
-      });
-
+      res.json({ success: true, data: stats[0] });
     } catch (error) {
       console.error('Error fetching statistics:', error);
-      const lang = DoctorAppointmentsController.normalizeLanguage(
-        req.headers['accept-language'],
-        null
-      );
-      res.status(500).json({
-        success: false,
-        message: lang === 'ar' 
-          ? 'خطأ في جلب الإحصائيات' 
-          : 'Error fetching statistics',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
+      const lang = DoctorAppointmentsController.normalizeLanguage(req.headers['accept-language'], null);
+      res.status(500).json({ success: false, message: lang === 'ar' ? 'خطأ في جلب الإحصائيات' : 'Error fetching statistics', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
     } finally {
       connection.release();
     }

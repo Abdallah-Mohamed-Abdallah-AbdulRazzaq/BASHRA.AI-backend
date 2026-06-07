@@ -38,6 +38,7 @@ const getLocalizedField = (obj, field, lang = 'ar') => {
  */
 const filterByLanguage = (data, lang = 'ar') => {
   if (!data) return data;
+  if (lang === 'all') return data;
   
   // If it's an array, apply to each item
   if (Array.isArray(data)) {
@@ -93,7 +94,7 @@ const getLocalizedMessage = (messageAr, messageEn, lang = 'ar') => {
  * @returns {Boolean} True if valid, false otherwise
  */
 const isValidLanguage = (lang) => {
-  return ['ar', 'en'].includes(lang);
+  return ['ar', 'en', 'all'].includes(lang);
 };
 
 /**

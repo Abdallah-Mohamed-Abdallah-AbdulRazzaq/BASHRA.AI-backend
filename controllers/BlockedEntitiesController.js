@@ -402,12 +402,111 @@ class BlockedEntitiesController {
       sort_order = 'DESC'
     } = req.query;
 
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    const language = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'ar';
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const offsetNum = (pageNum - 1) * limitNum;
+
+    if (entity_type && !BlockedEntitiesController.VALID_ENTITY_TYPES.includes(entity_type)) {
+      return res.status(400).json({
+        success: false,
+        message_ar: 'نوع الكيان غير صحيح',
+        message_en: 'Invalid entity type'
+      });
+    }
+
+    if (block_type && !BlockedEntitiesController.VALID_BLOCK_TYPES.includes(block_type)) {
+      return res.status(400).json({
+        success: false,
+        message_ar: 'نوع الحظر غير صحيح',
+        message_en: 'Invalid block type'
+      });
+    }
+
+    const normalizedIsActive = String(is_active).toLowerCase();
+    let isActiveFilter;
+    if (is_active !== undefined && is_active !== '') {
+      if (['true', '1'].includes(normalizedIsActive)) {
+        isActiveFilter = 1;
+      } else if (['false', '0'].includes(normalizedIsActive)) {
+        isActiveFilter = 0;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message_ar: 'قيمة is_active غير صحيحة',
+          message_en: 'Invalid is_active value'
+        });
+      }
+    }
 
     try {
-      let query = `
-        SELECT 
+      const fromAndJoins = `
+        FROM blocked_entities be
+        LEFT JOIN admins ba ON be.blocked_by_admin_id = ba.id
+        LEFT JOIN admins ra ON be.removed_by_admin_id = ra.id
+        LEFT JOIN users u ON be.blocked_user_id = u.id
+        LEFT JOIN doctors d ON be.blocked_doctor_id = d.id
+        LEFT JOIN assistants ast ON be.blocked_assistant_id = ast.id
+        LEFT JOIN admins adm ON be.blocked_admin_id = adm.id
+      `;
+
+      let whereClause = 'WHERE 1=1';
+      const params = [];
+
+      if (isActiveFilter !== undefined) {
+        whereClause += ' AND be.is_active = ?';
+        params.push(isActiveFilter);
+      }
+
+      if (entity_type) {
+        const blockedIdField = BlockedEntitiesController.getBlockedIdField(entity_type);
+        whereClause += ` AND be.${blockedIdField} IS NOT NULL`;
+      }
+
+      if (block_type) {
+        whereClause += ' AND be.block_type = ?';
+        params.push(block_type);
+      }
+
+      if (search) {
+        whereClause += ` AND (
+          u.email LIKE ? OR u.phone LIKE ? OR
+          d.email LIKE ? OR d.phone LIKE ? OR
+          ast.email LIKE ? OR ast.phone LIKE ? OR
+          adm.email LIKE ? OR adm.phone LIKE ? OR
+          be.reason LIKE ?
+        )`;
+        const searchPattern = `%${search}%`;
+        params.push(
+          searchPattern, searchPattern,
+          searchPattern, searchPattern,
+          searchPattern, searchPattern,
+          searchPattern, searchPattern,
+          searchPattern
+        );
+      }
+
+      const [countResult] = await db.query(
+        `
+        SELECT COUNT(*) as total
+        ${fromAndJoins}
+        ${whereClause}
+        `,
+        params
+      );
+      const total = Number(countResult[0]?.total || 0);
+
+      const sortFieldMap = {
+        created_at: 'be.created_at',
+        blocked_until: 'be.blocked_until',
+        block_type: 'be.block_type',
+        removed_at: 'be.removed_at'
+      };
+      const sortField = sortFieldMap[sort_by] || sortFieldMap.created_at;
+      const sortDirection = String(sort_order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+      const [blockedEntities] = await db.query(
+        `
+        SELECT
           be.id,
           be.blocked_user_id,
           be.blocked_admin_id,
@@ -421,105 +520,52 @@ class BlockedEntitiesController {
           be.created_at,
           be.removed_at,
           be.removed_by_admin_id,
-          -- Blocked by admin info
           ba.email as blocked_by_email,
           ba.admin_type as blocked_by_admin_type,
-          -- Removed by admin info
           ra.email as removed_by_email,
-          -- Entity info based on type
-          CASE 
+          CASE
             WHEN be.blocked_user_id IS NOT NULL THEN 'user'
             WHEN be.blocked_doctor_id IS NOT NULL THEN 'doctor'
             WHEN be.blocked_assistant_id IS NOT NULL THEN 'assistant'
             WHEN be.blocked_admin_id IS NOT NULL THEN 'admin'
           END as entity_type,
           COALESCE(be.blocked_user_id, be.blocked_doctor_id, be.blocked_assistant_id, be.blocked_admin_id) as entity_id,
-          -- Entity email
           COALESCE(u.email, d.email, ast.email, adm.email) as entity_email,
           COALESCE(u.phone, d.phone, ast.phone, adm.phone) as entity_phone,
           COALESCE(u.status, d.status, ast.status, adm.status) as entity_status
-        FROM blocked_entities be
-        LEFT JOIN admins ba ON be.blocked_by_admin_id = ba.id
-        LEFT JOIN admins ra ON be.removed_by_admin_id = ra.id
-        LEFT JOIN users u ON be.blocked_user_id = u.id
-        LEFT JOIN doctors d ON be.blocked_doctor_id = d.id
-        LEFT JOIN assistants ast ON be.blocked_assistant_id = ast.id
-        LEFT JOIN admins adm ON be.blocked_admin_id = adm.id
-        WHERE 1=1
-      `;
-
-      const params = [];
-
-      // Filter by is_active
-      if (is_active !== undefined) {
-        query += ' AND be.is_active = ?';
-        params.push(is_active === 'true' ? 1 : 0);
-      }
-
-      // Filter by entity_type
-      if (entity_type && BlockedEntitiesController.VALID_ENTITY_TYPES.includes(entity_type)) {
-        const blockedIdField = BlockedEntitiesController.getBlockedIdField(entity_type);
-        query += ` AND be.${blockedIdField} IS NOT NULL`;
-      }
-
-      // Filter by block_type
-      if (block_type && BlockedEntitiesController.VALID_BLOCK_TYPES.includes(block_type)) {
-        query += ' AND be.block_type = ?';
-        params.push(block_type);
-      }
-
-      // Search
-      if (search) {
-        query += ` AND (
-          u.email LIKE ? OR u.phone LIKE ? OR
-          d.email LIKE ? OR d.phone LIKE ? OR
-          ast.email LIKE ? OR ast.phone LIKE ? OR
-          adm.email LIKE ? OR adm.phone LIKE ? OR
-          be.reason LIKE ?
-        )`;
-        const searchPattern = `%${search}%`;
-        params.push(searchPattern, searchPattern, searchPattern, searchPattern, 
-                    searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
-      }
-
-      // Get total count
-      const countQuery = query.replace(/SELECT[\s\S]*?FROM/, 'SELECT COUNT(*) as total FROM');
-      const [countResult] = await db.query(countQuery, params);
-      const total = countResult[0]?.total || 0;
-
-      // Validate sort_by
-      const allowedSortFields = ['created_at', 'blocked_until', 'block_type', 'removed_at'];
-      const sortField = allowedSortFields.includes(sort_by) ? sort_by : 'created_at';
-      const sortDirection = sort_order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-      // Add sorting and pagination
-      query += ` ORDER BY be.${sortField} ${sortDirection} LIMIT ? OFFSET ?`;
-      params.push(parseInt(limit), offset);
-
-      const [blockedEntities] = await db.query(query, params);
+        ${fromAndJoins}
+        ${whereClause}
+        ORDER BY ${sortField} ${sortDirection}
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+        `,
+        params
+      );
 
       res.json({
         success: true,
         data: blockedEntities,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(total / parseInt(limit)),
-          hasMore: offset + blockedEntities.length < total
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: offsetNum + blockedEntities.length < total
         }
       });
 
     } catch (error) {
-      logger.error('Get all blocked entities error', { error: error.message });
+      logger.error('Get all blocked entities error', {
+        error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
       res.status(500).json({
         success: false,
         message_ar: 'خطأ في جلب الكيانات المحظورة',
-        message_en: 'Error fetching blocked entities'
+        message_en: 'Error fetching blocked entities',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
-
   /**
    * Get block details by ID
    * جلب تفاصيل الحظر
@@ -673,7 +719,9 @@ class BlockedEntitiesController {
   static async getEntityBlockHistory(req, res) {
     const { entity_id, entity_type } = req.params;
     const { page = 1, limit = 20 } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const offsetNum = (pageNum - 1) * limitNum;
 
     if (!BlockedEntitiesController.VALID_ENTITY_TYPES.includes(entity_type)) {
       return res.status(400).json({
@@ -714,8 +762,8 @@ class BlockedEntitiesController {
         LEFT JOIN admins ra ON be.removed_by_admin_id = ra.id
         WHERE be.${blockedIdField} = ?
         ORDER BY be.created_at DESC
-        LIMIT ? OFFSET ?
-      `, [entity_id, parseInt(limit), offset]);
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+      `, [entity_id]);
 
       // Get total count
       const [countResult] = await db.query(
@@ -730,9 +778,9 @@ class BlockedEntitiesController {
         history,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(total / parseInt(limit))
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum)
         }
       });
 

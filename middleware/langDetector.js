@@ -23,7 +23,7 @@ const langDetector = (req, res, next) => {
   }
 
   // Validate language - fallback to Arabic if invalid
-  if (!['ar', 'en'].includes(lang)) {
+  if (!['ar', 'en', 'all'].includes(lang)) {
     lang = 'ar';
   }
 

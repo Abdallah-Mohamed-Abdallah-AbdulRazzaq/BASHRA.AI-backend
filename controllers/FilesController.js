@@ -7,6 +7,22 @@ const db = require('../config/db');
  * Complete file management (Admin only)
  */
 class FilesController {
+  static VALID_ENTITY_TYPES = ['user', 'admin', 'doctor', 'assistant'];
+  static VALID_FILE_CATEGORIES = ['profile_picture', 'medical_image', 'document', 'prescription', 'license', 'id_document', 'other'];
+  static VALID_VIRUS_SCAN_STATUSES = ['pending', 'clean', 'infected', 'error'];
+
+  static toPositiveInt(value, fallback = 1, max = 100) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static toNonNegativeInt(value, fallback = 0, max = 1000000) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+    return Math.min(parsed, max);
+  }
+
   
   /**
    * Get all files with filters
@@ -28,71 +44,101 @@ class FilesController {
         searchTerm
       } = req.query;
       
-      // Parse pagination parameters with defaults
-      let pageNum = parseInt(page);
-      let limitNum = parseInt(limit);
-      
-      // Set defaults if invalid
-      if (isNaN(pageNum) || pageNum < 1) pageNum = 1;
-      if (isNaN(limitNum) || limitNum < 1) limitNum = 50;
-      if (limitNum > 100) limitNum = 100;
-      
-      // Calculate offset
+      const pageNum = FilesController.toPositiveInt(page, 1, 1000000);
+      const limitNum = FilesController.toPositiveInt(limit, 50, 100);
       const offsetNum = (pageNum - 1) * limitNum;
-      
-      // Build query
-      let query = `SELECT * FROM files WHERE is_deleted = 0`;
+
+      let whereClause = 'WHERE is_deleted = 0';
       const params = [];
       
-      // Apply filters
-      if (entityType && entityId) {
+      if (entityType || entityId) {
+        if (!entityType || !entityId || !FilesController.VALID_ENTITY_TYPES.includes(entityType)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Valid entityType and entityId are required when filtering by uploader'
+          });
+        }
+
+        const parsedEntityId = Number.parseInt(entityId, 10);
+        if (!Number.isFinite(parsedEntityId) || parsedEntityId < 1) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid entityId'
+          });
+        }
+
         const uploadedByField = `uploaded_by_${entityType}_id`;
-        query += ` AND ${uploadedByField} = ?`;
-        params.push(parseInt(entityId));
+        whereClause += ` AND ${uploadedByField} = ?`;
+        params.push(parsedEntityId);
       }
       
       if (fileCategory) {
-        query += ` AND file_category = ?`;
+        if (!FilesController.VALID_FILE_CATEGORIES.includes(fileCategory)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid fileCategory'
+          });
+        }
+        whereClause += ' AND file_category = ?';
         params.push(fileCategory);
       }
       
-      if (relatedToType && relatedToId) {
-        query += ` AND related_to_type = ? AND related_to_id = ?`;
-        params.push(relatedToType, parseInt(relatedToId));
+      if (relatedToType || relatedToId) {
+        const parsedRelatedId = Number.parseInt(relatedToId, 10);
+        if (!relatedToType || !Number.isFinite(parsedRelatedId) || parsedRelatedId < 1) {
+          return res.status(400).json({
+            success: false,
+            message: 'Valid relatedToType and relatedToId are required when filtering by related entity'
+          });
+        }
+        whereClause += ' AND related_to_type = ? AND related_to_id = ?';
+        params.push(relatedToType, parsedRelatedId);
       }
       
       if (virusScanStatus) {
-        query += ` AND virus_scan_status = ?`;
+        if (!FilesController.VALID_VIRUS_SCAN_STATUSES.includes(virusScanStatus)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid virusScanStatus'
+          });
+        }
+        whereClause += ' AND virus_scan_status = ?';
         params.push(virusScanStatus);
       }
       
-      if (isPublic !== undefined) {
-        query += ` AND is_public = ?`;
-        params.push(isPublic === 'true' ? 1 : 0);
+      if (isPublic !== undefined && isPublic !== '') {
+        const normalizedPublic = String(isPublic).toLowerCase();
+        if (!['true', 'false', '1', '0'].includes(normalizedPublic)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid isPublic value'
+          });
+        }
+        whereClause += ' AND is_public = ?';
+        params.push(['true', '1'].includes(normalizedPublic) ? 1 : 0);
       }
       
       if (storageProvider) {
-        query += ` AND storage_provider = ?`;
+        whereClause += ' AND storage_provider = ?';
         params.push(storageProvider);
       }
       
       if (searchTerm) {
-        query += ` AND (original_filename LIKE ? OR uuid LIKE ?)`;
-        params.push(`%${searchTerm}%`, `%${searchTerm}%`);
+        whereClause += ' AND (original_filename LIKE ? OR stored_filename LIKE ? OR uuid LIKE ?)';
+        const searchPattern = `%${searchTerm}%`;
+        params.push(searchPattern, searchPattern, searchPattern);
       }
       
-      // Get total count
-      const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
-      const [countResult] = await db.execute(countQuery, params);
-      const totalFiles = countResult[0].total;
+      const [countResult] = await db.execute(
+        `SELECT COUNT(*) as total FROM files ${whereClause}`,
+        params
+      );
+      const totalFiles = Number(countResult[0]?.total || 0);
       
-      // Add pagination to query (using direct values since they're validated integers)
-      // Note: We use direct values for LIMIT/OFFSET as they're validated integers,
-      // avoiding MySQL prepared statement issues with mixed parameter types
-      query += ` ORDER BY created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
-      
-      // Execute query with filter params only (no pagination params needed)
-      const [files] = await db.execute(query, params);
+      const [files] = await db.execute(
+        `SELECT * FROM files ${whereClause} ORDER BY created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`,
+        params
+      );
       
       return res.status(200).json({
         success: true,
@@ -103,7 +149,8 @@ class FilesController {
             total: totalFiles,
             page: pageNum,
             limit: limitNum,
-            totalPages: Math.ceil(totalFiles / limitNum)
+            totalPages: Math.ceil(totalFiles / limitNum),
+            hasMore: offsetNum + files.length < totalFiles
           }
         }
       });
@@ -113,7 +160,7 @@ class FilesController {
       return res.status(500).json({
         success: false,
         message: 'Error retrieving files',
-        error: error.message
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
@@ -330,11 +377,13 @@ class FilesController {
     try {
       const { entityType, entityId } = req.params;
       const { fileCategory, limit = 50, offset = 0 } = req.query;
+      const limitNum = FilesController.toPositiveInt(limit, 50, 100);
+      const offsetNum = FilesController.toNonNegativeInt(offset, 0);
       
       const files = await FileService.getFilesByUploader(
         entityType,
         entityId,
-        { fileCategory, limit: parseInt(limit), offset: parseInt(offset) }
+        { fileCategory, limit: limitNum, offset: offsetNum }
       );
       
       return res.status(200).json({
@@ -361,11 +410,13 @@ class FilesController {
     try {
       const { relatedToType, relatedToId } = req.params;
       const { fileCategory, limit = 50, offset = 0 } = req.query;
+      const limitNum = FilesController.toPositiveInt(limit, 50, 100);
+      const offsetNum = FilesController.toNonNegativeInt(offset, 0);
       
       const files = await FileService.getFilesByRelatedEntity(
         relatedToType,
         relatedToId,
-        { fileCategory, limit: parseInt(limit), offset: parseInt(offset) }
+        { fileCategory, limit: limitNum, offset: offsetNum }
       );
       
       return res.status(200).json({

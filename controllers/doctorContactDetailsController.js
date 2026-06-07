@@ -316,44 +316,106 @@ class DoctorContactDetailsController {
    */
   static async getAllContactDetails(req, res) {
     const connection = await db.getConnection();
-    
+
     try {
-      const { doctor_id } = req.query;
+      const rawDoctorId = req.query.doctor_id;
+      const rawPage = Number(req.query.page);
+      const rawLimit = Number(req.query.limit);
 
-      let query = `
-        SELECT 
-          dcd.*,
-          d.first_name,
-          d.last_name,
-          d.email as doctor_email,
-          d.phone_number as doctor_phone,
-          d.specialization
-        FROM doctor_contact_details dcd
-        INNER JOIN doctors d ON dcd.doctor_id = d.id
-      `;
-      const params = [];
+      const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+      const limit = Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 20;
+      const offset = (page - 1) * limit;
 
-      if (doctor_id) {
-        query += ' WHERE dcd.doctor_id = ?';
-        params.push(doctor_id);
+      const requestedLanguage = String(req.headers['accept-language'] || 'ar')
+        .split(',')[0]
+        .split('-')[0]
+        .trim()
+        .toLowerCase();
+
+      const language = ['ar', 'en'].includes(requestedLanguage) ? requestedLanguage : 'ar';
+
+      let whereClause = '';
+      const whereParams = [];
+
+      if (rawDoctorId !== undefined && rawDoctorId !== '') {
+        const doctorId = Number(rawDoctorId);
+
+        if (!Number.isInteger(doctorId) || doctorId <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: language === 'ar'
+              ? 'معرف الطبيب غير صحيح'
+              : 'Invalid doctor_id'
+          });
+        }
+
+        whereClause = 'WHERE dcd.doctor_id = ?';
+        whereParams.push(doctorId);
       }
 
-      query += ' ORDER BY dcd.created_at DESC';
+      const [countRows] = await connection.execute(
+        `
+          SELECT COUNT(*) AS total
+          FROM doctor_contact_details dcd
+          INNER JOIN doctors d ON dcd.doctor_id = d.id
+          ${whereClause}
+        `,
+        whereParams
+      );
 
-      const [details] = await connection.execute(query, params);
+      const total = Number(countRows[0]?.total || 0);
+      const totalPages = Math.ceil(total / limit);
 
-      res.json({
+      const [details] = await connection.execute(
+        `
+          SELECT
+            dcd.*,
+            d.email AS doctor_email,
+            d.phone AS doctor_phone,
+            dp.license_number,
+            dp.profile_picture_url,
+            COALESCE(dpt_lang.full_name, dpt_ar.full_name, dpt_en.full_name) AS doctor_name,
+            COALESCE(dpt_lang.specialty, dpt_ar.specialty, dpt_en.specialty) AS doctor_specialty
+          FROM doctor_contact_details dcd
+          INNER JOIN doctors d ON dcd.doctor_id = d.id
+          LEFT JOIN doctor_profiles dp ON dp.doctor_id = d.id
+          LEFT JOIN doctor_profile_translations dpt_lang
+            ON dpt_lang.doctor_profile_id = dp.id
+            AND dpt_lang.language_code = ?
+          LEFT JOIN doctor_profile_translations dpt_ar
+            ON dpt_ar.doctor_profile_id = dp.id
+            AND dpt_ar.language_code = 'ar'
+          LEFT JOIN doctor_profile_translations dpt_en
+            ON dpt_en.doctor_profile_id = dp.id
+            AND dpt_en.language_code = 'en'
+          ${whereClause}
+          ORDER BY dcd.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `,
+        [language, ...whereParams]
+      );
+
+      return res.json({
         success: true,
         count: details.length,
+        total,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore: page < totalPages
+        },
         data: details
       });
 
     } catch (error) {
       console.error('Error fetching all contact details:', error);
-      res.status(500).json({
+
+      return res.status(500).json({
         success: false,
         message: 'خطأ في جلب معلومات التواصل',
-        error: error.message
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     } finally {
       connection.release();
@@ -367,41 +429,76 @@ class DoctorContactDetailsController {
    */
   static async getContactDetailsByDoctorId(req, res) {
     const connection = await db.getConnection();
-    
-    try {
-      const doctorId = req.params.doctorId;
 
-      const [details] = await connection.execute(`
-        SELECT 
-          dcd.*,
-          d.first_name,
-          d.last_name,
-          d.email as doctor_email,
-          d.phone_number as doctor_phone,
-          d.specialization
-        FROM doctor_contact_details dcd
-        INNER JOIN doctors d ON dcd.doctor_id = d.id
-        WHERE dcd.doctor_id = ?
-      `, [doctorId]);
+    try {
+      const doctorId = Number(req.params.doctorId);
+
+      const requestedLanguage = String(req.headers['accept-language'] || 'ar')
+        .split(',')[0]
+        .split('-')[0]
+        .trim()
+        .toLowerCase();
+
+      const language = ['ar', 'en'].includes(requestedLanguage) ? requestedLanguage : 'ar';
+
+      if (!Number.isInteger(doctorId) || doctorId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: language === 'ar'
+            ? 'معرف الطبيب غير صحيح'
+            : 'Invalid doctor ID'
+        });
+      }
+
+      const [details] = await connection.execute(
+        `
+          SELECT
+            dcd.*,
+            d.email AS doctor_email,
+            d.phone AS doctor_phone,
+            dp.license_number,
+            dp.profile_picture_url,
+            COALESCE(dpt_lang.full_name, dpt_ar.full_name, dpt_en.full_name) AS doctor_name,
+            COALESCE(dpt_lang.specialty, dpt_ar.specialty, dpt_en.specialty) AS doctor_specialty
+          FROM doctor_contact_details dcd
+          INNER JOIN doctors d ON dcd.doctor_id = d.id
+          LEFT JOIN doctor_profiles dp ON dp.doctor_id = d.id
+          LEFT JOIN doctor_profile_translations dpt_lang
+            ON dpt_lang.doctor_profile_id = dp.id
+            AND dpt_lang.language_code = ?
+          LEFT JOIN doctor_profile_translations dpt_ar
+            ON dpt_ar.doctor_profile_id = dp.id
+            AND dpt_ar.language_code = 'ar'
+          LEFT JOIN doctor_profile_translations dpt_en
+            ON dpt_en.doctor_profile_id = dp.id
+            AND dpt_en.language_code = 'en'
+          WHERE dcd.doctor_id = ?
+          LIMIT 1
+        `,
+        [language, doctorId]
+      );
 
       if (details.length === 0) {
         return res.status(404).json({
           success: false,
-          message: 'لم يتم العثور على معلومات تواصل لهذا الطبيب'
+          message: language === 'ar'
+            ? 'لم يتم العثور على معلومات تواصل لهذا الطبيب'
+            : 'No contact details found for this doctor'
         });
       }
 
-      res.json({
+      return res.json({
         success: true,
         data: details[0]
       });
 
     } catch (error) {
       console.error('Error fetching doctor contact details:', error);
-      res.status(500).json({
+
+      return res.status(500).json({
         success: false,
         message: 'خطأ في جلب معلومات التواصل',
-        error: error.message
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     } finally {
       connection.release();

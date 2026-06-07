@@ -43,6 +43,69 @@ class AdminUserManagementController {
     return userPreference || 'ar';
   }
 
+  static toPositiveInt(value, fallback = 1, max = 100) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static buildUserCountQuery(filters, language) {
+    let query = `
+      SELECT COUNT(DISTINCT u.id) as total
+      FROM users u
+      LEFT JOIN user_profiles up ON u.id = up.user_id
+      LEFT JOIN user_profile_translations upt_lang
+        ON up.id = upt_lang.profile_id AND upt_lang.language_code = ?
+      LEFT JOIN user_profile_translations upt_ar
+        ON up.id = upt_ar.profile_id AND upt_ar.language_code = 'ar'
+      LEFT JOIN user_profile_translations upt_en
+        ON up.id = upt_en.profile_id AND upt_en.language_code = 'en'
+      WHERE 1=1
+    `;
+
+    const params = [language];
+
+    if (filters.status) {
+      query += ' AND u.status = ?';
+      params.push(filters.status);
+    }
+
+    if (filters.verified !== undefined) {
+      if (filters.verified === true || filters.verified === 'true') {
+        query += ' AND u.email_verified_at IS NOT NULL';
+      } else {
+        query += ' AND u.email_verified_at IS NULL';
+      }
+    }
+
+    if (filters.query) {
+      query += ` AND (
+        COALESCE(upt_lang.full_name, upt_ar.full_name, upt_en.full_name) LIKE ?
+        OR u.email LIKE ?
+        OR u.phone LIKE ?
+      )`;
+      const searchTerm = `%${filters.query}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+
+    if (filters.email) {
+      query += ' AND u.email LIKE ?';
+      params.push(`%${filters.email}%`);
+    }
+
+    if (filters.phone) {
+      query += ' AND u.phone LIKE ?';
+      params.push(`%${filters.phone}%`);
+    }
+
+    if (filters.uuid) {
+      query += ' AND u.uuid = ?';
+      params.push(filters.uuid);
+    }
+
+    return { query, params };
+  }
+
   /**
    * Validate status transition
    * 
@@ -87,13 +150,15 @@ class AdminUserManagementController {
       last_login_at: userData.last_login_at,
       last_activity_at: userData.last_activity_at,
       created_at: userData.created_at,
-      profile: userData.full_name ? {
-        full_name: userData.full_name,
+      profile: userData.profile_id ? {
+        id: userData.profile_id,
+        full_name: userData.full_name || null,
         date_of_birth: userData.date_of_birth,
         gender: userData.gender,
         nationality: userData.nationality,
         profile_picture_url: userData.profile_picture_url,
-        language_preference: userData.language_preference
+        language_preference: userData.language_preference,
+        translation_language: userData.translation_language || null
       } : null
     };
   }
@@ -111,17 +176,28 @@ class AdminUserManagementController {
         u.id, u.uuid, u.email, u.phone, u.status, u.is_active,
         u.email_verified_at, u.phone_verified_at, u.is_id_verified,
         u.last_login_at, u.last_activity_at, u.created_at,
+        up.id AS profile_id,
         up.date_of_birth, up.gender, up.nationality, 
         up.profile_picture_url, up.language_preference,
-        upt.full_name
+        COALESCE(upt_lang.full_name, upt_ar.full_name, upt_en.full_name) AS full_name,
+        CASE
+          WHEN upt_lang.full_name IS NOT NULL THEN ?
+          WHEN upt_ar.full_name IS NOT NULL THEN 'ar'
+          WHEN upt_en.full_name IS NOT NULL THEN 'en'
+          ELSE NULL
+        END AS translation_language
       FROM users u
       LEFT JOIN user_profiles up ON u.id = up.user_id
-      LEFT JOIN user_profile_translations upt ON up.id = upt.profile_id 
-        AND upt.language_code = ?
+      LEFT JOIN user_profile_translations upt_lang
+        ON up.id = upt_lang.profile_id AND upt_lang.language_code = ?
+      LEFT JOIN user_profile_translations upt_ar
+        ON up.id = upt_ar.profile_id AND upt_ar.language_code = 'ar'
+      LEFT JOIN user_profile_translations upt_en
+        ON up.id = upt_en.profile_id AND upt_en.language_code = 'en'
       WHERE 1=1
     `;
 
-    const params = [language];
+    const params = [language, language];
 
     // Add status filter
     if (filters.status) {
@@ -138,9 +214,13 @@ class AdminUserManagementController {
       }
     }
 
-    // Add search query filter
+    // Add search query filter with translation fallback.
     if (filters.query) {
-      query += ' AND (upt.full_name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)';
+      query += ` AND (
+        COALESCE(upt_lang.full_name, upt_ar.full_name, upt_en.full_name) LIKE ?
+        OR u.email LIKE ?
+        OR u.phone LIKE ?
+      )`;
       const searchTerm = `%${filters.query}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
@@ -168,7 +248,6 @@ class AdminUserManagementController {
     return { query, params };
   }
 
-
   /**
    * GET /api/admin/users
    * Get all users with pagination and filters
@@ -179,8 +258,8 @@ class AdminUserManagementController {
   static async getAllUsers(req, res) {
     try {
       // Extract and validate query parameters
-      const page = parseInt(req.query.page) || 1;
-      const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+      const page = AdminUserManagementController.toPositiveInt(req.query.page, 1, 1000000);
+      const limit = AdminUserManagementController.toPositiveInt(req.query.limit, 20, 100);
       const offset = (page - 1) * limit;
       const language = AdminUserManagementController.normalizeLanguage(
         req.headers['accept-language'],
@@ -190,24 +269,25 @@ class AdminUserManagementController {
       const filters = {
         status: req.query.status,
         verified: req.query.verified,
+        query: req.query.query || req.query.search,
+        email: req.query.email,
+        phone: req.query.phone,
+        uuid: req.query.uuid,
         language
       };
 
-      // Build query
+      // Build data query
       const { query, params } = AdminUserManagementController.buildUserQuery(filters, language);
 
-      // Get total count
-      const countQuery = query.replace(
-        /SELECT[\s\S]*?FROM/i,
-        'SELECT COUNT(DISTINCT u.id) as total FROM'
-      ).replace(/ORDER BY.*$/i, '');
-      
-      const [countResult] = await db.execute(countQuery, params);
-      const totalItems = countResult[0].total;
+      // Build count query explicitly instead of using query.replace(...).
+      // This avoids fragile multiline regex replacement and keeps pagination stable.
+      const { query: countQuery, params: countParams } = AdminUserManagementController.buildUserCountQuery(filters, language);
+      const [countResult] = await db.execute(countQuery, countParams);
+      const totalItems = Number(countResult[0]?.total || 0);
 
-      // Get paginated results
-      const paginatedQuery = query + ' LIMIT ? OFFSET ?';
-      const [users] = await db.execute(paginatedQuery, [...params, limit, offset]);
+      // LIMIT/OFFSET are interpolated only after strict numeric validation.
+      const paginatedQuery = `${query} LIMIT ${limit} OFFSET ${offset}`;
+      const [users] = await db.execute(paginatedQuery, params);
 
       // Format response
       const formattedUsers = users.map(user => 
@@ -243,12 +323,14 @@ class AdminUserManagementController {
     } catch (error) {
       logger.error('Get all users error', { 
         error: error.message, 
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
         admin_id: req.user?.id 
       });
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve users',
-        message_ar: 'فشل في استرجاع المستخدمين'
+        message_ar: 'فشل في استرجاع المستخدمين',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
@@ -283,21 +365,33 @@ class AdminUserManagementController {
           u.email_verified_at, u.phone_verified_at, u.is_id_verified,
           u.last_login_at, u.last_activity_at, u.login_attempts, u.locked_until,
           u.created_at, u.updated_at,
+          up.id AS profile_id,
           up.date_of_birth, up.gender, up.nationality, 
           up.profile_picture_url, up.emergency_contact_phone,
           up.timezone, up.language_preference,
-          upt.full_name, upt.emergency_contact_name, 
-          upt.emergency_contact_relationship,
+          COALESCE(upt_lang.full_name, upt_ar.full_name, upt_en.full_name) AS full_name,
+          COALESCE(upt_lang.emergency_contact_name, upt_ar.emergency_contact_name, upt_en.emergency_contact_name) AS emergency_contact_name,
+          COALESCE(upt_lang.emergency_contact_relationship, upt_ar.emergency_contact_relationship, upt_en.emergency_contact_relationship) AS emergency_contact_relationship,
+          CASE
+            WHEN upt_lang.full_name IS NOT NULL THEN ?
+            WHEN upt_ar.full_name IS NOT NULL THEN 'ar'
+            WHEN upt_en.full_name IS NOT NULL THEN 'en'
+            ELSE NULL
+          END AS translation_language,
           CASE WHEN pp.id IS NOT NULL THEN 1 ELSE 0 END as has_patient_profile
         FROM users u
         LEFT JOIN user_profiles up ON u.id = up.user_id
-        LEFT JOIN user_profile_translations upt ON up.id = upt.profile_id 
-          AND upt.language_code = ?
+        LEFT JOIN user_profile_translations upt_lang
+          ON up.id = upt_lang.profile_id AND upt_lang.language_code = ?
+        LEFT JOIN user_profile_translations upt_ar
+          ON up.id = upt_ar.profile_id AND upt_ar.language_code = 'ar'
+        LEFT JOIN user_profile_translations upt_en
+          ON up.id = upt_en.profile_id AND upt_en.language_code = 'en'
         LEFT JOIN patient_profiles pp ON u.id = pp.user_id
         WHERE u.id = ?
       `;
 
-      const [users] = await db.execute(query, [language, userId]);
+      const [users] = await db.execute(query, [language, language, userId]);
 
       if (users.length === 0) {
         return res.status(404).json({
@@ -336,8 +430,9 @@ class AdminUserManagementController {
             updated_at: userData.updated_at
           }
         },
-        profile: userData.full_name ? {
-          full_name: userData.full_name,
+        profile: userData.profile_id ? {
+          id: userData.profile_id,
+          full_name: userData.full_name || null,
           date_of_birth: userData.date_of_birth,
           gender: userData.gender,
           nationality: userData.nationality,
@@ -350,7 +445,8 @@ class AdminUserManagementController {
           preferences: {
             timezone: userData.timezone,
             language: userData.language_preference
-          }
+          },
+          translation_language: userData.translation_language || null
         } : null,
         has_patient_profile: Boolean(userData.has_patient_profile)
       };
@@ -446,22 +542,33 @@ class AdminUserManagementController {
       const query = `
         SELECT 
           u.id, u.uuid, u.email, u.phone,
-          upt.full_name,
+          COALESCE(upt_lang.full_name, upt_ar.full_name, upt_en.full_name) AS full_name,
           pp.id as patient_profile_id,
           pp.blood_type, pp.height, pp.weight,
           pp.smoking_status, pp.alcohol_consumption, pp.exercise_frequency,
           pp.insurance_provider, pp.insurance_policy_number,
           pp.preferred_doctor_id, pp.created_at as profile_created_at, 
           pp.updated_at as profile_updated_at,
-          ppt.medical_history, ppt.current_medications,
-          ppt.allergies, ppt.chronic_conditions, ppt.family_medical_history
+          COALESCE(ppt_lang.medical_history, ppt_ar.medical_history, ppt_en.medical_history) AS medical_history,
+          COALESCE(ppt_lang.current_medications, ppt_ar.current_medications, ppt_en.current_medications) AS current_medications,
+          COALESCE(ppt_lang.allergies, ppt_ar.allergies, ppt_en.allergies) AS allergies,
+          COALESCE(ppt_lang.chronic_conditions, ppt_ar.chronic_conditions, ppt_en.chronic_conditions) AS chronic_conditions,
+          COALESCE(ppt_lang.family_medical_history, ppt_ar.family_medical_history, ppt_en.family_medical_history) AS family_medical_history
         FROM users u
         LEFT JOIN user_profiles up ON u.id = up.user_id
-        LEFT JOIN user_profile_translations upt ON up.id = upt.profile_id 
-          AND upt.language_code = ?
+        LEFT JOIN user_profile_translations upt_lang
+          ON up.id = upt_lang.profile_id AND upt_lang.language_code = ?
+        LEFT JOIN user_profile_translations upt_ar
+          ON up.id = upt_ar.profile_id AND upt_ar.language_code = 'ar'
+        LEFT JOIN user_profile_translations upt_en
+          ON up.id = upt_en.profile_id AND upt_en.language_code = 'en'
         LEFT JOIN patient_profiles pp ON u.id = pp.user_id
-        LEFT JOIN patient_profile_translations ppt ON pp.id = ppt.patient_profile_id 
-          AND ppt.language_code = ?
+        LEFT JOIN patient_profile_translations ppt_lang
+          ON pp.id = ppt_lang.patient_profile_id AND ppt_lang.language_code = ?
+        LEFT JOIN patient_profile_translations ppt_ar
+          ON pp.id = ppt_ar.patient_profile_id AND ppt_ar.language_code = 'ar'
+        LEFT JOIN patient_profile_translations ppt_en
+          ON pp.id = ppt_en.patient_profile_id AND ppt_en.language_code = 'en'
         WHERE u.id = ?
       `;
 
@@ -562,17 +669,10 @@ class AdminUserManagementController {
         req.user?.language_preference
       );
 
-      const filters = {
-        query: req.query.query,
-        email: req.query.email,
-        phone: req.query.phone,
-        uuid: req.query.uuid,
-        status: req.query.status,
-        verified: req.query.verified,
-        language
-      };
-
-      // Reuse getAllUsers logic with search filters
+      // Reuse getAllUsers logic; getAllUsers reads query/email/phone/uuid/status/verified directly.
+      if (!req.query.query && req.query.search) {
+        req.query.query = req.query.search;
+      }
       return AdminUserManagementController.getAllUsers(req, res);
 
     } catch (error) {
@@ -719,8 +819,8 @@ class AdminUserManagementController {
           description,
           JSON.stringify(oldValues),
           JSON.stringify(newValues),
-          clientInfo.ip,
-          clientInfo.userAgent,
+          clientInfo.ip_address || null,
+          clientInfo.user_agent || null,
           severity
         ]
       );
@@ -882,8 +982,8 @@ class AdminUserManagementController {
   static async getUserLogs(req, res) {
     try {
       const userId = parseInt(req.params.id);
-      const page = parseInt(req.query.page) || 1;
-      const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+      const page = AdminUserManagementController.toPositiveInt(req.query.page, 1, 1000000);
+      const limit = AdminUserManagementController.toPositiveInt(req.query.limit, 20, 100);
       const offset = (page - 1) * limit;
       const actionFilter = req.query.action;
       const language = AdminUserManagementController.normalizeLanguage(
@@ -929,11 +1029,11 @@ class AdminUserManagementController {
       `;
       const countParams = actionFilter ? [userId, actionFilter] : [userId];
       const [countResult] = await db.execute(countQuery, countParams);
-      const totalItems = countResult[0].total;
+      const totalItems = Number(countResult[0]?.total || 0);
 
-      // Get paginated logs
-      const paginatedQuery = query + ' LIMIT ? OFFSET ?';
-      const [logs] = await db.execute(paginatedQuery, [...params, limit, offset]);
+      // Get paginated logs. LIMIT/OFFSET are interpolated after strict numeric validation.
+      const paginatedQuery = `${query} LIMIT ${limit} OFFSET ${offset}`;
+      const [logs] = await db.execute(paginatedQuery, params);
 
       // Format logs
       const formattedLogs = logs.map(log => ({

@@ -26,23 +26,107 @@ class AdminDoctorManagementController {
    * جلب جميع الأطباء مع ملفاتهم الشخصية للمراجعة
    */
   static async getAllDoctors(req, res) {
-    const { 
-      page = 1, 
-      limit = 20, 
-      status, 
-      approval_status, 
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      approval_status,
       is_verified,
       search,
       sort_by = 'created_at',
       sort_order = 'DESC'
     } = req.query;
 
-    const offset = (parseInt(page) - 1) * parseInt(limit);
     const language = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'ar';
 
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const offsetNum = (pageNum - 1) * limitNum;
+
+    const validDoctorStatuses = ['active', 'inactive', 'suspended', 'pending_verification'];
+    const validApprovalStatuses = ['pending', 'approved', 'rejected', 'suspended'];
+
+    if (status && !validDoctorStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message_ar: 'حالة الطبيب غير صحيحة',
+        message_en: 'Invalid doctor status'
+      });
+    }
+
+    if (approval_status && !validApprovalStatuses.includes(approval_status)) {
+      return res.status(400).json({
+        success: false,
+        message_ar: 'حالة الموافقة غير صحيحة',
+        message_en: 'Invalid approval status'
+      });
+    }
+
+    if (is_verified !== undefined && !['true', 'false', '1', '0', true, false, 1, 0].includes(is_verified)) {
+      return res.status(400).json({
+        success: false,
+        message_ar: 'قيمة is_verified غير صحيحة',
+        message_en: 'Invalid is_verified value'
+      });
+    }
+
+    const isVerifiedValue = is_verified === true || is_verified === 'true' || is_verified === '1' || is_verified === 1 ? 1 : 0;
+
     try {
-      let query = `
-        SELECT 
+      const fromAndJoins = `
+        FROM doctors d
+        LEFT JOIN doctor_profiles dp ON d.id = dp.doctor_id
+        LEFT JOIN doctor_profile_translations dpt ON dp.id = dpt.doctor_profile_id AND dpt.language_code = ?
+      `;
+
+      let whereClause = 'WHERE 1=1';
+      const filterParams = [language];
+
+      if (status) {
+        whereClause += ' AND d.status = ?';
+        filterParams.push(status);
+      }
+
+      if (approval_status) {
+        whereClause += ' AND dp.approval_status = ?';
+        filterParams.push(approval_status);
+      }
+
+      if (is_verified !== undefined) {
+        whereClause += ' AND dp.is_verified = ?';
+        filterParams.push(isVerifiedValue);
+      }
+
+      if (search) {
+        whereClause += ' AND (d.email LIKE ? OR d.phone LIKE ? OR dpt.full_name LIKE ? OR dp.license_number LIKE ?)';
+        const searchPattern = `%${search}%`;
+        filterParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
+      }
+
+      const [countResult] = await db.query(
+        `
+        SELECT COUNT(DISTINCT d.id) as total
+        ${fromAndJoins}
+        ${whereClause}
+        `,
+        filterParams
+      );
+      const total = Number(countResult[0]?.total || 0);
+
+      const sortFieldMap = {
+        created_at: 'd.created_at',
+        email: 'd.email',
+        status: 'd.status',
+        approval_status: 'dp.approval_status',
+        is_verified: 'dp.is_verified',
+        rating_average: 'dp.rating_average'
+      };
+      const sortField = sortFieldMap[sort_by] || sortFieldMap.created_at;
+      const sortDirection = String(sort_order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+      const [doctors] = await db.query(
+        `
+        SELECT
           d.id,
           d.uuid,
           d.email,
@@ -72,71 +156,38 @@ class AdminDoctorManagementController {
         LEFT JOIN doctor_profiles dp ON d.id = dp.doctor_id
         LEFT JOIN doctor_profile_translations dpt ON dp.id = dpt.doctor_profile_id AND dpt.language_code = ?
         LEFT JOIN admins va ON dp.verified_by = va.id
-        WHERE 1=1
-      `;
-      
-      const params = [language];
-
-      // Apply filters
-      if (status) {
-        query += ' AND d.status = ?';
-        params.push(status);
-      }
-
-      if (approval_status) {
-        query += ' AND dp.approval_status = ?';
-        params.push(approval_status);
-      }
-
-      if (is_verified !== undefined) {
-        query += ' AND dp.is_verified = ?';
-        params.push(is_verified === 'true' ? 1 : 0);
-      }
-
-      if (search) {
-        query += ' AND (d.email LIKE ? OR d.phone LIKE ? OR dpt.full_name LIKE ? OR dp.license_number LIKE ?)';
-        const searchPattern = `%${search}%`;
-        params.push(searchPattern, searchPattern, searchPattern, searchPattern);
-      }
-
-      // Validate sort_by to prevent SQL injection
-      const allowedSortFields = ['created_at', 'email', 'status', 'approval_status', 'is_verified', 'rating_average'];
-      const sortField = allowedSortFields.includes(sort_by) ? sort_by : 'created_at';
-      const sortDirection = sort_order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-      // Get total count
-      const countQuery = query.replace(/SELECT[\s\S]*?FROM/, 'SELECT COUNT(*) as total FROM');
-      const [countResult] = await db.query(countQuery, params);
-      const total = countResult[0]?.total || 0;
-
-      // Add sorting and pagination
-      query += ` ORDER BY d.${sortField} ${sortDirection} LIMIT ? OFFSET ?`;
-      params.push(parseInt(limit), offset);
-
-      const [doctors] = await db.query(query, params);
+        ${whereClause}
+        ORDER BY ${sortField} ${sortDirection}
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+        `,
+        filterParams
+      );
 
       res.json({
         success: true,
         data: doctors,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(total / parseInt(limit)),
-          hasMore: offset + doctors.length < total
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: offsetNum + doctors.length < total
         }
       });
 
     } catch (error) {
-      logger.error('Get all doctors error', { error: error.message });
+      logger.error('Get all doctors error', {
+        error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
       res.status(500).json({
         success: false,
         message_ar: 'خطأ في جلب بيانات الأطباء',
-        message_en: 'Error fetching doctors data'
+        message_en: 'Error fetching doctors data',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
-
   /**
    * Get single doctor details (for admin review)
    * جلب تفاصيل طبيب واحد للمراجعة
@@ -1035,180 +1086,6 @@ class AdminDoctorManagementController {
     }
   }
 
-
-    /**
-     * Update doctor verification status (comprehensive)
-     * تحديث حالة التحقق الشاملة للطبيب
-     * Updates: is_verified, verification_date, verified_by, approval_status
-     */
-    static async updateDoctorVerificationStatus(req, res) {
-      const { doctorId } = req.params;
-      const { is_verified, approval_status, reason } = req.body;
-      const adminId = req.user.id;
-      const clientInfo = getClientInfo(req);
-
-      // Validation
-      if (is_verified === undefined) {
-        return res.status(400).json({
-          success: false,
-          message_ar: 'حالة التحقق مطلوبة (is_verified)',
-          message_en: 'Verification status is required (is_verified)'
-        });
-      }
-
-      const validApprovalStatuses = ['pending', 'approved', 'rejected', 'suspended'];
-      if (approval_status && !validApprovalStatuses.includes(approval_status)) {
-        return res.status(400).json({
-          success: false,
-          message_ar: 'حالة الموافقة غير صحيحة. القيم المسموحة: ' + validApprovalStatuses.join(', '),
-          message_en: 'Invalid approval status. Allowed values: ' + validApprovalStatuses.join(', ')
-        });
-      }
-
-      const connection = await db.getConnection();
-
-      try {
-        await connection.beginTransaction();
-
-        // Get current profile
-        const [profileRows] = await connection.query(
-          `SELECT dp.*, d.email, d.status as doctor_status, d.uuid
-           FROM doctor_profiles dp
-           JOIN doctors d ON dp.doctor_id = d.id
-           WHERE dp.doctor_id = ?`,
-          [doctorId]
-        );
-
-        if (profileRows.length === 0) {
-          await connection.rollback();
-          return res.status(404).json({
-            success: false,
-            message_ar: 'ملف الطبيب غير موجود',
-            message_en: 'Doctor profile not found'
-          });
-        }
-
-        const currentProfile = profileRows[0];
-        const profileId = currentProfile.id;
-        const oldData = {
-          is_verified: currentProfile.is_verified,
-          verification_date: currentProfile.verification_date,
-          verified_by: currentProfile.verified_by,
-          approval_status: currentProfile.approval_status
-        };
-
-        // Prepare update data
-        const updateData = {
-          is_verified: is_verified ? 1 : 0,
-          verification_date: is_verified ? new Date() : null,
-          verified_by: is_verified ? adminId : null
-        };
-
-        // If approval_status is provided, update it
-        if (approval_status) {
-          updateData.approval_status = approval_status;
-        } else if (is_verified) {
-          // Auto-set approval_status to 'approved' if verified
-          updateData.approval_status = 'approved';
-        }
-
-        // Update doctor_profiles
-        await connection.query(
-          `UPDATE doctor_profiles
-           SET is_verified = ?,
-               verification_date = ?,
-               verified_by = ?,
-               approval_status = ?,
-               updated_at = NOW()
-           WHERE id = ?`,
-          [
-            updateData.is_verified,
-            updateData.verification_date,
-            updateData.verified_by,
-            updateData.approval_status,
-            profileId
-          ]
-        );
-
-        // Update doctor status based on verification and approval
-        let newDoctorStatus = currentProfile.doctor_status;
-
-        if (is_verified && updateData.approval_status === 'approved') {
-          newDoctorStatus = 'active';
-        } else if (updateData.approval_status === 'rejected') {
-          newDoctorStatus = 'inactive';
-        } else if (updateData.approval_status === 'suspended') {
-          newDoctorStatus = 'suspended';
-        } else if (!is_verified) {
-          newDoctorStatus = 'pending_verification';
-        }
-
-        if (newDoctorStatus !== currentProfile.doctor_status) {
-          await connection.query(
-            'UPDATE doctors SET status = ?, updated_at = NOW() WHERE id = ?',
-            [newDoctorStatus, doctorId]
-          );
-        }
-
-        // Log admin action
-        await logAdminAction(
-          adminId,
-          'UPDATE_DOCTOR_VERIFICATION_STATUS',
-          'doctor_profile',
-          profileId,
-          oldData,
-          { ...updateData, reason, newDoctorStatus },
-          clientInfo
-        );
-
-        await connection.commit();
-
-        logger.info('Doctor verification status updated', {
-          doctorId,
-          profileId,
-          oldData,
-          newData: updateData,
-          newDoctorStatus,
-          updatedBy: adminId,
-          reason
-        });
-
-        res.json({
-          success: true,
-          message_ar: 'تم تحديث حالة التحقق بنجاح',
-          message_en: 'Verification status updated successfully',
-          data: {
-            doctorId,
-            doctorUuid: currentProfile.uuid,
-            profileId,
-            oldData,
-            newData: {
-              is_verified: updateData.is_verified === 1,
-              verification_date: updateData.verification_date,
-              verified_by: updateData.verified_by,
-              approval_status: updateData.approval_status,
-              doctor_status: newDoctorStatus
-            }
-          }
-        });
-
-      } catch (error) {
-        await connection.rollback();
-        logger.error('Update doctor verification status error', {
-          error: error.message,
-          stack: error.stack,
-          doctorId
-        });
-        res.status(500).json({
-          success: false,
-          message_ar: 'خطأ في تحديث حالة التحقق',
-          message_en: 'Error updating verification status',
-          error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-      } finally {
-        connection.release();
-      }
-    }
 
   /**
    * Update doctor verification status (comprehensive)

@@ -11,26 +11,14 @@ const { parseFormData } = require('../middleware/formDataMiddleware');
  * Base path: /api/files
  */
 
-// All routes require authentication and admin authorization
+// All routes require authentication and admin authorization.
+// authorizeSuperAdmin is intentionally kept first to preserve the existing super-admin-only access behavior.
 router.use(authenticateJWT, authorizeSuperAdmin, authorizeAnyAdmin);
 
 /**
  * @route   GET /api/files
  * @desc    Get all files with filters
  * @access  Private (Admin only)
- * @query   {
- *            page: number,
- *            limit: number,
- *            entityType: 'user'|'admin'|'doctor'|'assistant',
- *            entityId: number,
- *            fileCategory: string,
- *            relatedToType: string,
- *            relatedToId: number,
- *            virusScanStatus: 'pending'|'clean'|'infected'|'error',
- *            isPublic: boolean,
- *            storageProvider: string,
- *            searchTerm: string
- *          }
  */
 router.get('/', FilesController.getAllFiles);
 
@@ -42,18 +30,9 @@ router.get('/', FilesController.getAllFiles);
 router.get('/statistics', FilesController.getFileStatistics);
 
 /**
- * @route   GET /api/files/:uuid
- * @desc    Get file by UUID
- * @access  Private (Admin only)
- */
-router.get('/:uuid', FilesController.getFileByUuid);
-
-/**
  * @route   GET /api/files/uploader/:entityType/:entityId
  * @desc    Get files by uploader
  * @access  Private (Admin only)
- * @params  entityType: 'user'|'admin'|'doctor'|'assistant'
- *          entityId: number
  */
 router.get('/uploader/:entityType/:entityId', FilesController.getFilesByUploader);
 
@@ -65,16 +44,17 @@ router.get('/uploader/:entityType/:entityId', FilesController.getFilesByUploader
 router.get('/related/:relatedToType/:relatedToId', FilesController.getFilesByRelated);
 
 /**
+ * @route   GET /api/files/:uuid
+ * @desc    Get file by UUID
+ * @access  Private (Admin only)
+ * Important: keep this dynamic route after static routes like /statistics, /uploader, and /related.
+ */
+router.get('/:uuid', FilesController.getFileByUuid);
+
+/**
  * @route   PUT /api/files/:uuid
  * @desc    Update file metadata
  * @access  Private (Admin only)
- * @body    {
- *            is_public: boolean,
- *            metadata: object,
- *            virus_scan_status: string,
- *            virus_scan_date: datetime,
- *            expires_at: datetime
- *          }
  */
 router.put('/:uuid',
   parseFormData,
@@ -90,7 +70,6 @@ router.put('/:uuid',
  * @route   DELETE /api/files/:uuid
  * @desc    Delete file (soft delete)
  * @access  Private (Admin only)
- * @query   deleteFromDisk: boolean
  */
 router.delete('/:uuid',
   adminActionLogger('DELETE_FILE', (req) => ({
@@ -128,10 +107,6 @@ router.post('/cleanup/expired',
  * @route   POST /api/files/bulk-delete
  * @desc    Bulk delete files
  * @access  Private (Admin only)
- * @body    {
- *            uuids: string[],
- *            deleteFromDisk: boolean
- *          }
  */
 router.post('/bulk-delete',
   parseFormData,

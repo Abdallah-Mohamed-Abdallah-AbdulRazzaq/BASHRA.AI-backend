@@ -204,19 +204,43 @@ class AdminAIUsageController {
         req.user?.language_preference
       );
 
-      const page = parseInt(req.query.page) || 1;
-      const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+      const rawPage = Number(req.query.page);
+      const rawLimit = Number(req.query.limit);
+
+      const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+      const limit = Number.isInteger(rawLimit) && rawLimit > 0
+        ? Math.min(rawLimit, 100)
+        : 20;
+
       const offset = (page - 1) * limit;
 
       const scopeType = req.query.scope_type;
       const isActive = AdminAIUsageController.parseBoolean(req.query.is_active);
 
+      const allowedScopeTypes = ['global', 'user', 'package'];
+
       const where = [];
       const params = [];
 
       if (scopeType) {
+        if (!allowedScopeTypes.includes(scopeType)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid scope_type',
+            message_ar: 'نوع النطاق غير صحيح'
+          });
+        }
+
         where.push('scope_type = ?');
         params.push(scopeType);
+      }
+
+      if (req.query.is_active !== undefined && isActive === undefined) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid is_active value',
+          message_ar: 'قيمة is_active غير صحيحة'
+        });
       }
 
       if (isActive !== undefined) {
@@ -235,18 +259,21 @@ class AdminAIUsageController {
         params
       );
 
-      const totalItems = countRows[0].total;
+      const totalItems = Number(countRows[0]?.total || 0);
       const totalPages = Math.ceil(totalItems / limit);
 
+      // Important:
+      // LIMIT/OFFSET are interpolated only after strict numeric validation.
+      // This avoids mysql2 "Incorrect arguments to mysqld_stmt_execute".
       const [policies] = await db.execute(
         `
         SELECT *
         FROM ai_usage_policies
         ${whereSql}
         ORDER BY is_active DESC, priority ASC, created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT ${limit} OFFSET ${offset}
         `,
-        [...params, limit, offset]
+        params
       );
 
       return res.status(200).json({
@@ -269,13 +296,15 @@ class AdminAIUsageController {
     } catch (error) {
       logger.error('Get AI usage policies error', {
         error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
         admin_id: req.user?.id
       });
 
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve AI usage policies',
-        message_ar: 'فشل في جلب سياسات استخدام الذكاء الاصطناعي'
+        message_ar: 'فشل في جلب سياسات استخدام الذكاء الاصطناعي',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
