@@ -63,8 +63,60 @@ app.use(helmet({
   }
 }));
 
+// CORS Configuration
+// IMPORTANT: keep CORS before rate limiters and routes so browser preflight OPTIONS requests
+// receive CORS headers and do not fail with 500/429 before reaching the API.
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3006',
+  'https://api.bashraai.com',
+  'https://bashraai.com',
+  'https://www.bashraai.com',
+  'https://admin.bashraai.com',
+  'https://www.admin.bashraai.com',
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_FRONTEND_URL,
+  process.env.DASHBOARD_URL,
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no Origin header, e.g. Postman, curl, server-to-server, mobile apps.
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    const error = new Error(`CORS blocked origin: ${origin}`);
+    error.status = 403;
+    return callback(error);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'lang',
+    'Accept-Language',
+    'Cache-Control',
+    'Pragma'
+  ],
+  optionsSuccessStatus: 200,
+  maxAge: 86400
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 // Rate Limiting
 const generalLimiter = rateLimit({
+  skip: (req) => req.method === 'OPTIONS',
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, // Limit each IP to 1000 requests per windowMs
   message: {
@@ -76,6 +128,7 @@ const generalLimiter = rateLimit({
 });
 
 const authLimiter = rateLimit({
+  skip: (req) => req.method === 'OPTIONS',
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Limit each IP to 10 authentication requests per windowMs
   message: {
@@ -93,6 +146,7 @@ const authLimiter = rateLimit({
 });
 
 const otpLimiter = rateLimit({
+  skip: (req) => req.method === 'OPTIONS',
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 5, // Limit each IP to 5 OTP requests per 5 minutes
   message: {
@@ -129,37 +183,6 @@ app.use([
   '/api/auth-doctor/resend-otp',
   '/api/auth-assistant/resend-otp'
 ], otpLimiter);
-
-// CORS Configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:3006',
-      'https://api.bashraai.com',
-      'https://bashraai.com',
-      'https://www.bashraai.com',
-      process.env.FRONTEND_URL,
-    ].filter(Boolean);
-    
-    // Allow requests from same origin (for testing pages)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'lang', 'Accept-Language']
-};
-
-app.use(cors(corsOptions));
 
 // Trust proxy if behind reverse proxy (for proper IP detection)
 app.set('trust proxy', 1);

@@ -41,6 +41,18 @@ const deleteClinicImageFile = async (imagePath) => {
 };
 
 class ClinicsController {
+  static toPositiveInt(value, fallback = 20, max = 100) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static toNonNegativeInt(value, fallback = 0, max = 1000000) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+    return Math.min(parsed, max);
+  }
+
   /**
    * Get all clinics for authenticated doctor
    * GET /api/clinics
@@ -1097,7 +1109,9 @@ class ClinicsController {
         limit = 20
       } = req.query;
 
-      const offset = (parseInt(page) - 1) * parseInt(limit);
+      const pageNum = ClinicsController.toPositiveInt(page, 1, 1000000);
+      const limitNum = ClinicsController.toPositiveInt(limit, 20, 100);
+      const offsetNum = (pageNum - 1) * limitNum;
       const baseUrl = process.env.BASE_URL || 'http://localhost:3006';
 
       let whereConditions = ['c.status = ?'];
@@ -1151,8 +1165,8 @@ class ClinicsController {
         LEFT JOIN doctor_profile_translations dpt ON dp.id = dpt.doctor_profile_id AND dpt.language_code = ?
         WHERE ${whereClause}
         ORDER BY c.is_main_branch DESC, c.created_at DESC
-        LIMIT ? OFFSET ?
-      `, [lang, ...params, parseInt(limit), offset]);
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+      `, [lang, ...params]);
 
       // Add full URL to main_image_path
       const clinicsWithUrls = clinics.map(clinic => ({
@@ -1164,8 +1178,8 @@ class ClinicsController {
         success: true,
         count: clinicsWithUrls.length,
         total: countResult[0].total,
-        page: parseInt(page),
-        totalPages: Math.ceil(countResult[0].total / parseInt(limit)),
+        page: pageNum,
+        totalPages: Math.ceil(Number(countResult[0]?.total || 0) / limitNum),
         data: clinicsWithUrls
       });
 
@@ -1339,7 +1353,9 @@ class ClinicsController {
         search
       } = req.query;
 
-      const offset = (parseInt(page) - 1) * parseInt(limit);
+      const pageNum = ClinicsController.toPositiveInt(page, 1, 1000000);
+      const limitNum = ClinicsController.toPositiveInt(limit, 20, 100);
+      const offsetNum = (pageNum - 1) * limitNum;
       const baseUrl = process.env.BASE_URL || 'http://localhost:3006';
 
       let whereConditions = ["c.status = 'active'"];
@@ -1406,8 +1422,8 @@ class ClinicsController {
         LEFT JOIN doctor_profile_translations dpt ON dp.id = dpt.doctor_profile_id AND dpt.language_code = ?
         WHERE ${whereClause}
         ORDER BY c.is_main_branch DESC, c.created_at DESC
-        LIMIT ? OFFSET ?
-      `, [lang, ...params, parseInt(limit), offset]);
+        LIMIT ${limitNum} OFFSET ${offsetNum}
+      `, [lang, ...params]);
 
       // Add full URL to main_image_path
       const clinicsWithUrls = clinics.map(clinic => ({
@@ -1419,8 +1435,8 @@ class ClinicsController {
         success: true,
         count: clinicsWithUrls.length,
         total: countResult[0].total,
-        page: parseInt(page),
-        totalPages: Math.ceil(countResult[0].total / parseInt(limit)),
+        page: pageNum,
+        totalPages: Math.ceil(Number(countResult[0]?.total || 0) / limitNum),
         data: clinicsWithUrls
       });
 

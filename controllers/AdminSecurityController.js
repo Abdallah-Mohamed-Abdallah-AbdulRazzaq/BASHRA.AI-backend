@@ -18,6 +18,25 @@ const logger = winston.createLogger({
 
 class AdminSecurityController {
 
+  static toPositiveInt(value, fallback = 100, max = 100) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static toNonNegativeInt(value, fallback = 0, max = 1000000) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static normalizeEntityType(entityType) {
+    if (!entityType) return null;
+    const normalized = String(entityType).trim().toLowerCase();
+    const allowed = ['user', 'admin', 'doctor', 'assistant'];
+    return allowed.includes(normalized) ? normalized : null;
+  }
+
   /**
    * Block a user/doctor/assistant
    */
@@ -270,6 +289,9 @@ class AdminSecurityController {
       endDate 
     } = req.query;
 
+    const limitNum = AdminSecurityController.toPositiveInt(limit, 100, 100);
+    const offsetNum = AdminSecurityController.toNonNegativeInt(offset, 0);
+
     try {
       let query = 'SELECT al.*, a.email as admin_email FROM admin_logs al JOIN admins a ON al.admin_id = a.id WHERE 1=1';
       const params = [];
@@ -299,8 +321,7 @@ class AdminSecurityController {
         params.push(endDate);
       }
 
-      query += ' ORDER BY al.created_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), parseInt(offset));
+      query += ` ORDER BY al.created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
 
       const [logs] = await db.query(query, params);
 
@@ -339,10 +360,10 @@ class AdminSecurityController {
         success: true,
         logs: logs,
         pagination: {
-          total: countResult[0].total,
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          hasMore: countResult[0].total > (parseInt(offset) + logs.length)
+          total: Number(countResult[0]?.total || 0),
+          limit: limitNum,
+          offset: offsetNum,
+          hasMore: Number(countResult[0]?.total || 0) > (offsetNum + logs.length)
         }
       });
 
@@ -368,9 +389,21 @@ class AdminSecurityController {
       hours = 24 
     } = req.query;
 
+    const limitNum = AdminSecurityController.toPositiveInt(limit, 100, 100);
+    const offsetNum = AdminSecurityController.toNonNegativeInt(offset, 0);
+    const hoursNum = AdminSecurityController.toPositiveInt(hours, 24, 24 * 30);
+    const normalizedEntityType = AdminSecurityController.normalizeEntityType(entityType);
+
+    if (entityType && !normalizedEntityType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid entity type'
+      });
+    }
+
     try {
       let query = 'SELECT * FROM failed_logins WHERE attempted_at > DATE_SUB(NOW(), INTERVAL ? HOUR)';
-      const params = [parseInt(hours)];
+      const params = [hoursNum];
 
       if (email) {
         query += ' AND email LIKE ?';
@@ -382,13 +415,12 @@ class AdminSecurityController {
         params.push(ipAddress);
       }
 
-      if (entityType) {
+      if (normalizedEntityType) {
         query += ' AND entity_type = ?';
-        params.push(entityType);
+        params.push(normalizedEntityType);
       }
 
-      query += ' ORDER BY attempted_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), parseInt(offset));
+      query += ` ORDER BY attempted_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
 
       const [attempts] = await db.query(query, params);
 
@@ -403,7 +435,7 @@ class AdminSecurityController {
          FROM failed_logins 
          WHERE attempted_at > DATE_SUB(NOW(), INTERVAL ? HOUR)
          GROUP BY failure_reason`,
-        [parseInt(hours)]
+        [hoursNum]
       );
 
       res.json({
@@ -411,8 +443,8 @@ class AdminSecurityController {
         attempts: attempts,
         stats: stats,
         pagination: {
-          limit: parseInt(limit),
-          offset: parseInt(offset)
+          limit: limitNum,
+          offset: offsetNum
         }
       });
 
@@ -430,6 +462,17 @@ class AdminSecurityController {
    */
   static async getBlockedEntities(req, res) {
     const { limit = 100, offset = 0, entityType, isActive = true } = req.query;
+
+    const limitNum = AdminSecurityController.toPositiveInt(limit, 100, 100);
+    const offsetNum = AdminSecurityController.toNonNegativeInt(offset, 0);
+    const normalizedEntityType = AdminSecurityController.normalizeEntityType(entityType);
+
+    if (entityType && !normalizedEntityType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid entity type'
+      });
+    }
 
     try {
       let query = `
@@ -451,14 +494,13 @@ class AdminSecurityController {
         LEFT JOIN assistants ast ON be.blocked_assistant_id = ast.id
         WHERE be.is_active = ?
       `;
-      const params = [isActive === 'true' ? 1 : 0];
+      const params = [String(isActive).toLowerCase() === 'true' ? 1 : 0];
 
-      if (entityType) {
-        query += ` AND be.blocked_${entityType}_id IS NOT NULL`;
+      if (normalizedEntityType) {
+        query += ` AND be.blocked_${normalizedEntityType}_id IS NOT NULL`;
       }
 
-      query += ' ORDER BY be.created_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), parseInt(offset));
+      query += ` ORDER BY be.created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
 
       const [blockedEntities] = await db.query(query, params);
 
@@ -466,8 +508,8 @@ class AdminSecurityController {
         success: true,
         blockedEntities: blockedEntities,
         pagination: {
-          limit: parseInt(limit),
-          offset: parseInt(offset)
+          limit: limitNum,
+          offset: offsetNum
         }
       });
 
@@ -614,6 +656,17 @@ class AdminSecurityController {
   static async getSystemSessions(req, res) {
     const { entityType, limit = 100, offset = 0 } = req.query;
 
+    const limitNum = AdminSecurityController.toPositiveInt(limit, 100, 100);
+    const offsetNum = AdminSecurityController.toNonNegativeInt(offset, 0);
+    const normalizedEntityType = AdminSecurityController.normalizeEntityType(entityType);
+
+    if (entityType && !normalizedEntityType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid entity type'
+      });
+    }
+
     try {
       let query = `
         SELECT ls.*,
@@ -639,12 +692,11 @@ class AdminSecurityController {
       
       const params = [];
 
-      if (entityType) {
-        query += ` AND ls.${entityType}_id IS NOT NULL`;
+      if (normalizedEntityType) {
+        query += ` AND ls.${normalizedEntityType}_id IS NOT NULL`;
       }
 
-      query += ' ORDER BY ls.last_activity_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), parseInt(offset));
+      query += ` ORDER BY ls.last_activity_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
 
       const [sessions] = await db.query(query, params);
 
@@ -667,8 +719,8 @@ class AdminSecurityController {
         sessions: sessions,
         stats: stats[0],
         pagination: {
-          limit: parseInt(limit),
-          offset: parseInt(offset)
+          limit: limitNum,
+          offset: offsetNum
         }
       });
 
@@ -753,6 +805,7 @@ class AdminSecurityController {
    */
   static async getSecurityAlerts(req, res) {
     const { limit = 50 } = req.query;
+    const limitNum = AdminSecurityController.toPositiveInt(limit, 50, 100);
 
     try {
       // Get high-frequency failed logins (potential attacks)
@@ -768,8 +821,8 @@ class AdminSecurityController {
         GROUP BY ip_address
         HAVING attempt_count > 10
         ORDER BY attempt_count DESC
-        LIMIT ?
-      `, [parseInt(limit)]);
+        LIMIT ${limitNum}
+      `);
 
       // Get users with many failed attempts
       const [targetedUsers] = await db.query(`
@@ -784,8 +837,8 @@ class AdminSecurityController {
         GROUP BY email, entity_type
         HAVING attempt_count > 5
         ORDER BY attempt_count DESC
-        LIMIT ?
-      `, [parseInt(limit)]);
+        LIMIT ${limitNum}
+      `);
 
       // Get recent high-severity admin actions
       const [criticalActions] = await db.query(`
@@ -795,8 +848,8 @@ class AdminSecurityController {
         WHERE al.severity IN ('high', 'critical')
         AND al.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
         ORDER BY al.created_at DESC
-        LIMIT ?
-      `, [parseInt(limit)]);
+        LIMIT ${limitNum}
+      `);
 
       // Get recently blocked entities
       const [recentBlocks] = await db.query(`
@@ -805,8 +858,8 @@ class AdminSecurityController {
         JOIN admins ba ON be.blocked_by_admin_id = ba.id
         WHERE be.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
         ORDER BY be.created_at DESC
-        LIMIT ?
-      `, [parseInt(limit)]);
+        LIMIT ${limitNum}
+      `);
 
       const alerts = {
         suspiciousIPs: suspiciousIPs.map(ip => ({

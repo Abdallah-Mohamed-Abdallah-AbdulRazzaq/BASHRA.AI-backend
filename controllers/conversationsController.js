@@ -15,6 +15,18 @@ const logger = winston.createLogger({
 });
 
 class ConversationsController {
+
+  static toPositiveInt(value, fallback = 50, max = 100) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static toNonNegativeInt(value, fallback = 0, max = 1000000) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+    return Math.min(parsed, max);
+  }
   
   /**
    * GET /conversations
@@ -162,13 +174,8 @@ class ConversationsController {
       const entityType = req.user.entityType;
       
       // Pagination parameters
-      let limit = parseInt(req.query.limit) || 50;
-      const offset = parseInt(req.query.offset) || 0;
-      
-      // التأكد من أن limit أكبر من 0
-      if (limit <= 0) {
-        limit = 50; // القيمة الافتراضية
-      }
+      const limit = ConversationsController.toPositiveInt(req.query.limit, 50, 100);
+      const offset = ConversationsController.toNonNegativeInt(req.query.offset, 0);
 
       // التحقق من أن المستخدم مشارك في المحادثة
       const [participantCheck] = await db.query(
@@ -248,8 +255,8 @@ class ConversationsController {
         LEFT JOIN files f ON m.file_id = f.id
         WHERE m.conversation_id = ? AND m.is_deleted = 0
         ORDER BY m.created_at DESC
-        LIMIT ? OFFSET ?`,
-        [req.lang || 'ar', req.lang || 'ar', conversationId, limit, offset]
+        LIMIT ${limit} OFFSET ${offset}`,
+        [req.lang || 'ar', req.lang || 'ar', conversationId]
       );
 
       // جلب العدد الكلي للرسائل

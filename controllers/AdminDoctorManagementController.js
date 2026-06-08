@@ -906,7 +906,9 @@ class AdminDoctorManagementController {
    */
   static async getPendingDoctors(req, res) {
     const { page = 1, limit = 20 } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const offsetNum = (pageNum - 1) * limitNum;
     const language = req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'ar';
 
     try {
@@ -930,8 +932,8 @@ class AdminDoctorManagementController {
         LEFT JOIN doctor_profile_translations dpt ON dp.id = dpt.doctor_profile_id AND dpt.language_code = ?
         WHERE dp.approval_status = 'pending'
         ORDER BY d.created_at ASC
-        LIMIT ? OFFSET ?`,
-        [language, parseInt(limit), offset]
+        LIMIT ${limitNum} OFFSET ${offsetNum}`,
+        [language]
       );
 
       // Get total count
@@ -949,10 +951,10 @@ class AdminDoctorManagementController {
         data: doctors,
         pagination: {
           total,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(total / parseInt(limit)),
-          hasMore: offset + doctors.length < total
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+          hasMore: offsetNum + doctors.length < total
         }
       });
 
@@ -1086,6 +1088,180 @@ class AdminDoctorManagementController {
     }
   }
 
+
+    /**
+     * Update doctor verification status (comprehensive)
+     * تحديث حالة التحقق الشاملة للطبيب
+     * Updates: is_verified, verification_date, verified_by, approval_status
+     */
+    static async updateDoctorVerificationStatus(req, res) {
+      const { doctorId } = req.params;
+      const { is_verified, approval_status, reason } = req.body;
+      const adminId = req.user.id;
+      const clientInfo = getClientInfo(req);
+
+      // Validation
+      if (is_verified === undefined) {
+        return res.status(400).json({
+          success: false,
+          message_ar: 'حالة التحقق مطلوبة (is_verified)',
+          message_en: 'Verification status is required (is_verified)'
+        });
+      }
+
+      const validApprovalStatuses = ['pending', 'approved', 'rejected', 'suspended'];
+      if (approval_status && !validApprovalStatuses.includes(approval_status)) {
+        return res.status(400).json({
+          success: false,
+          message_ar: 'حالة الموافقة غير صحيحة. القيم المسموحة: ' + validApprovalStatuses.join(', '),
+          message_en: 'Invalid approval status. Allowed values: ' + validApprovalStatuses.join(', ')
+        });
+      }
+
+      const connection = await db.getConnection();
+
+      try {
+        await connection.beginTransaction();
+
+        // Get current profile
+        const [profileRows] = await connection.query(
+          `SELECT dp.*, d.email, d.status as doctor_status, d.uuid
+           FROM doctor_profiles dp
+           JOIN doctors d ON dp.doctor_id = d.id
+           WHERE dp.doctor_id = ?`,
+          [doctorId]
+        );
+
+        if (profileRows.length === 0) {
+          await connection.rollback();
+          return res.status(404).json({
+            success: false,
+            message_ar: 'ملف الطبيب غير موجود',
+            message_en: 'Doctor profile not found'
+          });
+        }
+
+        const currentProfile = profileRows[0];
+        const profileId = currentProfile.id;
+        const oldData = {
+          is_verified: currentProfile.is_verified,
+          verification_date: currentProfile.verification_date,
+          verified_by: currentProfile.verified_by,
+          approval_status: currentProfile.approval_status
+        };
+
+        // Prepare update data
+        const updateData = {
+          is_verified: is_verified ? 1 : 0,
+          verification_date: is_verified ? new Date() : null,
+          verified_by: is_verified ? adminId : null
+        };
+
+        // If approval_status is provided, update it
+        if (approval_status) {
+          updateData.approval_status = approval_status;
+        } else if (is_verified) {
+          // Auto-set approval_status to 'approved' if verified
+          updateData.approval_status = 'approved';
+        }
+
+        // Update doctor_profiles
+        await connection.query(
+          `UPDATE doctor_profiles
+           SET is_verified = ?,
+               verification_date = ?,
+               verified_by = ?,
+               approval_status = ?,
+               updated_at = NOW()
+           WHERE id = ?`,
+          [
+            updateData.is_verified,
+            updateData.verification_date,
+            updateData.verified_by,
+            updateData.approval_status,
+            profileId
+          ]
+        );
+
+        // Update doctor status based on verification and approval
+        let newDoctorStatus = currentProfile.doctor_status;
+
+        if (is_verified && updateData.approval_status === 'approved') {
+          newDoctorStatus = 'active';
+        } else if (updateData.approval_status === 'rejected') {
+          newDoctorStatus = 'inactive';
+        } else if (updateData.approval_status === 'suspended') {
+          newDoctorStatus = 'suspended';
+        } else if (!is_verified) {
+          newDoctorStatus = 'pending_verification';
+        }
+
+        if (newDoctorStatus !== currentProfile.doctor_status) {
+          await connection.query(
+            'UPDATE doctors SET status = ?, updated_at = NOW() WHERE id = ?',
+            [newDoctorStatus, doctorId]
+          );
+        }
+
+        // Log admin action
+        await logAdminAction(
+          adminId,
+          'UPDATE_DOCTOR_VERIFICATION_STATUS',
+          'doctor_profile',
+          profileId,
+          oldData,
+          { ...updateData, reason, newDoctorStatus },
+          clientInfo
+        );
+
+        await connection.commit();
+
+        logger.info('Doctor verification status updated', {
+          doctorId,
+          profileId,
+          oldData,
+          newData: updateData,
+          newDoctorStatus,
+          updatedBy: adminId,
+          reason
+        });
+
+        res.json({
+          success: true,
+          message_ar: 'تم تحديث حالة التحقق بنجاح',
+          message_en: 'Verification status updated successfully',
+          data: {
+            doctorId,
+            doctorUuid: currentProfile.uuid,
+            profileId,
+            oldData,
+            newData: {
+              is_verified: updateData.is_verified === 1,
+              verification_date: updateData.verification_date,
+              verified_by: updateData.verified_by,
+              approval_status: updateData.approval_status,
+              doctor_status: newDoctorStatus
+            }
+          }
+        });
+
+      } catch (error) {
+        await connection.rollback();
+        logger.error('Update doctor verification status error', {
+          error: error.message,
+          stack: error.stack,
+          doctorId
+        });
+        res.status(500).json({
+          success: false,
+          message_ar: 'خطأ في تحديث حالة التحقق',
+          message_en: 'Error updating verification status',
+          error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+      } finally {
+        connection.release();
+      }
+    }
 
   /**
    * Update doctor verification status (comprehensive)

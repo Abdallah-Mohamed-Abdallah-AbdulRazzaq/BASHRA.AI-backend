@@ -9,6 +9,27 @@ const { v4: uuidv4 } = require('uuid');
  * Central service for managing all files in the system
  */
 class FileService {
+  static toPositiveInt(value, fallback = 50, max = 100) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static toNonNegativeInt(value, fallback = 0, max = 1000000) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+    return Math.min(parsed, max);
+  }
+
+  static normalizeEntityType(entityType) {
+    const normalized = String(entityType || '').trim().toLowerCase();
+    const allowed = ['user', 'admin', 'doctor', 'assistant'];
+    if (!allowed.includes(normalized)) {
+      throw new Error(`Invalid entity type: ${entityType}`);
+    }
+    return normalized;
+  }
+
   
   /**
    * Upload and register file in database
@@ -191,8 +212,11 @@ class FileService {
   static async getFilesByUploader(entityType, entityId, options = {}) {
     try {
       const { fileCategory, limit = 50, offset = 0 } = options;
+      const limitNum = FileService.toPositiveInt(limit, 50, 100);
+      const offsetNum = FileService.toNonNegativeInt(offset, 0);
+      const normalizedEntityType = FileService.normalizeEntityType(entityType);
       
-      const uploadedByField = `uploaded_by_${entityType}_id`;
+      const uploadedByField = `uploaded_by_${normalizedEntityType}_id`;
       
       let query = `SELECT * FROM files WHERE ${uploadedByField} = ? AND is_deleted = 0`;
       const params = [entityId];
@@ -202,8 +226,7 @@ class FileService {
         params.push(fileCategory);
       }
       
-      query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
+      query += ` ORDER BY created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
       
       const [files] = await db.execute(query, params);
       
@@ -220,6 +243,8 @@ class FileService {
   static async getFilesByRelatedEntity(relatedToType, relatedToId, options = {}) {
     try {
       const { fileCategory, limit = 50, offset = 0 } = options;
+      const limitNum = FileService.toPositiveInt(limit, 50, 100);
+      const offsetNum = FileService.toNonNegativeInt(offset, 0);
       
       let query = `SELECT * FROM files WHERE related_to_type = ? AND related_to_id = ? AND is_deleted = 0`;
       const params = [relatedToType, relatedToId];
@@ -229,8 +254,7 @@ class FileService {
         params.push(fileCategory);
       }
       
-      query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
+      query += ` ORDER BY created_at DESC LIMIT ${limitNum} OFFSET ${offsetNum}`;
       
       const [files] = await db.execute(query, params);
       
